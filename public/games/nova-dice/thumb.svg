@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="32%" r="82%"><stop offset="0" stop-color="#15324a"/><stop offset="1" stop-color="#070b14"/></radialGradient>
+    <linearGradient id="die" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cdd6ea"/></linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <!-- dado -->
+  <g transform="translate(150,140) rotate(-8)">
+    <rect x="-58" y="-58" width="116" height="116" rx="22" fill="url(#die)" stroke="#8a94ad" stroke-width="2"/>
+    <g fill="#0a0e1a"><circle cx="-28" cy="-28" r="11"/><circle cx="28" cy="-28" r="11"/><circle cx="-28" cy="28" r="11"/><circle cx="28" cy="28" r="11"/><circle cx="0" cy="0" r="11" fill="#19e57f"/></g>
+  </g>
+  <!-- barra mayor/menor -->
+  <g transform="translate(0,250)">
+    <rect x="40" y="0" width="100" height="16" rx="8" fill="#ff4d5e"/>
+    <rect x="140" y="0" width="120" height="16" rx="8" fill="#19e57f"/>
+    <rect x="136" y="-7" width="6" height="30" rx="3" fill="#fff"/>
+    <circle cx="200" cy="8" r="14" fill="#ffc83d" stroke="#0a0e1a" stroke-width="3"/>
+  </g>
+  <text x="150" y="350" font-family="'Sora','Arial Black',sans-serif" font-size="40" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="2">DICE</text>
+  <text x="150" y="376" font-family="Arial,sans-serif" font-size="14" fill="#19e57f" text-anchor="middle" letter-spacing="3">MAYOR O MENOR</text>
+</svg>

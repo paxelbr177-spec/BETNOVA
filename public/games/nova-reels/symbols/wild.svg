@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1affa0"/><stop offset="1" stop-color="#0fb863"/>
+    </linearGradient>
+    <radialGradient id="wglow" cx="0.5" cy="0.4" r="0.6">
+      <stop offset="0" stop-color="#1affa0" stop-opacity="0.5"/><stop offset="1" stop-color="#1affa0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g transform="translate(60,60)">
+    <circle cx="0" cy="0" r="46" fill="url(#wglow)"/>
+    <rect x="-34" y="-34" width="68" height="68" rx="16" fill="#0a0e1a" stroke="url(#wg)" stroke-width="3"/>
+    <path d="M-16,16 V-16 h16 a8 8 0 0 1 2.5,15.6 A8.4 8.4 0 0 1 4,16 H-16 Z M-7.5,-3.5 H1 a3.3 3.3 0 0 0 0,-6.6 H-7.5 Z M-7.5,9.5 H2.5 a3.6 3.6 0 0 0 0,-7.2 H-7.5 Z" fill="url(#wg)"/>
+    <text x="0" y="30" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#1affa0" text-anchor="middle">WILD</text>
+  </g>
+</svg>

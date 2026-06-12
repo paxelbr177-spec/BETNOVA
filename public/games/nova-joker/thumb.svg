@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="80%"><stop offset="0" stop-color="#3a1d6e"/><stop offset="1" stop-color="#0a0413"/></radialGradient>
+    <linearGradient id="jg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c79bff"/><stop offset="1" stop-color="#7a30e0"/></linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <text x="40" y="80" font-size="60" fill="#ffc83d" opacity=".12">♠</text>
+  <text x="220" y="360" font-size="60" fill="#ffc83d" opacity=".12">♦</text>
+  <!-- cartas en abanico -->
+  <g transform="translate(150,180)">
+    <g transform="rotate(-16) translate(-54,0)"><rect x="-34" y="-50" width="68" height="100" rx="9" fill="#fff" stroke="#b87e0a" stroke-width="2"/><text x="0" y="6" font-family="'Arial Black',sans-serif" font-size="34" font-weight="900" fill="#e3143c" text-anchor="middle">A</text><text x="0" y="34" font-size="22" fill="#e3143c" text-anchor="middle">♥</text></g>
+    <g transform="rotate(16) translate(54,0)"><rect x="-34" y="-50" width="68" height="100" rx="9" fill="#fff" stroke="#b87e0a" stroke-width="2"/><text x="0" y="6" font-family="'Arial Black',sans-serif" font-size="34" font-weight="900" fill="#1a2330" text-anchor="middle">K</text><text x="0" y="34" font-size="22" fill="#1a2330" text-anchor="middle">♠</text></g>
+    <!-- gorro de joker original al centro -->
+    <g transform="translate(0,-6)">
+      <circle r="46" fill="#a45bff" opacity=".25"/>
+      <path d="M-30,-4 C-35,-30 -10,-34 0,-20 C10,-34 35,-30 30,-4 C18,4 -18,4 -30,-4 Z" fill="url(#jg)" stroke="#ffc83d" stroke-width="2.5"/>
+      <circle cx="-30" cy="-4" r="5" fill="#ffc83d"/><circle cx="0" cy="-22" r="5" fill="#ffc83d"/><circle cx="30" cy="-4" r="5" fill="#ffc83d"/>
+      <path d="M-22,2 C-10,16 10,16 22,2" fill="none" stroke="#ffc83d" stroke-width="3"/>
+    </g>
+  </g>
+  <text x="150" y="350" font-family="'Sora','Arial Black',sans-serif" font-size="40" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="1">JOKER</text>
+  <text x="150" y="376" font-family="Arial,sans-serif" font-size="15" fill="#ffc83d" text-anchor="middle" letter-spacing="3">WILD SLOT</text>
+</svg>

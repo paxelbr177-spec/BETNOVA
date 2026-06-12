@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe89a"/><stop offset="1" stop-color="#ffc83d"/></linearGradient></defs>
+  <text x="60" y="56" font-family="'Arial Black',Arial,sans-serif" font-size="46" font-weight="900" fill="url(#ga)" stroke="#b87e0a" stroke-width="2.5" text-anchor="middle">A</text>
+  <g transform="translate(60,86)" fill="#ffc83d" stroke="#b87e0a" stroke-width="1.5"><path d="M0,-13 L11,0 L0,13 L-11,0 Z"/></g>
+</svg>

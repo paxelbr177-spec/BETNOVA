@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Demo Spin — BetNova</title>
+<style>
+  :root { --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --gold:#ffc83d; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; }
+  body {
+    font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #15324a, var(--ink) 60%);
+    color:#e8eefc; display:flex; align-items:center; justify-content:center;
+    min-height:100%; user-select:none; overflow:hidden;
+  }
+  .game { width:min(92vw,520px); text-align:center; padding:18px; }
+  h1 { font-size:18px; letter-spacing:.5px; margin-bottom:4px; }
+  h1 span { color:var(--brand); }
+  .sub { color:#8a94ad; font-size:12px; margin-bottom:18px; }
+  .reels {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+    background:var(--panel); border:1px solid rgba(255,255,255,.08);
+    border-radius:20px; padding:18px; box-shadow:0 14px 40px rgba(0,0,0,.5);
+  }
+  .reel {
+    height:110px; border-radius:14px; background:#0c1322;
+    display:flex; align-items:center; justify-content:center;
+    font-size:60px; overflow:hidden; position:relative;
+  }
+  .reel .strip { display:flex; flex-direction:column; transition:transform .1s linear; }
+  .reel .strip div { height:110px; display:flex; align-items:center; justify-content:center; }
+  .hud { margin-top:18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .stat { background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 14px; flex:1; }
+  .stat span { display:block; font-size:11px; color:#8a94ad; }
+  .stat b { font-size:18px; }
+  .stat b.bal { color:var(--brand); }
+  .stat b.win { color:var(--gold); }
+  button {
+    margin-top:16px; width:100%; padding:14px; border:0; border-radius:14px;
+    background:var(--brand); color:var(--ink); font-weight:800; font-size:16px;
+    cursor:pointer; transition:filter .15s, transform .05s;
+    box-shadow:0 0 22px rgba(25,229,127,.4);
+  }
+  button:hover { filter:brightness(1.08); }
+  button:active { transform:scale(.98); }
+  button:disabled { opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg { margin-top:12px; min-height:20px; font-size:14px; color:var(--gold); font-weight:600; }
+  .tag { display:inline-block; margin-top:14px; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="game">
+    <h1>Demo <span>Spin</span></h1>
+    <p class="sub">Mini-juego de ejemplo · saldo ficticio · sin dinero real</p>
+
+    <div class="reels" id="reels">
+      <div class="reel"><div class="strip"><div>🍒</div></div></div>
+      <div class="reel"><div class="strip"><div>🔔</div></div></div>
+      <div class="reel"><div class="strip"><div>⭐</div></div></div>
+    </div>
+
+    <div class="hud">
+      <div class="stat"><span>Saldo (demo)</span><b class="bal" id="bal">1000</b></div>
+      <div class="stat"><span>Apuesta</span><b id="bet">10</b></div>
+      <div class="stat"><span>Último premio</span><b class="win" id="win">0</b></div>
+    </div>
+
+    <button id="spin">GIRAR (-10)</button>
+    <div class="msg" id="msg"></div>
+    <span class="tag">Juego de demostración original · BetNova</span>
+  </div>
+
+<script>
+  // Mini tragamonedas 3x3 ORIGINAL — solo para demostrar el loader de iframe.
+  // Sin assets con copyright; los símbolos son emojis del sistema.
+  const SYMBOLS = ['🍒','🔔','⭐','🍋','💎','7️⃣'];
+  const PAYOUTS = { '🍒':4, '🔔':6, '⭐':10, '🍋':3, '💎':20, '7️⃣':50 };
+  const BET = 10;
+
+  let balance = 1000;
+  let spinning = false;
+
+  const $ = (id) => document.getElementById(id);
+  const reels = [...document.querySelectorAll('.reel .strip')];
+
+  function randSym() { return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]; }
+
+  function buildStrip(finalSym) {
+    // 18 símbolos al azar + el final, para simular el giro
+    let html = '';
+    for (let i = 0; i < 18; i++) html += '<div>' + randSym() + '</div>';
+    html += '<div>' + finalSym + '</div>';
+    return html;
+  }
+
+  function spin() {
+    if (spinning || balance < BET) {
+      if (balance < BET) $('msg').textContent = 'Saldo insuficiente. Recarga la demo.';
+      return;
+    }
+    spinning = true;
+    $('spin').disabled = true;
+    $('msg').textContent = '';
+    balance -= BET;
+    $('bal').textContent = balance;
+
+    const finals = [randSym(), randSym(), randSym()];
+
+    reels.forEach((strip, i) => {
+      strip.style.transition = 'none';
+      strip.style.transform = 'translateY(0)';
+      strip.innerHTML = buildStrip(finals[i]);
+      // forzar reflow
+      void strip.offsetHeight;
+      const distance = 18 * 110; // hasta el símbolo final
+      strip.style.transition = 'transform ' + (1 + i * 0.35) + 's cubic-bezier(.18,.7,.25,1)';
+      strip.style.transform = 'translateY(-' + distance + 'px)';
+    });
+
+    setTimeout(() => evaluate(finals), 1000 + 2 * 350 + 150);
+  }
+
+  function evaluate(finals) {
+    let win = 0;
+    if (finals[0] === finals[1] && finals[1] === finals[2]) {
+      win = BET * PAYOUTS[finals[0]];           // tres iguales
+      $('msg').textContent = '🎉 ¡JACKPOT! +' + win;
+    } else if (finals[0] === finals[1] || finals[1] === finals[2] || finals[0] === finals[2]) {
+      win = BET * 1.5;                            // dos iguales
+      $('msg').textContent = '✨ Dos iguales · +' + win;
+    } else {
+      $('msg').textContent = '¡Suerte la próxima!';
+    }
+    balance += win;
+    $('bal').textContent = balance;
+    $('win').textContent = win;
+    spinning = false;
+    $('spin').disabled = false;
+  }
+
+  $('spin').addEventListener('click', spin);
+  document.addEventListener('keydown', (e) => { if (e.code === 'Space') spin(); });
+</script>
+</body>
+</html>

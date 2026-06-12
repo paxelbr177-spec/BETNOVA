@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs><linearGradient id="gk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d6b8ff"/><stop offset="1" stop-color="#a45bff"/></linearGradient></defs>
+  <text x="60" y="56" font-family="'Arial Black',Arial,sans-serif" font-size="46" font-weight="900" fill="url(#gk)" stroke="#5a1ea8" stroke-width="2.5" text-anchor="middle">K</text>
+  <g transform="translate(60,82)" fill="#a45bff" stroke="#5a1ea8" stroke-width="1">
+    <path d="M0,-13 C12,-2 14,6 6,9 C2,10 0,7 0,7 C0,7 -2,10 -6,9 C-14,6 -12,-2 0,-13 Z"/><path d="M-2,7 h4 l2,8 h-8 z"/>
+  </g>
+</svg>

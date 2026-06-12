@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Joker — BetNova</title>
+<!-- Phaser 3 (MIT) desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    /* Fondo "joker": morado profundo + brillo dorado */
+    background:
+      radial-gradient(ellipse 120% 70% at 50% -5%, rgba(255,200,61,.14), transparent 55%),
+      radial-gradient(ellipse at 50% 40%, #3a1d6e 0%, #241048 45%, #120726 75%, #0a0413 100%);
+    display:flex; align-items:center; justify-content:center; min-height:100%;
+    position:relative; user-select:none; -webkit-user-select:none; overflow:hidden;
+  }
+  /* Palos de cartas decorativos, grandes y tenues, en las esquinas */
+  body::before, body::after{
+    position:fixed; font-size:120px; line-height:1; opacity:.06; pointer-events:none; z-index:0;
+  }
+  body::before{ content:"♠ ♥"; top:6%; left:4%; color:#ffc83d; letter-spacing:30px; }
+  body::after{ content:"♦ ♣"; bottom:6%; right:4%; color:#ffc83d; letter-spacing:30px; }
+  .machine{ position:relative; z-index:1; }
+  .machine{ width:min(96vw,760px); }
+  .title{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .title h1{ font-size:20px; font-weight:800; letter-spacing:.5px; }
+  .title h1 span{ color:var(--brand); }
+  .title .tag{ font-size:11px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 10px; border-radius:999px; }
+  #game{
+    border-radius:18px; overflow:hidden; border:1.5px solid rgba(255,200,61,.35);
+    box-shadow:0 18px 50px rgba(0,0,0,.55), inset 0 0 40px rgba(164,91,255,.08); background:#140a26;
+  }
+  .hud{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px;
+  }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:10px 14px; text-align:center; }
+  .stat span{ display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+  .stat b{ font-size:20px; }
+  .stat b.bal{ color:var(--brand); } .stat b.win{ color:var(--gold); }
+  .controls{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 10px; }
+  .bet button{ width:34px; height:34px; border-radius:9px; border:0; background:var(--panel2); color:#fff; font-size:20px; cursor:pointer; }
+  .bet button:hover{ background:#26314d; }
+  .bet .val{ min-width:64px; text-align:center; }
+  .bet .val small{ display:block; font-size:10px; color:var(--muted); }
+  .bet .val b{ font-size:16px; }
+  .spin{
+    flex:1; height:54px; border:0; border-radius:14px; cursor:pointer;
+    background:linear-gradient(180deg,var(--brand),#0fb863); color:var(--ink);
+    font-size:18px; font-weight:800; letter-spacing:.5px;
+    box-shadow:0 0 24px rgba(25,229,127,.4); transition:filter .15s, transform .05s;
+  }
+  .spin:hover{ filter:brightness(1.07); }
+  .spin:active{ transform:scale(.985); }
+  .spin:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
+  .auto{ width:54px; height:54px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:var(--panel); color:#fff; cursor:pointer; font-size:11px; font-weight:700; }
+  .auto.on{ background:var(--brand); color:var(--ink); border-color:var(--brand); }
+  .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); font-size:15px; }
+  .foot{ margin-top:6px; text-align:center; font-size:10px; color:#5e6781; }
+  @media (max-width:520px){
+    .stat b{ font-size:16px; } .spin{ font-size:16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="machine">
+    <div class="title">
+      <h1>Nova <span>Joker</span></h1>
+      <span class="tag">Demo · saldo ficticio · sin dinero real</span>
+    </div>
+
+    <div id="game"></div>
+
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisplay">5.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisplay">0.00</b></div>
+    </div>
+
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown" aria-label="Bajar apuesta">−</button>
+        <div class="val"><small>Apuesta</small><b id="betValue">5</b></div>
+        <button id="betUp" aria-label="Subir apuesta">+</button>
+      </div>
+      <button class="spin" id="spinBtn">GIRAR</button>
+      <button class="auto" id="autoBtn">AUTO</button>
+    </div>
+
+    <div class="msg" id="message">¡Pulsa GIRAR para jugar!</div>
+    <div class="foot">Nova Joker · juego original de BetNova · 5×3 · 10 líneas · comodín JOKER · RTP teórico ~95%</div>
+  </div>
+
+  <script src="../_shared/wallet-bridge.js"></script>
+  <script src="../_shared/juice.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Crash — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:14px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:640px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .head h1{ font-size:20px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:11px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 10px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:#0a1120; box-shadow:0 14px 40px rgba(0,0,0,.5); }
+  canvas{ display:block; width:100%; height:auto; }
+  .mult{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:54px; font-weight:800; letter-spacing:1px; text-shadow:0 4px 18px rgba(0,0,0,.6); pointer-events:none; }
+  .mult.crash{ color:var(--red); } .mult.win{ color:var(--brand); }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px; text-align:center; }
+  .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:18px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:10px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:54px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:50px; border:0; border-radius:13px; cursor:pointer; font-size:17px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act.cash{ background:linear-gradient(180deg,var(--gold),#e0a90c); }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); }
+  .hist{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; justify-content:center; }
+  .hist b{ font-size:11px; padding:3px 8px; border-radius:999px; background:var(--panel2); }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Crash</span></h1><span class="tag">Demo · sin dinero real</span></div>
+    <div class="stage">
+      <canvas id="cv" width="600" height="320"></canvas>
+      <div class="mult" id="mult">1.00x</div>
+    </div>
+    <div class="hist" id="hist"></div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">10.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">10</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">APOSTAR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y despega 🚀</div>
+    <div class="foot">Nova Crash · juego original de BetNova · retírate antes de que explote</div>
+  </div>
+<script src="../_shared/wallet-bridge.js"></script>
+<script src="../_shared/juice.js"></script>
+<script>
+(function(){
+  const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  const BETS=[5,10,25,50,100]; let betIdx=1;
+  let balance=1000, state='idle', crashPoint=0, startT=0, mult=1, raf=0, crashTimer=0;
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+  const history=[];
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.12,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndCash=()=>{ [660,880,1175].forEach((f,i)=>setTimeout(()=>tone(f,0.18,'triangle',0.12),i*70)); };
+  const sndCrash=()=>tone(200,0.5,'sawtooth',0.14,60);
+
+  function genCrash(){ const r=Math.random(); return Math.max(1.0, Math.floor((0.99/(1-r))*100)/100); }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function drawBg(){
+    ctx.fillStyle='#0a1120'; ctx.fillRect(0,0,W,H);
+    // estrellas
+    ctx.fillStyle='rgba(255,255,255,.25)';
+    for(let i=0;i<40;i++){ const x=(i*97+ (state==='running'? (performance.now()*0.02):0))%W; const y=(i*53)%H; ctx.fillRect((W-x),y,1.5,1.5); }
+    // ejes sutiles
+    ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+    for(let gx=0;gx<=W;gx+=60){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
+  }
+
+  function curveY(m, maxM){ return H-10-( (m-1)/(maxM-1) )*(H-30); }
+
+  function draw(){
+    drawBg();
+    const elapsed=(performance.now()-startT)/1000;
+    mult=Math.exp(0.231*elapsed);
+    if(mult>=crashPoint){ return crash(); }
+    const maxM=Math.max(2, mult*1.15);
+    // curva
+    ctx.beginPath(); ctx.lineWidth=4; ctx.strokeStyle='#19e57f';
+    const steps=60;
+    for(let i=0;i<=steps;i++){ const t=elapsed*i/steps; const m=Math.exp(0.231*t); const x=10+(i/steps)*(W-20); const y=curveY(m,maxM); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    ctx.stroke();
+    // relleno
+    ctx.lineTo(W-20, H-10); ctx.lineTo(10,H-10); ctx.closePath(); ctx.fillStyle='rgba(25,229,127,.12)'; ctx.fill();
+    // cohete en la punta
+    const x=W-20, y=curveY(mult,maxM);
+    ctx.font='26px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('🚀',x-6,y-4);
+
+    $('mult').textContent=mult.toFixed(2)+'x';
+    $('mult').className='mult';
+    raf=requestAnimationFrame(draw);
+  }
+
+  function startRound(){
+    if(state!=='idle')return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet); syncUI();
+    crashPoint=genCrash(); startT=performance.now(); state='running';
+    $('winDisp').textContent=fmt(0);
+    $('actBtn').textContent='RETIRAR'; $('actBtn').classList.add('cash');
+    setMsg('🚀 ¡Despegando! Retírate a tiempo…');
+    tone(330,0.15,'sine',0.08,520);
+    // timer de respaldo: resuelve la ronda aunque el rAF se congele (pestaña en 2º plano)
+    const crashMs=(Math.log(crashPoint)/0.231)*1000;
+    clearTimeout(crashTimer); crashTimer=setTimeout(crash, crashMs+60);
+    raf=requestAnimationFrame(draw);
+  }
+
+  // cierre común de ronda: detiene animación/timer, registra historial, reactiva botón
+  function finalize(){
+    cancelAnimationFrame(raf); clearTimeout(crashTimer);
+    history.unshift(crashPoint); if(history.length>8)history.pop(); renderHist();
+    state='idle';
+    $('actBtn').textContent='APOSTAR'; $('actBtn').classList.remove('cash');
+    syncUI();
+  }
+
+  function cashOut(){
+    if(state!=='running')return;
+    state='cashed';
+    const win=BETS[betIdx]*mult;
+    balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
+    $('mult').textContent=mult.toFixed(2)+'x'; $('mult').className='mult win';
+    setMsg(`✅ Retiraste en ${mult.toFixed(2)}x · +${fmt(win)}`); sndCash();
+    if(window.Juice){ if(mult>=3) Juice.bigWin(win,{label:'¡RETIRO ÉPICO!',sub:mult.toFixed(2)+'x'}); else Juice.coins({count:50}); }
+    finalize(); // ← cierra la ronda al instante: puedes volver a apostar ya
+  }
+
+  function crash(){
+    if(state!=='running')return;
+    state='crashed'; mult=crashPoint;
+    drawBg();
+    $('mult').textContent=crashPoint.toFixed(2)+'x'; $('mult').className='mult crash';
+    setMsg(`💥 ¡Explotó en ${crashPoint.toFixed(2)}x! Perdiste.`); sndCrash();
+    finalize();
+  }
+
+  function renderHist(){
+    $('hist').innerHTML=history.map(h=>{ const col=h<2?'#ff8c5b':h<5?'#ffc83d':'#19e57f'; return `<b style="color:${col}">${h.toFixed(2)}x</b>`; }).join('');
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(state==='idle')startRound(); else if(state==='running')cashOut(); });
+  $('betUp').addEventListener('click',()=>{ if(state==='idle'&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(state==='idle'&&betIdx>0){betIdx--;syncUI();} });
+
+  drawBg(); syncUI();
+})();
+</script>
+</body>
+</html>

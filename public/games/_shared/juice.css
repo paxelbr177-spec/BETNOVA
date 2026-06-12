@@ -1,0 +1,29 @@
+/* BetNova "juice" — efectos visuales compartidos entre juegos.
+   Todo overlay es pointer-events:none para no bloquear el juego. */
+.juice-canvas{ position:fixed; inset:0; pointer-events:none; z-index:9998; }
+
+.juice-banner{ position:fixed; inset:0; display:grid; place-items:center; z-index:9999; pointer-events:none; }
+.juice-banner-card{ text-align:center; animation:juice-pop .5s cubic-bezier(.2,1.4,.4,1); }
+.juice-banner.out .juice-banner-card{ animation:juice-out .45s forwards; }
+.juice-banner-label{ font-family:"Sora","Segoe UI",system-ui,sans-serif; font-size:clamp(24px,7vw,40px); font-weight:800;
+  color:#ffc83d; letter-spacing:1px; text-shadow:0 0 22px rgba(255,200,61,.65), 0 4px 12px rgba(0,0,0,.6); }
+.juice-banner-amt{ font-size:clamp(36px,11vw,64px); font-weight:800; color:#19e57f;
+  text-shadow:0 0 26px rgba(25,229,127,.65), 0 4px 14px rgba(0,0,0,.7); }
+.juice-banner-sub{ margin-top:4px; font-size:13px; color:#cdd6ea; letter-spacing:2px; text-transform:uppercase; }
+
+@keyframes juice-pop{ 0%{transform:scale(.3) rotate(-6deg);opacity:0} 60%{transform:scale(1.12) rotate(2deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+@keyframes juice-out{ to{transform:scale(1.25);opacity:0} }
+
+/* screen shake (se aplica al contenedor del juego) */
+@keyframes juice-shakek{ 0%,100%{transform:translate(0,0)} 15%{transform:translate(-7px,4px)} 30%{transform:translate(7px,-4px)}
+  45%{transform:translate(-5px,-3px)} 60%{transform:translate(5px,3px)} 75%{transform:translate(-3px,2px)} 90%{transform:translate(3px,-1px)} }
+.juice-shake{ animation:juice-shakek .45s ease-in-out; }
+
+/* glow pulse para el botón principal cuando está listo */
+@keyframes juice-readyk{ 0%,100%{box-shadow:0 0 22px rgba(25,229,127,.4)} 50%{box-shadow:0 0 34px rgba(25,229,127,.7)} }
+.juice-ready{ animation:juice-readyk 1.8s ease-in-out infinite; }
+
+/* texto flotante (ej. +50.00 saliendo hacia arriba) */
+.juice-float{ position:fixed; transform:translate(-50%,-50%); font-weight:800; font-size:clamp(18px,5vw,26px);
+  color:#ffc83d; text-shadow:0 2px 8px rgba(0,0,0,.7); pointer-events:none; z-index:9999; animation:juice-floatk 1.2s ease-out forwards; }
+@keyframes juice-floatk{ 0%{opacity:0;transform:translate(-50%,-30%) scale(.7)} 20%{opacity:1} 100%{opacity:0;transform:translate(-50%,-170%) scale(1.1)} }

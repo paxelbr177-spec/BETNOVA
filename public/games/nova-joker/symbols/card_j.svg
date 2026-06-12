@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs><linearGradient id="gj" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a8f0bf"/><stop offset="1" stop-color="#19c46a"/></linearGradient></defs>
+  <text x="60" y="56" font-family="'Arial Black',Arial,sans-serif" font-size="46" font-weight="900" fill="url(#gj)" stroke="#0c6e3a" stroke-width="2.5" text-anchor="middle">J</text>
+  <g transform="translate(60,84)" fill="#19c46a" stroke="#0c6e3a" stroke-width="1">
+    <circle cx="0" cy="-6" r="6"/><circle cx="-7" cy="4" r="6"/><circle cx="7" cy="4" r="6"/><path d="M-2,5 h4 l2,9 h-8 z"/>
+  </g>
+</svg>
