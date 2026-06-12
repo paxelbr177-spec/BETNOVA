@@ -70,6 +70,10 @@ const cats = {
   'nova-dice': 'crash',
 }
 
+// Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs
+// usan rutas absolutas, así que hay que anteponer la base para que carguen.
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 export const games = names
   .map((name, i) => {
     const slug = slugify(name)
@@ -83,8 +87,8 @@ export const games = names
       hot: i % 5 === 0,
       rtp: (94 + (i % 6)).toFixed(1),
       players: 50 + ((i * 37) % 950),
-      embed: embeds[slug] || null,
-      thumb: thumbs[slug] || null,
+      embed: embeds[slug] ? base + embeds[slug] : null,
+      thumb: thumbs[slug] ? base + thumbs[slug] : null,
     }
   })
   // Catálogo recortado a juegos reales: solo los que tienen un juego cargado.
