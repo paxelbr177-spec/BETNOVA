@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs><radialGradient id="bg" cx="40%" cy="30%" r="90%"><stop offset="0" stop-color="#163a55"/><stop offset="1" stop-color="#05101f"/></radialGradient></defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <path d="M30 330 Q140 320 250 90" fill="none" stroke="#19e57f" stroke-width="6" stroke-linecap="round"/>
+  <path d="M250 90 l-18 8 l10 -20 z" fill="#19e57f"/>
+  <text x="150" y="220" font-family="'Sora','Arial Black',sans-serif" font-size="62" font-weight="800" fill="#ffc83d" text-anchor="middle" stroke="#0a0e1a" stroke-width="2">9.9x</text>
+  <text x="150" y="345" font-family="'Sora','Arial Black',sans-serif" font-size="42" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="2">LIMBO</text>
+  <text x="150" y="372" font-family="Arial,sans-serif" font-size="13" fill="#19e57f" text-anchor="middle" letter-spacing="3">SUPERA EL OBJETIVO</text>
+</svg>

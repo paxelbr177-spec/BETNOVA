@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs><radialGradient id="bg" cx="50%" cy="32%" r="85%"><stop offset="0" stop-color="#163a55"/><stop offset="1" stop-color="#05101f"/></radialGradient></defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <g transform="translate(150,170)">
+    <g stroke="rgba(0,0,0,.25)" stroke-width="2">
+      <path d="M0 0 L100 0 A100 100 0 0 1 70.7 70.7 Z" fill="#5b8cff"/>
+      <path d="M0 0 L70.7 70.7 A100 100 0 0 1 0 100 Z" fill="#3a4256"/>
+      <path d="M0 0 L0 100 A100 100 0 0 1 -70.7 70.7 Z" fill="#2bbd6a"/>
+      <path d="M0 0 L-70.7 70.7 A100 100 0 0 1 -100 0 Z" fill="#3a4256"/>
+      <path d="M0 0 L-100 0 A100 100 0 0 1 -70.7 -70.7 Z" fill="#ffc83d"/>
+      <path d="M0 0 L-70.7 -70.7 A100 100 0 0 1 0 -100 Z" fill="#3a4256"/>
+      <path d="M0 0 L0 -100 A100 100 0 0 1 70.7 -70.7 Z" fill="#ff4d5e"/>
+      <path d="M0 0 L70.7 -70.7 A100 100 0 0 1 100 0 Z" fill="#3a4256"/>
+    </g>
+    <circle r="22" fill="#0a1c14" stroke="#ffc83d" stroke-width="3"/>
+  </g>
+  <path d="M138 56 L162 56 L150 84 Z" fill="#ffc83d"/>
+  <text x="150" y="345" font-family="'Sora','Arial Black',sans-serif" font-size="42" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="2">WHEEL</text>
+  <text x="150" y="372" font-family="Arial,sans-serif" font-size="13" fill="#ffc83d" text-anchor="middle" letter-spacing="3">RUEDA DE LA FORTUNA</text>
+</svg>

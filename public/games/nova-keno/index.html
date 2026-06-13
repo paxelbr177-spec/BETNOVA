@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Keno — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --brand:#19e57f; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%); min-height:100%; padding:14px; user-select:none; }
+  .wrap{ max-width:520px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .head h1{ font-size:20px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:11px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 10px; border-radius:999px; }
+  .grid{ display:grid; grid-template-columns:repeat(8,1fr); gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:12px; }
+  .cell{ aspect-ratio:1; border-radius:9px; background:var(--panel2); border:1px solid rgba(255,255,255,.06); color:#cdd6ea;
+    font-weight:700; font-size:14px; cursor:pointer; display:grid; place-items:center; transition:transform .05s, background .15s; position:relative; }
+  .cell:hover{ filter:brightness(1.2); }
+  .cell.sel{ background:linear-gradient(180deg,#1f7fd6,#13456e); color:#fff; }
+  .cell.drawn{ outline:2px solid var(--gold); }
+  .cell.hit{ background:linear-gradient(180deg,var(--brand),#0fb863); color:#0a0e1a; }
+  .meta{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin:10px 2px 0; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px; text-align:center; }
+  .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; }
+  .stat b{ font-size:17px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 10px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:40px; text-align:center; font-weight:700; }
+  .ghost{ height:48px; padding:0 14px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:var(--panel); color:#fff; cursor:pointer; font-weight:700; font-size:13px; }
+  .act{ flex:1; min-width:120px; height:48px; border:0; border-radius:12px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Keno</span></h1><span class="tag">Demo · sin dinero real</span></div>
+    <div class="grid" id="grid"></div>
+    <div class="meta"><span id="pickInfo">Elige 1–10 números</span><span id="hitInfo"></span></div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Elegidos</span><b id="picks">0</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet"><button id="betDown">−</button><div class="v" id="betVal">10</div><button id="betUp">+</button></div>
+      <button class="ghost" id="autoBtn">Auto</button>
+      <button class="ghost" id="clearBtn">Limpiar</button>
+      <button class="act" id="playBtn">JUGAR</button>
+    </div>
+    <div class="msg" id="message">Elige tus números y juega 🎯</div>
+    <div class="foot">Nova Keno · juego original de BetNova · se sortean 10 de 40 · más aciertos, más paga</div>
+  </div>
+<script src="../_shared/wallet-bridge.js"></script>
+<script src="../_shared/juice.js"></script>
+<script>
+(function(){
+  const TOTAL=40, DRAW=10, MAXPICK=10;
+  const BETS=[5,10,25,50,100]; let betIdx=1;
+  // multiplicador por [elegidos][aciertos]
+  const PAY={
+    1:[0,3], 2:[0,1,9], 3:[0,0,2,16], 4:[0,0,1,5,40], 5:[0,0,0,2,12,80],
+    6:[0,0,0,1,4,25,150], 7:[0,0,0,0,2,8,50,300], 8:[0,0,0,0,1,4,20,100,500],
+    9:[0,0,0,0,1,3,10,40,200,800], 10:[0,0,0,0,0,2,8,25,100,400,1000]
+  };
+  let balance=1000, selected=new Set(), busy=false;
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.value=f; g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.08,c.currentTime+0.005); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndPick=()=>tone(700,0.05,'square',0.05);
+  const sndDraw=()=>tone(500+Math.random()*300,0.07,'triangle',0.07);
+  const sndWin=(big)=>{ (big?[523,659,784,1047]:[523,784]).forEach((f,i)=>setTimeout(()=>tone(f,0.16,'triangle',0.12),i*80)); };
+  const sndLose=()=>tone(300,0.3,'sine',0.07);
+
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+
+  function buildGrid(){
+    const g=$('grid');
+    for(let n=1;n<=TOTAL;n++){ const c=document.createElement('div'); c.className='cell'; c.dataset.n=n; c.textContent=n; c.addEventListener('click',()=>toggle(n)); g.appendChild(c); }
+  }
+  const cellEl=(n)=>$('grid').querySelector(`[data-n="${n}"]`);
+
+  function toggle(n){
+    if(busy)return;
+    if(selected.has(n)){ selected.delete(n); cellEl(n).classList.remove('sel'); }
+    else { if(selected.size>=MAXPICK){ setMsg('Máximo 10 números.'); return; } selected.add(n); cellEl(n).classList.add('sel'); sndPick(); }
+    clearMarks(); syncUI();
+  }
+  function clearMarks(){ $('grid').querySelectorAll('.cell').forEach(c=>c.classList.remove('drawn','hit')); $('hitInfo').textContent=''; }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betVal').textContent=BETS[betIdx];
+    $('picks').textContent=selected.size;
+    $('playBtn').disabled=busy||selected.size===0;
+  }
+  const setMsg=(t)=>$('message').textContent=t;
+
+  function autoPick(){
+    if(busy)return; clearAll();
+    while(selected.size<MAXPICK){ const n=1+Math.floor(Math.random()*TOTAL); if(!selected.has(n)){ selected.add(n); cellEl(n).classList.add('sel'); } }
+    syncUI(); setMsg('10 números al azar elegidos.');
+  }
+  function clearAll(){ if(busy)return; selected.forEach(n=>cellEl(n).classList.remove('sel')); selected.clear(); clearMarks(); syncUI(); }
+
+  function play(){
+    if(busy||selected.size===0)return; const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet); busy=true; clearMarks(); $('winDisp').textContent=fmt(0); syncUI(); setMsg('🎲 Sorteando…');
+    // sortear 10 únicos
+    const pool=Array.from({length:TOTAL},(_,i)=>i+1); const drawn=[];
+    for(let i=0;i<DRAW;i++){ const j=Math.floor(Math.random()*pool.length); drawn.push(pool.splice(j,1)[0]); }
+    // revelar uno a uno
+    let i=0;
+    const iv=setInterval(()=>{
+      const n=drawn[i]; const c=cellEl(n); c.classList.add('drawn'); if(selected.has(n)) c.classList.add('hit'); sndDraw();
+      if(++i>=DRAW){ clearInterval(iv); settle(drawn,bet); }
+    }, 140);
+  }
+
+  function settle(drawn,bet){
+    const picks=selected.size;
+    let hits=0; drawn.forEach(n=>{ if(selected.has(n)) hits++; });
+    const mult=(PAY[picks]&&PAY[picks][hits])||0;
+    const win=bet*mult;
+    $('hitInfo').textContent=`${hits} aciertos · ${mult}x`;
+    if(win>0){ balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
+      const big=mult>=10; setMsg(`🎯 ${hits} aciertos · +${fmt(win)}`); sndWin(big);
+      if(window.Juice){ if(big) Juice.bigWin(win,{label:'¡GRAN PREMIO!',sub:hits+' aciertos'}); else Juice.coins({count:50}); } }
+    else{ setMsg(`${hits} aciertos · sin premio`); sndLose(); }
+    busy=false; syncUI();
+  }
+
+  $('autoBtn').addEventListener('click',()=>{ ac(); autoPick(); });
+  $('clearBtn').addEventListener('click',()=>{ ac(); clearAll(); });
+  $('playBtn').addEventListener('click',()=>{ ac(); play(); });
+  $('betUp').addEventListener('click',()=>{ if(!busy&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!busy&&betIdx>0){betIdx--;syncUI();} });
+
+  buildGrid(); syncUI();
+})();
+</script>
+</body>
+</html>

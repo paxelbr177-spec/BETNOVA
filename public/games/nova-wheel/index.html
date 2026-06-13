@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Wheel — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --brand:#19e57f; --gold:#ffc83d; --muted:#8a94ad; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%); min-height:100%; padding:14px; user-select:none; }
+  .wrap{ max-width:480px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .head h1{ font-size:20px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:11px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 10px; border-radius:999px; }
+  .stage{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:14px; display:grid; place-items:center; }
+  canvas{ display:block; width:100%; max-width:320px; height:auto; }
+  .hud{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:14px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px; text-align:center; }
+  .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; }
+  .stat b{ font-size:18px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:10px; margin-top:14px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:54px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:50px; border:0; border-radius:13px; cursor:pointer; font-size:17px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Wheel</span></h1><span class="tag">Demo · sin dinero real</span></div>
+    <div class="stage"><canvas id="cv" width="320" height="340"></canvas></div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet"><button id="betDown">−</button><div class="v" id="betVal">10</div><button id="betUp">+</button></div>
+      <button class="act" id="spinBtn">GIRAR</button>
+    </div>
+    <div class="msg" id="message">Gira la rueda 🎡</div>
+    <div class="foot">Nova Wheel · juego original de BetNova · los segmentos pagan distinto · algunos son 0x</div>
+  </div>
+<script src="../_shared/wallet-bridge.js"></script>
+<script src="../_shared/juice.js"></script>
+<script>
+(function(){
+  const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+  const CX=160, CY=170, R=150;
+  const SEG=[0,1.5,0,2,0,1.5,0.5,3,0,1.5,0,5]; // multiplicadores por segmento
+  const N=SEG.length, segAng=2*Math.PI/N;
+  const colOf=(m)=> m===0?'#3a4256': m<1.5?'#5b8cff': m<3?'#2bbd6a': m<5?'#ffc83d':'#ff4d5e';
+  const BETS=[5,10,25,50,100]; let betIdx=1;
+  let balance=1000, rot=-Math.PI/2, spinning=false;
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.value=f; g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.07,c.currentTime+0.005); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndTick=()=>tone(1100,0.04,'square',0.04);
+  const sndWin=(big)=>{ (big?[523,659,784,1047]:[523,784]).forEach((f,i)=>setTimeout(()=>tone(f,0.16,'triangle',0.12),i*80)); };
+  const sndLose=()=>tone(300,0.3,'sine',0.07);
+
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    for(let i=0;i<N;i++){
+      const a0=rot+i*segAng, a1=a0+segAng;
+      ctx.beginPath(); ctx.moveTo(CX,CY); ctx.arc(CX,CY,R,a0,a1); ctx.closePath();
+      ctx.fillStyle=colOf(SEG[i]); ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2; ctx.stroke();
+      // texto
+      ctx.save(); ctx.translate(CX,CY); ctx.rotate(a0+segAng/2); ctx.textAlign='right'; ctx.textBaseline='middle';
+      ctx.fillStyle= SEG[i]>=1.5?'#0a0e1a':'#fff'; ctx.font='bold 16px Segoe UI';
+      ctx.fillText(SEG[i]+'x', R-12, 0); ctx.restore();
+    }
+    // centro
+    ctx.beginPath(); ctx.arc(CX,CY,26,0,7); ctx.fillStyle='#0a1c14'; ctx.fill(); ctx.strokeStyle='#ffc83d'; ctx.lineWidth=3; ctx.stroke();
+    // puntero (arriba)
+    ctx.beginPath(); ctx.moveTo(CX-12,18); ctx.lineTo(CX+12,18); ctx.lineTo(CX,42); ctx.closePath(); ctx.fillStyle='#ffc83d'; ctx.fill();
+  }
+
+  function syncUI(){ $('balance').textContent=fmt(balance); $('betVal').textContent=BETS[betIdx]; }
+  const setMsg=(t)=>$('message').textContent=t;
+
+  function spin(){
+    if(spinning)return; const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet); spinning=true; $('spinBtn').disabled=true; syncUI(); setMsg('🎡 Girando…');
+    const win=Math.floor(Math.random()*N);               // segmento ganador (justo)
+    const center=(win+0.5)*segAng;
+    const target=-Math.PI/2 - center + 2*Math.PI*6;       // que el centro quede arriba + 6 vueltas
+    const start=rot, t0=performance.now(), dur=3600;
+    let lastTick=0;
+    function step(now){
+      const k=Math.min(1,(now-t0)/dur);
+      const e=1-Math.pow(1-k,3);
+      rot=start+(target-start)*e; draw();
+      const tickIdx=Math.floor((rot)/segAng);
+      if(tickIdx!==lastTick){ lastTick=tickIdx; sndTick(); }
+      if(k<1) requestAnimationFrame(step); else finish(win,bet);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function finish(idx,bet){
+    const m=SEG[idx], win=bet*m;
+    if(win>0){ balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
+      const big=m>=3; setMsg(`Cayó en ${m}x · +${fmt(win)} 🎉`); sndWin(big);
+      if(window.Juice){ if(big) Juice.bigWin(win,{label:'¡GANASTE!',sub:m+'x'}); else Juice.coins({count:50}); } }
+    else{ $('winDisp').textContent=fmt(0); setMsg('Cayó en 0x · 😕 sin premio'); sndLose(); }
+    spinning=false; $('spinBtn').disabled=false; syncUI();
+  }
+
+  $('spinBtn').addEventListener('click',()=>{ ac(); spin(); });
+  $('betUp').addEventListener('click',()=>{ if(!spinning&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!spinning&&betIdx>0){betIdx--;syncUI();} });
+  draw(); syncUI();
+})();
+</script>
+</body>
+</html>

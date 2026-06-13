@@ -19,8 +19,8 @@ const covers = [
 ]
 
 const names = [
-  'Nova Fortune', 'Aztec Spin', 'Neon Rush', 'Nova Roulette', 'Nova Crash',
-  'Lucky Tiger', 'Dragon Coins', 'Nova Joker', 'Pirate Gold', 'Fruit Blast',
+  'Nova Fortune', 'Nova Blackjack', 'Nova Limbo', 'Nova Roulette', 'Nova Crash',
+  'Nova Keno', 'Nova Wheel', 'Nova Joker', 'Nova Coinflip', 'Fruit Blast',
   'Cosmic Wild', 'Nova Mines', 'Nova Dice', 'Wolf Moon', 'Samba Heat',
   'Inferno 7s', 'Ocean Treasure', 'Royal Crown', 'Thunder Zeus', 'Nova Plinko',
   'Bull Run', 'Phoenix Fire', 'Jungle Jackpot', 'Viking Saga',
@@ -43,9 +43,11 @@ const embeds = {
   'nova-mines': '/games/nova-mines/index.html',     // ★ mines original
   'nova-plinko': '/games/nova-plinko/index.html',   // ★ plinko original
   'nova-dice': '/games/nova-dice/index.html',       // ★ dice original
-  // Retirados del catálogo (calidad): Mystic Reels (karma-slots, muy simple),
-  // Neon Rush (neon-slot, render roto en iframe), Lucky Tiger (demo-spin, placeholder).
-  // Se reemplazarán por nuevos juegos originales.
+  'nova-blackjack': '/games/nova-blackjack/index.html', // ★ blackjack original
+  'nova-limbo': '/games/nova-limbo/index.html',     // ★ limbo original
+  'nova-keno': '/games/nova-keno/index.html',       // ★ keno original
+  'nova-wheel': '/games/nova-wheel/index.html',     // ★ wheel original
+  'nova-coinflip': '/games/nova-coinflip/index.html', // ★ coinflip original
 }
 
 // Miniaturas (arte original 3:4) para las tarjetas de los juegos jugables.
@@ -57,6 +59,11 @@ const thumbs = {
   'nova-mines': '/games/nova-mines/thumb.svg',
   'nova-plinko': '/games/nova-plinko/thumb.svg',
   'nova-dice': '/games/nova-dice/thumb.svg',
+  'nova-blackjack': '/games/nova-blackjack/thumb.svg',
+  'nova-limbo': '/games/nova-limbo/thumb.svg',
+  'nova-keno': '/games/nova-keno/thumb.svg',
+  'nova-wheel': '/games/nova-wheel/thumb.svg',
+  'nova-coinflip': '/games/nova-coinflip/thumb.svg',
 }
 
 // Categoría real de cada juego jugable (los tabs son: slots / crash / table).
@@ -68,6 +75,11 @@ const cats = {
   'nova-mines': 'crash',
   'nova-plinko': 'crash',
   'nova-dice': 'crash',
+  'nova-blackjack': 'table',
+  'nova-limbo': 'crash',
+  'nova-keno': 'crash',
+  'nova-wheel': 'crash',
+  'nova-coinflip': 'crash',
 }
 
 // Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs
