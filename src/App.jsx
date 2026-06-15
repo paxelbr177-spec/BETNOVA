@@ -12,6 +12,7 @@ import Profile from './pages/Profile.jsx'
 import Wallet from './pages/Wallet.jsx'
 import BetHistory from './pages/BetHistory.jsx'
 import GameDetail from './pages/GameDetail.jsx'
+import Admin from './pages/Admin.jsx'
 import NotFound from './pages/NotFound.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/cuenta" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/cuenta/billetera" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
           <Route path="/cuenta/apuestas" element={<ProtectedRoute><BetHistory /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

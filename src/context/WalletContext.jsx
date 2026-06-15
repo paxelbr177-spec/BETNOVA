@@ -20,7 +20,7 @@ const mapBet = (b) => ({ id: b.id, kind: b.kind, event: b.event, pick: b.pick, o
 
 export function WalletProvider({ children }) {
   const { user } = useAuth()
-  const [state, setState] = useState({ balance: 0, bonus: 0, transactions: [], bets: [], loading: true })
+  const [state, setState] = useState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, loading: true })
 
   const localKey = user ? `betnova_wallet_${user.email}` : null
 
@@ -40,27 +40,30 @@ export function WalletProvider({ children }) {
 
   const load = useCallback(async () => {
     if (!user) {
-      setState({ balance: 0, bonus: 0, transactions: [], bets: [], loading: false })
+      setState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, loading: false })
       return
     }
     if (hasSupabase) {
       setState((s) => ({ ...s, loading: true }))
       // RLS hace que cada query devuelva solo las filas del usuario actual.
-      const [{ data: profile }, { data: txs }, { data: bets }] = await Promise.all([
+      const [{ data: profile }, { data: txs }, { data: bets }, adminRes] = await Promise.all([
         supabase.from('profiles').select('balance,bonus').single(),
         supabase.from('transactions').select('*').order('created_at', { ascending: false }).limit(50),
         supabase.from('bets').select('*').order('created_at', { ascending: false }).limit(50),
+        // Consulta tolerante: si la columna is_admin aún no existe, devuelve error y queda false.
+        supabase.from('profiles').select('is_admin').single(),
       ])
       setState({
         balance: Number(profile?.balance ?? DEFAULT_BALANCE),
         bonus: Number(profile?.bonus ?? 0),
         transactions: (txs || []).map(mapTx),
         bets: (bets || []).map(mapBet),
+        isAdmin: Boolean(adminRes?.data?.is_admin),
         loading: false,
       })
     } else {
       const d = loadLocal()
-      setState({ ...d, loading: false })
+      setState({ ...d, isAdmin: false, loading: false })
     }
   }, [user, loadLocal])
 

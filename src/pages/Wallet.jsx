@@ -1,7 +1,14 @@
-import { useState } from 'react'
 import AccountLayout, { fmt } from '../components/AccountLayout.jsx'
-import { user, paymentMethods } from '../data/account.js'
+import { user } from '../data/account.js'
 import { useWallet } from '../context/WalletContext.jsx'
+
+// Links de pago estáticos de Mercado Pago (montos fijos en ARS).
+const MP_LINKS = [
+  { amount: 2000, url: 'https://mpago.la/1c58wLG' },
+  { amount: 5000, url: 'https://mpago.la/1UCdtN5' },
+  { amount: 10000, url: 'https://mpago.la/2MkcCnt' },
+  { amount: 20000, url: 'https://mpago.la/1v2i8yn' },
+]
 
 const typeMeta = {
   deposit: { label: 'Depósito', cls: 'text-brand' },
@@ -17,35 +24,7 @@ const statusMeta = {
 }
 
 export default function Wallet() {
-  const { balance, bonus, transactions, deposit, withdraw } = useWallet()
-  const [mode, setMode] = useState('deposit')
-  const [method, setMethod] = useState('pix')
-  const [amount, setAmount] = useState('')
-  const [msg, setMsg] = useState(null)
-  const [busy, setBusy] = useState(false)
-
-  const quick = [25, 50, 100, 250]
-
-  const submit = async (e) => {
-    e.preventDefault()
-    const val = parseFloat(amount)
-    if (!val || val <= 0) { setMsg({ ok: false, text: 'Introduce un importe válido.' }); return }
-    if (mode === 'withdraw' && val > balance) {
-      setMsg({ ok: false, text: 'Importe superior a tu saldo disponible.' }); return
-    }
-    setBusy(true)
-    const fn = mode === 'deposit' ? deposit : withdraw
-    const { error } = await fn(val, method === 'pix' ? 'Pix' : method === 'card' ? 'Tarjeta' : method === 'usdt' ? 'USDT' : 'Skrill')
-    setBusy(false)
-    if (error) { setMsg({ ok: false, text: error }); return }
-    setMsg({
-      ok: true,
-      text: mode === 'deposit'
-        ? `Depósito de $${fmt(val)} acreditado.`
-        : `Retiro de $${fmt(val)} solicitado. Procesando…`,
-    })
-    setAmount('')
-  }
+  const { balance, bonus, transactions } = useWallet()
 
   return (
     <AccountLayout title="Billetera">
@@ -66,82 +45,29 @@ export default function Wallet() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-        {/* Depósito / Retiro */}
+        {/* Recargar saldo (Mercado Pago) */}
         <div className="card p-6">
-          <div className="mb-5 grid grid-cols-2 rounded-xl bg-panel2 p-1">
-            {['deposit', 'withdraw'].map((m) => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setMsg(null) }}
-                className={`rounded-lg py-2 text-sm font-semibold transition ${
-                  mode === m ? 'bg-brand text-ink' : 'text-slate-300'
-                }`}
+          <h2 className="font-display text-lg font-bold text-white">Recargar saldo</h2>
+          <p className="mt-1 text-sm text-muted">Paga con Mercado Pago y el administrador acreditará tu saldo.</p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {MP_LINKS.map((l) => (
+              <a
+                key={l.amount}
+                href={l.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center gap-1 rounded-xl border border-white/10 bg-panel2 p-4 transition hover:border-brand/50 hover:bg-brand/5"
               >
-                {m === 'deposit' ? 'Depositar' : 'Retirar'}
-              </button>
+                <span className="text-2xl">💳</span>
+                <span className="font-display text-lg font-extrabold text-white">${l.amount.toLocaleString('es-ES')}</span>
+                <span className="text-[11px] text-muted">ARS · Pagar</span>
+              </a>
             ))}
           </div>
-
-          <form onSubmit={submit} className="space-y-5">
-            <div>
-              <label className="mb-2 block text-sm text-slate-300">Método</label>
-              <div className="grid grid-cols-2 gap-2">
-                {paymentMethods.map((p) => (
-                  <button
-                    type="button"
-                    key={p.id}
-                    onClick={() => setMethod(p.id)}
-                    className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition ${
-                      method === p.id
-                        ? 'border-brand/60 bg-brand/10 text-white'
-                        : 'border-white/10 bg-panel2 text-slate-300 hover:border-white/20'
-                    }`}
-                  >
-                    <span className="text-lg">{p.emoji}</span>
-                    <span>
-                      <span className="block font-medium">{p.label}</span>
-                      <span className="block text-[11px] text-muted">{p.note}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm text-slate-300">Importe ({user.currency})</label>
-              <input
-                className="input"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => { setAmount(e.target.value); setMsg(null) }}
-                placeholder="0.00"
-              />
-              <div className="mt-2 flex flex-wrap gap-2">
-                {quick.map((q) => (
-                  <button
-                    type="button"
-                    key={q}
-                    onClick={() => setAmount(String(q))}
-                    className="rounded-lg bg-panel2 px-3 py-1.5 text-sm text-slate-300 hover:bg-white/10"
-                  >
-                    +${q}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">
-              {busy ? 'Procesando…' : mode === 'deposit' ? 'Depositar ahora' : 'Solicitar retiro'}
-            </button>
-
-            {msg && (
-              <p className={`rounded-xl p-3 text-center text-sm ${
-                msg.ok ? 'bg-brand/10 text-brand' : 'bg-red-500/10 text-red-400'
-              }`}>
-                {msg.text}
-              </p>
-            )}
-          </form>
+          <div className="mt-4 rounded-xl bg-panel2 p-3 text-xs text-muted">
+            Tras pagar, avisa al administrador con <b className="text-white">tu nombre</b> y el monto.
+            Él confirmará el pago y cargará tu saldo. Los retiros también se gestionan con el administrador.
+          </div>
         </div>
 
         {/* Transacciones */}

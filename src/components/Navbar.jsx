@@ -16,7 +16,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { balance: walletBalance } = useWallet()
+  const { balance: walletBalance, isAdmin } = useWallet()
   const loggedIn = Boolean(user)
 
   // Avatar e iniciales derivados del usuario autenticado.
@@ -66,6 +66,11 @@ export default function Navbar() {
                 <span className="font-display font-bold text-brand">${balance}</span>
                 <span className="ml-1 grid h-6 w-6 place-items-center rounded-lg bg-brand text-ink">+</span>
               </Link>
+              {isAdmin && (
+                <Link to="/admin" className="rounded-xl border border-gold/40 bg-gold/10 px-3 py-2 text-sm font-semibold text-gold transition hover:bg-gold/20">
+                  ⚙ Admin
+                </Link>
+              )}
               <Link to="/cuenta" aria-label="Mi cuenta" title={user.email}>
                 <span
                   className="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-bold text-ink ring-2 ring-transparent transition hover:ring-brand/50"
@@ -131,6 +136,11 @@ export default function Navbar() {
                 <NavLink to="/cuenta/apuestas" onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 text-sm font-medium text-slate-300">
                   🎟️ Mis apuestas
                 </NavLink>
+                {isAdmin && (
+                  <NavLink to="/admin" onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 text-sm font-semibold text-gold">
+                    ⚙ Panel de administrador
+                  </NavLink>
+                )}
                 <button onClick={handleLogout} className="mt-1 rounded-lg px-3 py-3 text-left text-sm font-medium text-red-400">
                   🚪 Cerrar sesión
                 </button>
