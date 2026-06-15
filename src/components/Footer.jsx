@@ -15,8 +15,8 @@ export default function Footer() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm text-muted">
-            Plataforma de demostración de casino y apuestas deportivas. Marca y
-            contenido ficticios, creados para fines de maqueta.
+            Casino online con juegos <span className="text-white">100% originales</span>,
+            desarrollados por BetNova. Sin proveedores externos.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             {pays.map((p) => (
@@ -42,9 +42,9 @@ export default function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-xs text-muted md:flex-row">
           <div className="flex items-center gap-3">
             <span className="grid h-6 w-6 place-items-center rounded-full border border-white/20 font-bold">18+</span>
-            <span>Juega con responsabilidad. Esta es una maqueta sin dinero real.</span>
+            <span>Juega con responsabilidad. Solo para mayores de 18 años.</span>
           </div>
-          <p>© {new Date().getFullYear()} BetNova (demo). Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} BetNova. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

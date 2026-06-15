@@ -27,7 +27,6 @@ const names = [
 ]
 
 const catPool = ['slots', 'live', 'crash', 'table', 'jackpot', 'slots', 'slots', 'live']
-const providers = ['NovaPlay', 'Spinhouse', 'Evergreen', 'PixelBet', 'Ace Studios']
 
 const slugify = (s) =>
   s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -94,7 +93,7 @@ export const games = names
       name,
       slug,
       category: cats[slug] || catPool[i % catPool.length],
-      provider: providers[i % providers.length],
+      provider: 'BetNova',
       cover: covers[i % covers.length],
       hot: i % 5 === 0,
       rtp: (94 + (i % 6)).toFixed(1),

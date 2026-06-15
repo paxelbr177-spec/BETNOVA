@@ -24,7 +24,7 @@ export default function AuthShell({ title, subtitle, children, footer }) {
             ))}
           </ul>
         </div>
-        <p className="text-xs text-muted">+18 · Juega con responsabilidad · Maqueta sin dinero real.</p>
+        <p className="text-xs text-muted">+18 · Juega con responsabilidad.</p>
       </div>
 
       {/* Formulario */}

@@ -48,7 +48,7 @@ export default function Casino() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar juego o proveedor…"
+            placeholder="Buscar juego…"
             className="input pl-10"
           />
         </div>

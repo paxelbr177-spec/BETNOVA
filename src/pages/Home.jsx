@@ -12,7 +12,7 @@ function Marquee() {
     '🎉 Bono de bienvenida 100% hasta $500',
     '⚡ Retiros en minutos vía Pix',
     '🏆 Cashback semanal del 10%',
-    '🎰 +2.000 juegos disponibles',
+    '🎰 Juegos 100% originales de BetNova',
     '🔒 Juego seguro y verificado',
   ]
   const loop = [...items, ...items]
@@ -135,9 +135,14 @@ export default function Home() {
 
       {/* Juegos destacados */}
       <section className="mx-auto max-w-7xl px-4 py-6">
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display text-2xl font-bold text-white">🔥 Juegos destacados</h2>
-          <Link to="/casino" className="text-sm font-semibold text-brand hover:underline">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-2xl font-bold text-white">🔥 Juegos destacados</h2>
+            <p className="mt-1 text-sm text-muted">
+              100% originales, desarrollados por BetNova — sin proveedores externos.
+            </p>
+          </div>
+          <Link to="/casino" className="shrink-0 text-sm font-semibold text-brand hover:underline">
             Ver todos
           </Link>
         </div>

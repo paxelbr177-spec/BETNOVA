@@ -37,9 +37,7 @@ export default function GameDetail() {
 
           {/* Estado de integración */}
           <p className="mt-3 text-xs text-muted">
-            {game.embed
-              ? '✓ Juego HTML5 cargado desde ' + game.embed
-              : '○ Sin juego integrado todavía — pulsa play para ver cómo añadirlo.'}
+            🎮 Juego original desarrollado por BetNova — sin proveedores externos.
           </p>
 
           {/* Acciones */}
@@ -52,11 +50,10 @@ export default function GameDetail() {
           <div className="card mt-6 p-6">
             <h2 className="font-display text-lg font-bold text-white">Sobre el juego</h2>
             <p className="mt-2 text-muted">
-              {game.name} es un título de demostración de la categoría{' '}
-              <span className="text-slate-200">{game.category}</span>, desarrollado por{' '}
-              <span className="text-slate-200">{game.provider}</span>. Disfruta de una
-              experiencia fluida con gráficos vibrantes y mecánicas de bonificación.
-              Este contenido es ficticio y forma parte de una maqueta.
+              {game.name} es un juego <span className="text-slate-200">100% original</span>,
+              desarrollado por <span className="text-slate-200">BetNova</span> — sin
+              proveedores externos. Disfruta de una experiencia fluida, con gráficos
+              vibrantes y mecánicas propias.
             </p>
           </div>
         </div>
@@ -65,7 +62,7 @@ export default function GameDetail() {
         <aside className="space-y-4">
           <div className="card p-6">
             <h1 className="font-display text-2xl font-extrabold text-white">{game.name}</h1>
-            <p className="mt-1 text-muted">{game.provider}</p>
+            <p className="mt-1 text-muted">Desarrollado por {game.provider}</p>
             {game.hot && <span className="chip mt-3 text-gold">🔥 Popular</span>}
 
             <dl className="mt-5 space-y-3 text-sm">

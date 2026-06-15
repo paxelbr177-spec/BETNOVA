@@ -76,7 +76,7 @@ export default function Profile() {
           </div>
           <div className="flex items-center gap-3 sm:col-span-2">
             <button type="submit" className="btn-primary text-sm">Guardar cambios</button>
-            {saved && <span className="text-sm text-brand">✓ Guardado (demo)</span>}
+            {saved && <span className="text-sm text-brand">✓ Guardado</span>}
           </div>
         </form>
       </div>

@@ -49,7 +49,7 @@ export default function Login() {
     >
       {sent ? (
         <div className="rounded-xl bg-brand/10 p-4 text-center text-brand">
-          ✓ Sesión iniciada (demo). Redirigiendo…
+          ✓ Sesión iniciada. Redirigiendo…
         </div>
       ) : (
         <form onSubmit={submit} noValidate className="space-y-4">

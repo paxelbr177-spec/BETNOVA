@@ -38,7 +38,7 @@ export default function Promotions() {
     <div className="mx-auto max-w-7xl px-4 py-10">
       <div className="mb-8">
         <h1 className="font-display text-3xl font-extrabold text-white">Promociones</h1>
-        <p className="mt-2 text-muted">Bonos y beneficios de ejemplo. Aplican términos y condiciones (demo).</p>
+        <p className="mt-2 text-muted">Bonos y beneficios. Aplican términos y condiciones.</p>
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
@@ -69,8 +69,7 @@ export default function Promotions() {
 
       <div className="mt-10 rounded-2xl border border-white/10 bg-panel p-5 text-sm text-muted">
         <strong className="text-white">Juego responsable:</strong> los bonos están sujetos a
-        requisitos de apuesta. Juega solo con lo que puedas permitirte. +18. Esta es una
-        maqueta sin dinero real.
+        requisitos de apuesta. Juega solo con lo que puedas permitirte. +18.
       </div>
     </div>
   )
