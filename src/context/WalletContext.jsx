@@ -45,13 +45,17 @@ export function WalletProvider({ children }) {
     }
     if (hasSupabase) {
       setState((s) => ({ ...s, loading: true }))
-      // RLS hace que cada query devuelva solo las filas del usuario actual.
+      // IMPORTANTE: filtrar por el id del usuario. Si es admin, las políticas le dejan
+      // ver TODOS los perfiles/transacciones, así que sin el filtro .single() recibiría
+      // muchas filas y fallaría. Con .eq('id'/'user_id', uid) siempre es su propia fila.
+      const { data: au } = await supabase.auth.getUser()
+      const uid = au?.user?.id
       const [{ data: profile }, { data: txs }, { data: bets }, adminRes] = await Promise.all([
-        supabase.from('profiles').select('balance,bonus').single(),
-        supabase.from('transactions').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('bets').select('*').order('created_at', { ascending: false }).limit(50),
-        // Consulta tolerante: si la columna is_admin aún no existe, devuelve error y queda false.
-        supabase.from('profiles').select('is_admin').single(),
+        supabase.from('profiles').select('balance,bonus').eq('id', uid).single(),
+        supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(50),
+        supabase.from('bets').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(50),
+        // Tolerante: si la columna is_admin aún no existe, devuelve error y queda false.
+        supabase.from('profiles').select('is_admin').eq('id', uid).maybeSingle(),
       ])
       setState({
         balance: Number(profile?.balance ?? DEFAULT_BALANCE),
