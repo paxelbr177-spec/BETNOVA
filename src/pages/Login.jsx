@@ -61,7 +61,7 @@ export default function Login() {
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <label className="text-sm text-slate-300">Contraseña</label>
-              <a href="#" className="text-xs text-brand hover:underline">¿Olvidaste?</a>
+              <Link to="/recuperar" className="text-xs text-brand hover:underline">¿Olvidaste?</Link>
             </div>
             <input className="input" type="password" value={form.password} onChange={set('password')} placeholder="••••••••" />
             {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password}</p>}

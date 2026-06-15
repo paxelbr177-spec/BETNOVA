@@ -36,6 +36,8 @@ const writeUsers = (u) => localStorage.setItem(LS_USERS, JSON.stringify(u))
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  // true cuando el usuario llega desde un enlace de "recuperar contraseña"
+  const [recovery, setRecovery] = useState(false)
 
   useEffect(() => {
     if (hasSupabase) {
@@ -43,8 +45,9 @@ export function AuthProvider({ children }) {
         setUser(normalize(data.session?.user))
         setLoading(false)
       })
-      const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
         setUser(normalize(session?.user))
+        if (event === 'PASSWORD_RECOVERY') setRecovery(true)
       })
       return () => sub.subscription.unsubscribe()
     }
@@ -95,8 +98,34 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Envía el email con el enlace para crear una nueva contraseña.
+  async function resetPassword(email) {
+    if (hasSupabase) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/recuperar',
+      })
+      if (error) return { error: friendly(error.message) }
+      return {}
+    }
+    return { error: 'La recuperación por email solo funciona con la configuración real (Supabase).' }
+  }
+
+  // Define la nueva contraseña (el usuario llegó desde el enlace del email).
+  async function updatePassword(newPassword) {
+    if (hasSupabase) {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) return { error: friendly(error.message) }
+      return {}
+    }
+    return { error: 'No disponible en modo local.' }
+  }
+
+  const clearRecovery = () => setRecovery(false)
+
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut, isMock: !hasSupabase }}>
+    <AuthContext.Provider
+      value={{ user, loading, recovery, signUp, signIn, signOut, resetPassword, updatePassword, clearRecovery, isMock: !hasSupabase }}
+    >
       {children}
     </AuthContext.Provider>
   )
