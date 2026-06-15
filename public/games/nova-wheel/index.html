@@ -56,7 +56,7 @@
   const SEG=[0,1.5,0,2,0,1.5,0.5,3,0,1.5,0,5]; // multiplicadores por segmento
   const N=SEG.length, segAng=2*Math.PI/N;
   const colOf=(m)=> m===0?'#3a4256': m<1.5?'#5b8cff': m<3?'#2bbd6a': m<5?'#ffc83d':'#ff4d5e';
-  const BETS=[5,10,25,50,100]; let betIdx=1;
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
   let balance=1000, rot=-Math.PI/2, spinning=false;
   const $=(id)=>document.getElementById(id);
   const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});

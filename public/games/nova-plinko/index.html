@@ -55,7 +55,7 @@
   const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
   const W=cv.width, H=cv.height;
   const ROWS=12, SLOTS=ROWS+1;
-  const BETS=[5,10,25,50,100]; let betIdx=1;
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
   let balance=1000, dropping=false;
   // Conexión con la billetera de BetNova (o demo local si se abre suelto/invitado)
   NovaWallet.ready(b=>{ balance=b; syncUI(); });

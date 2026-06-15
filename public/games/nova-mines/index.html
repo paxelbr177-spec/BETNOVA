@@ -63,8 +63,8 @@
 <script src="../_shared/juice.js"></script>
 <script>
 (function(){
-  const T=25; const BETS=[5,10,25,50,100];
-  let betIdx=1, mines=3, balance=1000, state='idle';
+  const T=25; const BETS=[50,100,250,500,1000];
+  let betIdx=0, mines=3, balance=1000, state='idle';
   NovaWallet.ready(b=>{ balance=b; syncUI(); });
   NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
   let mineSet=new Set(), revealed=0, mult=1, roundCanWin=true;

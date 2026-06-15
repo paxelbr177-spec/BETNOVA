@@ -38,7 +38,7 @@ if (window.NovaWallet) {
   NovaWallet.ready((b) => { balance = b; syncUI(); });
   NovaWallet.onBalance((b) => { balance = b; syncUI(); });
 }
-let chip = 5;
+let chip = 50;
 let spinning = false;
 const placed = new Map(); // betId -> amount
 
@@ -162,6 +162,7 @@ function syncUI() {
 function placeBet(betId) {
   if (spinning || !BETS[betId]) return;
   if (balance < chip) { setMsg('Saldo insuficiente para esa ficha.'); return; }
+  if (totalBet() + chip > 1000) { setMsg('Apuesta máxima: 1000 ARS.'); return; }
   balance = window.NovaWallet ? NovaWallet.bet(chip) : balance - chip;
   placed.set(betId, (placed.get(betId) || 0) + chip);
   sndChip();

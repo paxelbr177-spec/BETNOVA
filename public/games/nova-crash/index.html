@@ -66,7 +66,7 @@
 (function(){
   const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
   const W=cv.width, H=cv.height;
-  const BETS=[5,10,25,50,100]; let betIdx=1;
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
   let balance=1000, state='idle', crashPoint=0, startT=0, mult=1, raf=0, crashTimer=0;
   NovaWallet.ready(b=>{ balance=b; syncUI(); });
   NovaWallet.onBalance(b=>{ balance=b; syncUI(); });

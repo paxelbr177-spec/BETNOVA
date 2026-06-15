@@ -48,7 +48,7 @@
     0x2bbd6a, 0xff8c5b, 0x5b8cff, 0xc0ff5b, 0xff5b8c];
 
   // ---- Estado del juego ----
-  const BET_LEVELS = [5, 10, 20, 50, 100];
+  const BET_LEVELS = [50, 100, 250, 500, 1000];
   let betIndex = 0;
   let balance = 1000;
   // Conexión con la billetera de BetNova (saldo real) o demo local si va suelto.
