@@ -46,6 +46,7 @@
     <div class="msg" id="message">Gira la rueda 🎡</div>
     <div class="foot">Nova Wheel · juego original de BetNova · los segmentos pagan distinto · algunos son 0x</div>
   </div>
+<script src="../_shared/house.js"></script>
 <script src="../_shared/wallet-bridge.js"></script>
 <script src="../_shared/juice.js"></script>
 <script>
@@ -94,7 +95,9 @@
     if(spinning)return; const bet=BETS[betIdx];
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet); spinning=true; $('spinBtn').disabled=true; syncUI(); setMsg('🎡 Girando…');
-    const win=Math.floor(Math.random()*N);               // segmento ganador (justo)
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+    const pool=[]; for(let i=0;i<N;i++){ if(canWin ? SEG[i]>0 : SEG[i]===0) pool.push(i); }
+    const win=pool[Math.floor(Math.random()*pool.length)]; // segmento ganador (sesgado por la casa)
     const center=(win+0.5)*segAng;
     const target=-Math.PI/2 - center + 2*Math.PI*6;       // que el centro quede arriba + 6 vueltas
     const start=rot, t0=performance.now(), dur=3600;

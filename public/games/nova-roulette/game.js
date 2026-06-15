@@ -235,8 +235,26 @@ function spin() {
   syncUI();
   setMsg('Girando…');
   sndSpin();
+  // "Modo casa": decidir si esta jugada PUEDE ganar.
+  const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+  // Conjunto de números cubiertos por alguna apuesta del jugador.
+  const covered = new Set();
+  placed.forEach((amount, betId) => {
+    const def = BETS[betId];
+    if (def) def.numbers.forEach((n) => covered.add(n));
+  });
+  const all = Array.from({ length: 37 }, (_, n) => n); // 0..36
+  let pool;
+  if (covered.size === 0) {
+    pool = all; // sin apuestas: número totalmente aleatorio
+  } else if (canWin) {
+    pool = all.filter((n) => covered.has(n)); // garantiza un ganador
+  } else {
+    pool = all.filter((n) => !covered.has(n)); // pérdida garantizada
+    if (pool.length === 0) pool = all; // por si las apuestas cubren todo 0..36
+  }
   // Número ganador JUSTO e independiente del render
-  pendingWin = Math.floor(Math.random() * 37);
+  pendingWin = pool[Math.floor(Math.random() * pool.length)];
   const idx = WHEEL.indexOf(pendingWin);
   try {
     roulette.rollByIndex(idx);

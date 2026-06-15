@@ -47,6 +47,7 @@
     <div class="msg" id="message">Pulsa SOLTAR BOLA 🔵</div>
     <div class="foot">Nova Plinko · juego original de BetNova · 12 filas · los bordes pagan más</div>
   </div>
+<script src="../_shared/house.js"></script>
 <script src="../_shared/wallet-bridge.js"></script>
 <script src="../_shared/juice.js"></script>
 <script>
@@ -96,8 +97,14 @@
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet); syncUI(); dropping=true; setMsg('🔵 Cayendo…'); $('dropBtn').disabled=true;
     // decidir camino: en cada fila izquierda/derecha
-    let path=[], slot=0;
-    for(let r=0;r<ROWS;r++){ const right=Math.random()<0.5?1:0; path.push(right); slot+=right; }
+    // sesgo de la casa: elegir primero la cubeta final (índice = nº de derechas)
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+    const buckets=[]; for(let s=0;s<SLOTS;s++){ if(canWin ? MULT[s]>=1.5 : MULT[s]<1) buckets.push(s); }
+    const slot = buckets[Math.floor(Math.random()*buckets.length)];
+    // construir un camino con exactamente `slot` derechas distribuidas al azar
+    let path=Array(ROWS).fill(0);
+    { let idxs=[]; for(let r=0;r<ROWS;r++) idxs.push(r);
+      for(let k=0;k<slot;k++){ const j=Math.floor(Math.random()*idxs.length); path[idxs[j]]=1; idxs.splice(j,1); } }
     // animar
     let r=0, t=0; let ball={x:cx, y:topY-10};
     let fromX=cx, toX=pegPos(0, path[0]? 2:1).x; // aproximación visual

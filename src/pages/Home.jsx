@@ -3,6 +3,9 @@ import GameCard from '../components/GameCard.jsx'
 import EventCard from '../components/EventCard.jsx'
 import { games, jackpots } from '../data/games.js'
 import { events } from '../data/sports.js'
+import { useAuth } from '../context/AuthContext.jsx'
+
+const heroBg = `${import.meta.env.BASE_URL}mundial-hero.svg`
 
 const fmt = (n) => n.toLocaleString('es-ES')
 
@@ -29,12 +32,19 @@ function Marquee() {
 export default function Home() {
   const featured = games.slice(0, 12)
   const liveEvents = events.filter((e) => e.live).slice(0, 3)
+  const { user } = useAuth()
 
   return (
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-hero-grid">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
+        <img
+          src={heroBg}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-90"
+        />
+        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div>
             <span className="chip mb-5 border border-brand/30 text-brand">
               ✨ Nuevo · Bono de bienvenida
@@ -47,7 +57,11 @@ export default function Home() {
               Recibe <span className="font-semibold text-white">100% hasta $500</span> en tu primer depósito.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/registro" className="btn-primary text-base">Crear cuenta gratis</Link>
+              {user ? (
+                <Link to="/casino" className="btn-primary text-base">Ir al casino</Link>
+              ) : (
+                <Link to="/registro" className="btn-primary text-base">Crear cuenta gratis</Link>
+              )}
               <Link to="/casino" className="btn-ghost text-base">Explorar casino</Link>
             </div>
             <div className="mt-8 flex items-center gap-6 text-sm text-muted">
@@ -137,18 +151,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA final */}
-      <section className="mx-auto max-w-7xl px-4 pb-4">
-        <div className="card relative overflow-hidden bg-hero-grid p-8 text-center md:p-14">
-          <h3 className="font-display text-3xl font-extrabold text-white md:text-4xl">
-            ¿Listo para empezar?
-          </h3>
-          <p className="mx-auto mt-3 max-w-lg text-muted">
-            Crea tu cuenta en menos de un minuto y reclama tu bono de bienvenida.
-          </p>
-          <Link to="/registro" className="btn-primary mt-6 text-base">Registrarme ahora</Link>
-        </div>
-      </section>
+      {/* CTA final (solo para visitantes sin sesión) */}
+      {!user && (
+        <section className="mx-auto max-w-7xl px-4 pb-4">
+          <div className="card relative overflow-hidden bg-hero-grid p-8 text-center md:p-14">
+            <h3 className="font-display text-3xl font-extrabold text-white md:text-4xl">
+              ¿Listo para empezar?
+            </h3>
+            <p className="mx-auto mt-3 max-w-lg text-muted">
+              Crea tu cuenta en menos de un minuto y reclama tu bono de bienvenida.
+            </p>
+            <Link to="/registro" className="btn-primary mt-6 text-base">Registrarme ahora</Link>
+          </div>
+        </section>
+      )}
     </>
   )
 }

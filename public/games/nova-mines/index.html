@@ -58,6 +58,7 @@
     <div class="msg" id="message">Elige apuesta y minas, luego ¡JUGAR!</div>
     <div class="foot">Nova Mines · juego original de BetNova · 5×5 · retira antes de pisar una mina</div>
   </div>
+<script src="../_shared/house.js"></script>
 <script src="../_shared/wallet-bridge.js"></script>
 <script src="../_shared/juice.js"></script>
 <script>
@@ -66,7 +67,7 @@
   let betIdx=1, mines=3, balance=1000, state='idle';
   NovaWallet.ready(b=>{ balance=b; syncUI(); });
   NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
-  let mineSet=new Set(), revealed=0, mult=1;
+  let mineSet=new Set(), revealed=0, mult=1, roundCanWin=true;
   const $=(id)=>document.getElementById(id);
   const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
 
@@ -100,6 +101,7 @@
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet);
     mineSet=new Set(); while(mineSet.size<mines){ mineSet.add(Math.floor(Math.random()*T)); }
+    roundCanWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
     revealed=0; mult=1; state='playing';
     tiles().forEach(t=>{ t.className='tile'; t.textContent=''; });
     $('actBtn').textContent='RETIRAR'; $('actBtn').classList.add('cash');
@@ -110,6 +112,11 @@
   function pick(i){
     if(state!=='playing')return;
     const t=tiles()[i]; if(t.classList.contains('done'))return;
+    // primer destape de la ronda: si la casa no permite ganar, forzar mina aquí
+    if(revealed===0 && !roundCanWin && !mineSet.has(i)){
+      const its=mineSet.values().next(); if(!its.done) mineSet.delete(its.value);
+      mineSet.add(i);
+    }
     if(mineSet.has(i)){
       t.classList.add('mine','done'); t.textContent='💣'; sndBoom();
       revealAll(i); state='idle'; mult=1;

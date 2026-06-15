@@ -170,8 +170,17 @@
       sndSpin();
 
       // Resultado aleatorio por columna
-      const result = [];
-      for (let c = 0; c < COLS; c++) result.push([randSym(), randSym(), randSym()]);
+      const genResult = () => {
+        const r = [];
+        for (let c = 0; c < COLS; c++) r.push([randSym(), randSym(), randSym()]);
+        return r;
+      };
+      let result = genResult();
+      // "Modo casa": si NO puede ganar, regenerar hasta que la evaluación sea 0.
+      const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+      if (!canWin) {
+        for (let tries = 0; tries < 40 && this.payout(result) > 0; tries++) result = genResult();
+      }
 
       let stopped = 0;
       for (let c = 0; c < COLS; c++) {
@@ -192,6 +201,23 @@
           },
         });
       }
+    }
+
+    // Evaluación pura (sin efectos): devuelve el pago total en "unidades de línea".
+    // Reutiliza la misma lógica que evaluate(); se usa para sesgar el resultado.
+    payout(result) {
+      let total = 0;
+      LINES.forEach((line) => {
+        const row = line.map((r, c) => result[c][r]);
+        let target = row[0] === 'wild' ? (row.find((s) => s !== 'wild') || 'wild') : row[0];
+        let count = 0;
+        for (const s of row) { if (s === target || s === 'wild') count++; else break; }
+        let pay = count >= 3 ? DEF[target].pay[count] : 0;
+        let wc = 0; for (const s of row) { if (s === 'wild') wc++; else break; }
+        if (wc >= 3 && DEF.wild.pay[wc] > pay) pay = DEF.wild.pay[wc];
+        if (pay > 0) total += pay;
+      });
+      return total;
     }
 
     evaluate(result, bet) {
