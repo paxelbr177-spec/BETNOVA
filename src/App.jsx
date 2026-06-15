@@ -14,6 +14,7 @@ import BetHistory from './pages/BetHistory.jsx'
 import GameDetail from './pages/GameDetail.jsx'
 import Admin from './pages/Admin.jsx'
 import ResetPassword from './pages/ResetPassword.jsx'
+import ActivityToasts from './components/ActivityToasts.jsx'
 import NotFound from './pages/NotFound.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import { useAuth } from './context/AuthContext.jsx'
@@ -59,6 +60,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <ActivityToasts />
     </div>
   )
 }
