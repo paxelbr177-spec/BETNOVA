@@ -9,7 +9,7 @@ export const user = {
   levelProgress: 64, // %
   balance: 842.5,
   bonus: 120.0,
-  currency: 'USD',
+  currency: 'ARS',
   kycVerified: true,
 }
 
