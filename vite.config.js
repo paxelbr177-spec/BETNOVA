@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// En producción el sitio vive en https://<user>.github.io/BETNOVA/, así que los
-// assets deben servirse desde /BETNOVA/. En desarrollo se queda en la raíz.
-export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/BETNOVA/' : '/',
+// El sitio se sirve en la RAÍZ del dominio propio (https://betnovaar.online/),
+// así que la base es '/'. (Antes era '/BETNOVA/' para github.io/BETNOVA/.)
+export default defineConfig(() => ({
+  base: '/',
   plugins: [react()],
   server: { port: 5173, open: true },
 }))
