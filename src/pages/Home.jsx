@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom'
 import GameCard from '../components/GameCard.jsx'
-import EventCard from '../components/EventCard.jsx'
 import { games, jackpots } from '../data/games.js'
-import { events } from '../data/sports.js'
 import { useAuth } from '../context/AuthContext.jsx'
 
 const heroBg = `${import.meta.env.BASE_URL}mundial-hero.svg`
@@ -31,7 +29,6 @@ function Marquee() {
 
 export default function Home() {
   const featured = games.slice(0, 12)
-  const liveEvents = events.filter((e) => e.live).slice(0, 3)
   const { user } = useAuth()
 
   return (
@@ -101,23 +98,38 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
             { t: 'Slots', d: '+1.200 títulos', e: '🎰', to: '/casino' },
-            { t: 'Casino en vivo', d: 'Dealers reales', e: '🃏', to: '/casino' },
-            { t: 'Deportes', d: 'Cuotas en vivo', e: '⚽', to: '/deportes' },
+            { t: 'Casino en vivo', d: 'Dealers reales', e: '🃏', soon: true },
+            { t: 'Deportes', d: 'Cuotas en vivo', e: '⚽', soon: true },
             { t: 'Crash', d: 'Multiplicadores', e: '🚀', to: '/casino' },
-          ].map((c) => (
-            <Link
-              key={c.t}
-              to={c.to}
-              className="card group flex flex-col gap-2 p-5 transition hover:-translate-y-1 hover:border-brand/40"
-            >
-              <span className="text-3xl">{c.e}</span>
-              <span className="font-display font-bold text-white">{c.t}</span>
-              <span className="text-sm text-muted">{c.d}</span>
-              <span className="mt-2 text-sm text-brand opacity-0 transition group-hover:opacity-100">
-                Ver más →
-              </span>
-            </Link>
-          ))}
+          ].map((c) =>
+            c.soon ? (
+              <div
+                key={c.t}
+                className="card relative flex cursor-not-allowed flex-col gap-2 p-5 opacity-60"
+                title="Próximamente"
+              >
+                <span className="absolute right-3 top-3 rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 text-[10px] font-semibold text-gold">
+                  Próximamente
+                </span>
+                <span className="text-3xl grayscale">{c.e}</span>
+                <span className="font-display font-bold text-white">{c.t}</span>
+                <span className="text-sm text-muted">{c.d}</span>
+              </div>
+            ) : (
+              <Link
+                key={c.t}
+                to={c.to}
+                className="card group flex flex-col gap-2 p-5 transition hover:-translate-y-1 hover:border-brand/40"
+              >
+                <span className="text-3xl">{c.e}</span>
+                <span className="font-display font-bold text-white">{c.t}</span>
+                <span className="text-sm text-muted">{c.d}</span>
+                <span className="mt-2 text-sm text-brand opacity-0 transition group-hover:opacity-100">
+                  Ver más →
+                </span>
+              </Link>
+            ),
+          )}
         </div>
       </section>
 
@@ -136,18 +148,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Apuestas en vivo */}
+      {/* Apuestas en vivo — próximamente */}
       <section className="mx-auto max-w-7xl px-4 py-12">
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display text-2xl font-bold text-white">⚡ Apuestas en vivo</h2>
-          <Link to="/deportes" className="text-sm font-semibold text-brand hover:underline">
-            Ver deportes
-          </Link>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {liveEvents.map((e) => (
-            <EventCard key={e.id} event={e} />
-          ))}
+        <div className="card flex flex-col items-center gap-3 p-10 text-center md:flex-row md:justify-between md:text-left">
+          <div>
+            <h2 className="font-display text-2xl font-bold text-white">⚡ Apuestas deportivas</h2>
+            <p className="mt-2 text-muted">Cuotas en vivo y resultados al instante. Estamos preparándolo.</p>
+          </div>
+          <span className="chip border border-gold/30 text-gold">Próximamente</span>
         </div>
       </section>
 
