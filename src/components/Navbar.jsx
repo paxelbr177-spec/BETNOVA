@@ -16,7 +16,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { balance: walletBalance, isAdmin, isAgent } = useWallet()
+  const { balance: walletBalance, isAdmin, isAgent, canCreateAgents } = useWallet()
   const loggedIn = Boolean(user)
 
   // Avatar e iniciales derivados del usuario autenticado.
@@ -73,7 +73,7 @@ export default function Navbar() {
               )}
               {isAgent && (
                 <Link to="/agente" className="rounded-xl border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-sm font-semibold text-sky-300 transition hover:bg-sky-400/20">
-                  👥 Agente
+                  {canCreateAgents ? '🛠 Administrador' : '👥 Agente'}
                 </Link>
               )}
               <Link to="/cuenta" aria-label="Mi cuenta" title={user.email}>
@@ -148,7 +148,7 @@ export default function Navbar() {
                 )}
                 {isAgent && (
                   <NavLink to="/agente" onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 text-sm font-semibold text-sky-300">
-                    👥 Panel de agente
+                    {canCreateAgents ? '🛠 Panel de administrador' : '👥 Panel de agente'}
                   </NavLink>
                 )}
                 <button onClick={handleLogout} className="mt-1 rounded-lg px-3 py-3 text-left text-sm font-medium text-red-400">

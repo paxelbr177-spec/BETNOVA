@@ -9,6 +9,8 @@
 alter table public.profiles add column if not exists is_agent   boolean not null default false;
 alter table public.profiles add column if not exists created_by uuid references auth.users(id);
 alter table public.profiles add column if not exists username   text;
+-- can_create_agents: solo el "Administrador" (ej. Dario) puede crear agentes.
+alter table public.profiles add column if not exists can_create_agents boolean not null default false;
 create index if not exists profiles_created_by_idx on public.profiles(created_by);
 
 -- 2) ¿El que llama es agente?
@@ -36,20 +38,25 @@ create policy "agent reads own players bets" on public.bets
 
 -- 4) Vincular un jugador recién creado (signUp) a este agente.
 --    El front hace el signUp (email = usuario@dominio interno) y luego llama a esto.
-create or replace function public.agent_create_player(p_email text, p_username text, p_name text)
+drop function if exists public.agent_create_player(text, text, text);
+create or replace function public.agent_create_player(p_email text, p_username text, p_name text, p_as_agent boolean default false)
 returns void language plpgsql security definer set search_path = public as $$
 begin
   if not public.is_agent_caller() then
-    raise exception 'Solo un agente puede crear usuarios.';
+    raise exception 'Solo un agente o administrador puede crear usuarios.';
+  end if;
+  -- Crear AGENTES solo lo permite quien tiene can_create_agents (el Administrador).
+  if p_as_agent and not coalesce((select can_create_agents from public.profiles where id = auth.uid()), false) then
+    raise exception 'No tenés permiso para crear agentes.';
   end if;
   update public.profiles
      set created_by = auth.uid(),
          username   = p_username,
-         name       = coalesce(nullif(p_name, ''), name)
+         name       = coalesce(nullif(p_name, ''), name),
+         is_agent   = (coalesce(is_agent, false) or p_as_agent)
    where lower(email) = lower(p_email)
      and created_by is null
-     and coalesce(is_admin, false) = false
-     and coalesce(is_agent, false) = false;
+     and coalesce(is_admin, false) = false;
   if not found then
     raise exception 'No se pudo vincular el usuario (ya existe o no está disponible).';
   end if;
@@ -87,13 +94,16 @@ begin
 end; $$;
 
 -- 6) Permisos
-revoke all on function public.agent_create_player(text, text, text) from public;
-revoke all on function public.agent_set_balance(uuid, numeric)       from public;
-grant execute on function public.agent_create_player(text, text, text) to authenticated;
-grant execute on function public.agent_set_balance(uuid, numeric)       to authenticated;
+revoke all on function public.agent_create_player(text, text, text, boolean) from public;
+revoke all on function public.agent_set_balance(uuid, numeric)              from public;
+grant execute on function public.agent_create_player(text, text, text, boolean) to authenticated;
+grant execute on function public.agent_set_balance(uuid, numeric)              to authenticated;
 
 -- ============================================================
--- 7) Marcar a tu primo como AGENTE (cambia el email por el suyo) y darle saldo:
--- update public.profiles set is_agent = true where email = 'EMAIL_DEL_PRIMO@gmail.com';
---   (el saldo se lo das desde tu panel de admin con "Cargar")
+-- 7) Roles (cambiá los emails). El saldo/float se da con "Cargar" desde el panel de arriba.
+-- DUEÑOS (control total, panel /admin):
+-- update public.profiles set is_admin = true where email in ('axel@...','alejoromanhernandez@gmail.com','candelava2018@gmail.com','beli@...');
+-- ADMINISTRADOR (Dario: agente + puede crear agentes):
+-- update public.profiles set is_agent = true, can_create_agents = true where email = 'dariobet@gmail.com';
+-- AGENTE: lo crea Dario desde su panel (no hace falta SQL).
 -- ============================================================

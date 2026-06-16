@@ -16,7 +16,7 @@ function Stat({ label, value, accent }) {
 }
 
 export default function AgentPanel() {
-  const { isAgent, loading, balance: float, refresh } = useWallet()
+  const { isAgent, canCreateAgents, loading, balance: float, refresh } = useWallet()
   const [uid, setUid] = useState(null)
   const [players, setPlayers] = useState([])
   const [txs, setTxs] = useState([])
@@ -24,8 +24,8 @@ export default function AgentPanel() {
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
 
-  // Form crear usuario
-  const [form, setForm] = useState({ name: '', username: '', password: '' })
+  // Form crear usuario (o agente, si es administrador)
+  const [form, setForm] = useState({ name: '', username: '', password: '', asAgent: false })
   // Gestión de saldo por jugador
   const [openId, setOpenId] = useState(null)
   const [amount, setAmount] = useState('')
@@ -37,7 +37,7 @@ export default function AgentPanel() {
     setUid(id)
     const { data: ps } = await supabase
       .from('profiles')
-      .select('id,name,username,balance,created_at')
+      .select('id,name,username,balance,is_agent,created_at')
       .eq('created_by', id)
       .order('created_at', { ascending: true })
     const ids = (ps || []).map((p) => p.id)
@@ -95,12 +95,13 @@ export default function AgentPanel() {
       return setMsg({ ok: false, text: m })
     }
     // 2) Vincular el jugador a este agente (created_by) + guardar usuario/nombre.
-    const { error: linkErr } = await supabase.rpc('agent_create_player', { p_email: email, p_username: uname, p_name: form.name || uname })
+    const makeAgent = canCreateAgents && form.asAgent
+    const { error: linkErr } = await supabase.rpc('agent_create_player', { p_email: email, p_username: uname, p_name: form.name || uname, p_as_agent: makeAgent })
     try { await temp.auth.signOut() } catch { /* noop */ }
     setBusy(false)
     if (linkErr) return setMsg({ ok: false, text: linkErr.message })
-    setMsg({ ok: true, text: `✓ Usuario creado. Usuario: "${uname}" · Clave: "${form.password}". Pasáselos al familiar para que entre.` })
-    setForm({ name: '', username: '', password: '' })
+    setMsg({ ok: true, text: `✓ ${makeAgent ? 'Agente' : 'Usuario'} creado. Usuario: "${uname}" · Clave: "${form.password}". Pasáselos para que pueda entrar.` })
+    setForm({ name: '', username: '', password: '', asAgent: false })
     loadData()
   }
 
@@ -122,8 +123,8 @@ export default function AgentPanel() {
     <div className="mx-auto max-w-7xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-extrabold text-white">Panel de agente</h1>
-          <p className="mt-1 text-muted">Creá usuarios y gestioná el saldo de tus jugadores.</p>
+          <h1 className="font-display text-3xl font-extrabold text-white">{canCreateAgents ? 'Panel de administrador' : 'Panel de agente'}</h1>
+          <p className="mt-1 text-muted">{canCreateAgents ? 'Creá agentes y usuarios, y gestioná sus saldos.' : 'Creá usuarios y gestioná el saldo de tus jugadores.'}</p>
         </div>
         <button onClick={() => { loadData(); refresh() }} className="btn-ghost text-sm">↻ Actualizar</button>
       </div>
@@ -141,9 +142,25 @@ export default function AgentPanel() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         {/* Crear usuario */}
         <div className="card h-fit p-6">
-          <h2 className="mb-1 font-display text-lg font-bold text-white">Crear usuario</h2>
-          <p className="mb-4 text-sm text-muted">Para un familiar que no sabe registrarse. Entrará con el usuario y la clave que pongas.</p>
+          <h2 className="mb-1 font-display text-lg font-bold text-white">{canCreateAgents ? 'Crear usuario o agente' : 'Crear usuario'}</h2>
+          <p className="mb-4 text-sm text-muted">Entrará con el usuario y la clave que pongas (ideal para familiares que no saben registrarse).</p>
           <form onSubmit={createPlayer} className="space-y-3">
+            {canCreateAgents && (
+              <div className="flex gap-2">
+                {[{ v: false, l: '👤 Usuario' }, { v: true, l: '🛠 Agente' }].map((o) => (
+                  <button
+                    key={String(o.v)}
+                    type="button"
+                    onClick={() => setForm({ ...form, asAgent: o.v })}
+                    className={`flex-1 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+                      form.asAgent === o.v ? 'border-sky-400/50 bg-sky-400/10 text-sky-300' : 'border-white/10 text-slate-300 hover:bg-white/5'
+                    }`}
+                  >
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+            )}
             <div>
               <label className="mb-1 block text-sm text-slate-300">Nombre (cómo lo verás)</label>
               <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Tía Marta" />
@@ -157,19 +174,21 @@ export default function AgentPanel() {
               <label className="mb-1 block text-sm text-slate-300">Contraseña</label>
               <input className="input" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="mínimo 6 caracteres" />
             </div>
-            <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">{busy ? 'Creando…' : 'Crear usuario'}</button>
+            <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">{busy ? 'Creando…' : (canCreateAgents && form.asAgent ? 'Crear agente' : 'Crear usuario')}</button>
           </form>
         </div>
 
         {/* Jugadores */}
         <div className="card p-6">
-          <h2 className="mb-4 font-display text-lg font-bold text-white">Tus jugadores</h2>
+          <h2 className="mb-4 font-display text-lg font-bold text-white">{canCreateAgents ? 'Tus agentes y usuarios' : 'Tus jugadores'}</h2>
           <div className="space-y-2">
             {players.map((p) => (
               <div key={p.id} className="rounded-xl bg-panel2 p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-white">{p.name || '—'}</p>
+                    <p className="truncate font-medium text-white">
+                      {p.name || '—'} {p.is_agent && <span className="ml-1 rounded bg-sky-400/20 px-1.5 py-0.5 text-[10px] font-bold text-sky-300">AGENTE</span>}
+                    </p>
                     <p className="truncate text-xs text-muted">@{p.username || '—'}</p>
                   </div>
                   <div className="flex items-center gap-3">
