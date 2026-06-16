@@ -20,7 +20,7 @@ const mapBet = (b) => ({ id: b.id, kind: b.kind, event: b.event, pick: b.pick, o
 
 export function WalletProvider({ children }) {
   const { user } = useAuth()
-  const [state, setState] = useState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, loading: true })
+  const [state, setState] = useState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, isAgent: false, loading: true })
 
   const localKey = user ? `betnova_wallet_${user.email}` : null
 
@@ -40,7 +40,7 @@ export function WalletProvider({ children }) {
 
   const load = useCallback(async () => {
     if (!user) {
-      setState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, loading: false })
+      setState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, isAgent: false, loading: false })
       return
     }
     if (hasSupabase) {
@@ -50,24 +50,24 @@ export function WalletProvider({ children }) {
       // muchas filas y fallaría. Con .eq('id'/'user_id', uid) siempre es su propia fila.
       const { data: au } = await supabase.auth.getUser()
       const uid = au?.user?.id
-      const [{ data: profile }, { data: txs }, { data: bets }, adminRes] = await Promise.all([
-        supabase.from('profiles').select('balance,bonus').eq('id', uid).single(),
+      const [{ data: profile }, { data: txs }, { data: bets }] = await Promise.all([
+        // select('*') es tolerante: si una columna (p. ej. is_agent) aún no existe en la BD, no rompe.
+        supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
         supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(50),
         supabase.from('bets').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(50),
-        // Tolerante: si la columna is_admin aún no existe, devuelve error y queda false.
-        supabase.from('profiles').select('is_admin').eq('id', uid).maybeSingle(),
       ])
       setState({
         balance: Number(profile?.balance ?? DEFAULT_BALANCE),
         bonus: Number(profile?.bonus ?? 0),
         transactions: (txs || []).map(mapTx),
         bets: (bets || []).map(mapBet),
-        isAdmin: Boolean(adminRes?.data?.is_admin),
+        isAdmin: Boolean(profile?.is_admin),
+        isAgent: Boolean(profile?.is_agent),
         loading: false,
       })
     } else {
       const d = loadLocal()
-      setState({ ...d, isAdmin: false, loading: false })
+      setState({ ...d, isAdmin: false, isAgent: false, loading: false })
     }
   }, [user, loadLocal])
 

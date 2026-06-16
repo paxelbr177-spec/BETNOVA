@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase, hasSupabase } from '../lib/supabase.js'
+import { loginToEmail } from '../lib/players.js'
 
 const AuthContext = createContext(null)
 export const useAuth = () => useContext(AuthContext)
@@ -77,7 +78,8 @@ export function AuthProvider({ children }) {
 
   async function signIn({ email, password }) {
     if (hasSupabase) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      // Acepta email o "usuario" (jugadores creados por un agente entran con usuario).
+      const { error } = await supabase.auth.signInWithPassword({ email: loginToEmail(email), password })
       if (error) return { error: friendly(error.message) }
       return {}
     }

@@ -17,7 +17,9 @@ export default function Login() {
 
   const validate = () => {
     const er = {}
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = 'Introduce un email válido.'
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+    const isUsername = /^[a-zA-Z0-9_.]{3,}$/.test(form.email.trim())
+    if (!isEmail && !isUsername) er.email = 'Introduce tu email o tu usuario.'
     if (form.password.length < 6) er.password = 'Mínimo 6 caracteres.'
     setErrors(er)
     return Object.keys(er).length === 0
@@ -54,8 +56,8 @@ export default function Login() {
       ) : (
         <form onSubmit={submit} noValidate className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm text-slate-300">Email</label>
-            <input className="input" type="email" value={form.email} onChange={set('email')} placeholder="tu@email.com" />
+            <label className="mb-1.5 block text-sm text-slate-300">Email o usuario</label>
+            <input className="input" type="text" value={form.email} onChange={set('email')} placeholder="tu@email.com o tu usuario" />
             {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email}</p>}
           </div>
           <div>
