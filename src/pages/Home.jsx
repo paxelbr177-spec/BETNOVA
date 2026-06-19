@@ -3,7 +3,9 @@ import GameCard from '../components/GameCard.jsx'
 import { games, jackpots } from '../data/games.js'
 import { useAuth } from '../context/AuthContext.jsx'
 
-const heroBg = `${import.meta.env.BASE_URL}mundial-hero.svg`
+// Si existe public/hero.jpg (foto propia con licencia), se usa; si no, el arte original.
+const HERO_PHOTO = `${import.meta.env.BASE_URL}hero.jpg`
+const HERO_FALLBACK = `${import.meta.env.BASE_URL}mundial-hero.svg`
 
 const fmt = (n) => n.toLocaleString('es-ES')
 
@@ -36,7 +38,8 @@ export default function Home() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-hero-grid">
         <img
-          src={heroBg}
+          src={HERO_PHOTO}
+          onError={(e) => { if (!e.currentTarget.dataset.fb) { e.currentTarget.dataset.fb = '1'; e.currentTarget.src = HERO_FALLBACK } }}
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-90"

@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Megaways — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:560px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; padding:8px; border:1px solid rgba(255,255,255,.08); background:#0a1120; box-shadow:0 12px 36px rgba(0,0,0,.5); }
+  .ways{ text-align:center; font-size:12px; font-weight:700; color:var(--gold); margin-bottom:6px; letter-spacing:.3px; }
+  .ways b{ color:#fff; }
+  .grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:4px; align-items:start; min-height:210px; }
+  .reel{ display:flex; flex-direction:column; gap:4px; }
+  .tile{ aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+    font-size:22px; border-radius:8px; background:var(--panel2);
+    border:1px solid rgba(255,255,255,.06); line-height:1; }
+  .tile.win{ background:rgba(25,229,127,.18); border-color:var(--brand); box-shadow:0 0 10px rgba(25,229,127,.45); }
+  .tile.spin{ filter:blur(1px); opacity:.85; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px; text-align:center; }
+  .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:17px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:10px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:50px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:50px; border:0; border-radius:13px; cursor:pointer; font-size:17px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Megaways</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="ways" id="ways">Ways: <b>—</b></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">GIRAR</button>
+    </div>
+    <div class="msg" id="message">Hasta 46.656 formas de ganar ✨</div>
+    <div class="foot">Nova Megaways · juego original de BetNova · ways = producto de símbolos por rodillo</div>
+  </div>
+<script src="../_shared/house.js"></script>
+<script src="../_shared/wallet-bridge.js"></script>
+<script src="../_shared/juice.js"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000, spinning=false;
+  const REELS=6, MAX_MULT=50;
+  // símbolos y su valor base (por "way", pequeño)
+  const SYMS=['🔥','💎','🍋','🔔','⭐'];
+  const VAL={ '🔥':2, '💎':1.5, '🍋':1, '🔔':0.8, '⭐':2.5 };
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+  // ---- Audio (Web Audio sintetizado) ----
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.12,c.currentTime+0.015); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndTick=()=>tone(420+Math.random()*120,0.05,'square',0.05);
+  const sndWin=()=>{ [660,880,1175,1568].forEach((f,i)=>setTimeout(()=>tone(f,0.18,'triangle',0.12),i*70)); };
+  const sndLose=()=>tone(220,0.22,'sawtooth',0.10,150);
+
+  // ---- Estado del tablero ----
+  // board[reel] = array de símbolos (longitud variable 2..6)
+  let board=[];
+
+  function randomBoard(){
+    const b=[];
+    for(let r=0;r<REELS;r++){
+      const h=rnd(2,6);
+      const col=[];
+      for(let i=0;i<h;i++) col.push(SYMS[rnd(0,SYMS.length-1)]);
+      b.push(col);
+    }
+    return b;
+  }
+
+  function waysOf(b){ return b.reduce((p,col)=>p*col.length,1); }
+
+  // Evalúa el tablero. WIN RULE (izq->der):
+  //   para cada símbolo, cuenta cuántos rodillos CONSECUTIVOS desde el rodillo 1
+  //   lo contienen (al menos una vez). Si K>=3, es premio.
+  //   ways ganadores = producto sobre esos K rodillos de (conteo del símbolo).
+  //   pago = VAL[sym] * waysGanadores * (bet/10). Suma de los 5 símbolos.
+  // Devuelve { payout, mult, winCells:Set("r-i") }
+  function evaluate(b, bet){
+    let payout=0;
+    const winCells=new Set();
+    for(const sym of SYMS){
+      let k=0;            // rodillos consecutivos desde el 1 con el símbolo
+      let ways=1;
+      for(let r=0;r<REELS;r++){
+        const c=b[r].filter(s=>s===sym).length;
+        if(c>0){ k++; ways*=c; } else break;
+      }
+      if(k>=3){
+        payout += VAL[sym] * ways * (bet/10);
+        // marca celdas ganadoras en los primeros k rodillos
+        for(let r=0;r<k;r++){
+          b[r].forEach((s,i)=>{ if(s===sym) winCells.add(r+'-'+i); });
+        }
+      }
+    }
+    let mult = bet>0 ? payout/bet : 0;
+    if(mult>MAX_MULT){ mult=MAX_MULT; payout=MAX_MULT*bet; }
+    return { payout, mult, winCells };
+  }
+
+  // Genera un tablero respetando la "casa": un tablero ganador (m>0) sólo se
+  // conserva si NovaHouse.allowWin(m) lo permite; si no, se regenera hasta que
+  // m===0 (tope ~40 intentos).
+  function genGatedBoard(bet){
+    let tries=0, b, res;
+    while(true){
+      b=randomBoard();
+      res=evaluate(b,bet);
+      if(res.mult===0) return { b, res };
+      const allowed = window.NovaHouse ? NovaHouse.allowWin(res.mult) : true;
+      if(allowed) return { b, res };
+      if(++tries>40){
+        // forzar un tablero perdedor para garantizar el margen de la casa
+        // (regenera unas cuantas veces; si no, devuelve el último, raro)
+        for(let t=0;t<40;t++){ b=randomBoard(); res=evaluate(b,bet); if(res.mult===0) return {b,res}; }
+        return { b, res };
+      }
+    }
+  }
+
+  // ---- Render ----
+  function buildTiles(b){
+    const g=$('grid'); g.innerHTML='';
+    for(let r=0;r<REELS;r++){
+      const reel=document.createElement('div'); reel.className='reel'; reel.dataset.r=r;
+      for(let i=0;i<b[r].length;i++){
+        const t=document.createElement('div'); t.className='tile'; t.dataset.cell=r+'-'+i;
+        t.textContent=b[r][i];
+        reel.appendChild(t);
+      }
+      g.appendChild(reel);
+    }
+  }
+
+  function setWays(n){ $('ways').innerHTML='Ways: <b>'+n.toLocaleString('es-ES')+'</b>'; }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  // Animación de revelado: cada columna cicla símbolos y luego se asienta.
+  function reveal(finalBoard, done){
+    buildTiles(finalBoard); // estructura final (alturas correctas)
+    const reels=[...$('grid').children];
+    reels.forEach(reel=>{ [...reel.children].forEach(t=>t.classList.add('spin')); });
+
+    let settled=0;
+    reels.forEach((reel, r)=>{
+      const tiles=[...reel.children];
+      let ticks=8+r*3; // columnas de la izq se paran antes
+      const spin=()=>{
+        if(ticks<=0){
+          tiles.forEach((t,i)=>{ t.textContent=finalBoard[r][i]; t.classList.remove('spin'); });
+          settled++;
+          if(settled===REELS) done();
+          return;
+        }
+        tiles.forEach(t=>{ t.textContent=SYMS[rnd(0,SYMS.length-1)]; });
+        sndTick();
+        ticks--;
+        setTimeout(spin, 55);
+      };
+      spin();
+    });
+  }
+
+  function spin(){
+    if(spinning) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    spinning=true;
+    $('actBtn').disabled=true;
+    balance=NovaWallet.bet(bet);
+    $('winDisp').textContent=fmt(0);
+    setMsg('Girando…');
+    syncUI();
+
+    const { b, res } = genGatedBoard(bet);
+    board=b;
+    setWays(waysOf(b));
+
+    reveal(b, ()=>{
+      // resolver premio
+      if(res.payout>0){
+        // resaltar celdas ganadoras
+        res.winCells.forEach(cell=>{
+          const el=document.querySelector('.tile[data-cell="'+cell+'"]');
+          if(el) el.classList.add('win');
+        });
+        balance=NovaWallet.win(res.payout);
+        $('winDisp').textContent=fmt(res.payout);
+        setMsg('¡Ganaste '+fmt(res.payout)+' ('+res.mult.toFixed(2)+'x)!');
+        sndWin();
+        if(window.Juice){ if(res.mult>=10) Juice.bigWin(res.payout,{label:'¡MEGA WIN!',sub:res.mult.toFixed(2)+'x'}); else Juice.coins({count:40}); }
+      } else {
+        setMsg('Sin premio. ¡Gira de nuevo!');
+        sndLose();
+      }
+      // BUG-FIX: reactivar ANTES de syncUI para que GIRAR no quede deshabilitado
+      spinning=false;
+      $('actBtn').disabled=false;
+      syncUI();
+    });
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); spin(); });
+  $('betUp').addEventListener('click',()=>{ if(!spinning&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!spinning&&betIdx>0){betIdx--;syncUI();} });
+
+  // tablero inicial (decorativo)
+  const init=randomBoard(); buildTiles(init); setWays(waysOf(init)); syncUI();
+
+  // Conexión con la billetera al final: '$' y syncUI ya están definidos (evita TDZ).
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

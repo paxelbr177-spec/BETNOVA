@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Jackpot — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:18px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 8px; border-radius:999px; }
+
+  .jackpot{ text-align:center; border-radius:14px; padding:8px 6px 10px; margin-bottom:10px;
+    border:1px solid rgba(255,200,61,.35); background:linear-gradient(180deg,rgba(255,200,61,.10),rgba(255,200,61,.02));
+    box-shadow:0 8px 26px rgba(0,0,0,.45) inset, 0 0 0 0 rgba(0,0,0,0); }
+  .jackpot span{ display:block; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); opacity:.85; }
+  .jackpot b{ display:block; font-size:34px; font-weight:800; color:var(--gold); line-height:1.05; text-shadow:0 3px 18px rgba(255,200,61,.45); letter-spacing:1px; }
+
+  .stage{ position:relative; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.08);
+    background:#0a1120; box-shadow:0 14px 40px rgba(0,0,0,.5); padding:10px; }
+  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .cell{ position:relative; height:74px; display:flex; align-items:center; justify-content:center;
+    font-size:42px; border-radius:12px; background:linear-gradient(180deg,#0f1830,#0b1124);
+    border:1px solid rgba(255,255,255,.06); overflow:hidden; }
+  .cell.mid{ background:linear-gradient(180deg,#15203c,#101a32); border-color:rgba(25,229,127,.25); }
+  .cell.hit{ animation:pulse .5s ease; box-shadow:0 0 18px rgba(25,229,127,.55); border-color:var(--brand); }
+  .cell.jack{ box-shadow:0 0 22px rgba(255,200,61,.7); border-color:var(--gold); }
+  @keyframes pulse{ 0%{ transform:scale(.85);} 60%{ transform:scale(1.12);} 100%{ transform:scale(1);} }
+  .payline{ position:absolute; left:6px; right:6px; top:50%; height:2px; transform:translateY(-1px);
+    background:linear-gradient(90deg,transparent,rgba(25,229,127,.55),transparent); pointer-events:none; }
+
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+
+  .controls{ display:flex; gap:10px; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 8px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet button:disabled{ opacity:.4; cursor:not-allowed; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; font-size:14px; }
+  .act{ flex:1; height:48px; border:0; border-radius:13px; cursor:pointer; font-size:17px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; font-size:13px; color:var(--gold); }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Jackpot</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+
+    <div class="jackpot"><span>Bote Mayor</span><b id="jackpot">50,000</b></div>
+
+    <div class="stage">
+      <div class="grid" id="grid"></div>
+      <div class="payline"></div>
+    </div>
+
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">GIRAR</button>
+    </div>
+
+    <div class="msg" id="message">Gira y alinea 3 iguales en la línea central 🎰</div>
+    <div class="foot">Nova Jackpot · juego original de BetNova · la línea central paga · 3× 🎰 = bote mayor</div>
+  </div>
+
+<script src="../_shared/house.js"></script>
+<script src="../_shared/wallet-bridge.js"></script>
+<script src="../_shared/juice.js"></script>
+<script>
+(function(){
+  // ---- Símbolos y pagos (multiplicador sobre la apuesta) ----
+  const JACK='🎰';
+  const SYMBOLS=[
+    {s:'🍒', v:3},
+    {s:'🔔', v:5},
+    {s:'💎', v:10},
+    {s:'⭐', v:12},
+    {s:'7️⃣', v:18},
+  ];
+  const ALL=SYMBOLS.concat([{s:JACK, v:0}]); // 🎰 paga el bote, no un múltiplo fijo
+  const valueOf=(sym)=>{ const f=SYMBOLS.find(x=>x.s===sym); return f?f.v:0; };
+
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000, spinning=false, jackpot=50000;
+  let spinTimers=[];
+
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtInt=(n)=>Math.floor(n).toLocaleString('es-ES');
+
+  // ---- Audio (Web Audio sintetizado) ----
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.12,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  function noiseBurst(d,v){ const c=ac(); if(!c)return; const n=Math.floor(c.sampleRate*d); const buf=c.createBuffer(1,n,c.sampleRate); const data=buf.getChannelData(0); for(let i=0;i<n;i++)data[i]=(Math.random()*2-1)*(1-i/n); const src=c.createBufferSource(); src.buffer=buf; const g=c.createGain(); g.gain.value=v||0.08; src.connect(g); g.connect(c.destination); src.start(); }
+  const sndTick =()=>tone(420,0.05,'square',0.05);
+  const sndLose =()=>tone(180,0.22,'sawtooth',0.10,120);
+  const sndWin  =()=>{ [660,880,1175,1320].forEach((f,i)=>setTimeout(()=>tone(f,0.16,'triangle',0.12),i*70)); };
+  const sndJack =()=>{ [523,659,784,1047,1319,1568].forEach((f,i)=>setTimeout(()=>tone(f,0.30,'sawtooth',0.14),i*110)); setTimeout(()=>noiseBurst(0.4,0.10),200); };
+
+  // ---- Construir grilla DOM (3 columnas x 3 filas) ----
+  const cells=[]; // cells[col][row]
+  (function buildGrid(){
+    const g=$('grid');
+    for(let r=0;r<3;r++){
+      for(let c=0;c<3;c++){
+        const d=document.createElement('div');
+        d.className='cell'+(r===1?' mid':'');
+        d.textContent='❔';
+        g.appendChild(d);
+        if(!cells[c])cells[c]=[];
+        cells[c][r]=d;
+      }
+    }
+  })();
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('jackpot').textContent=fmtInt(jackpot);
+    $('betDown').disabled = spinning || betIdx===0;
+    $('betUp').disabled   = spinning || betIdx===BETS.length-1;
+    $('actBtn').disabled  = spinning;
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+  const randSym=()=>ALL[Math.floor(Math.random()*ALL.length)].s;
+
+  // ---- Construir el resultado con la casa controlando las victorias ----
+  // result = matriz [col][row] de símbolos. La fila ganadora es la del medio (row=1).
+  function buildResult(bet){
+    // 1) candidato de la fila central
+    let mid=[randSym(),randSym(),randSym()];
+
+    const lineMult=(arr)=>{
+      if(arr[0]===arr[1] && arr[1]===arr[2]){
+        if(arr[0]===JACK) return jackpot/bet;   // multiplicador enorme → bote
+        return valueOf(arr[0]);                  // 3 iguales normales
+      }
+      return 0; // sin línea
+    };
+
+    let m=lineMult(mid);
+    if(m>0){
+      const allow = window.NovaHouse ? NovaHouse.allowWin(m) : true;
+      if(!allow){
+        // Regenerar a una combinación NO ganadora (hasta ~40 intentos)
+        for(let i=0;i<40;i++){
+          mid=[randSym(),randSym(),randSym()];
+          if(lineMult(mid)===0) break;
+        }
+        // Garantía final: si tras 40 intentos sigue siendo línea, rómpela a mano
+        if(lineMult(mid)>0){
+          const others=ALL.filter(x=>x.s!==mid[0]);
+          mid[2]=others[Math.floor(Math.random()*others.length)].s;
+        }
+        m=lineMult(mid);
+      }
+    }
+
+    // 2) filas superior e inferior: decorativas y aleatorias
+    const res=[[],[],[]];
+    for(let c=0;c<3;c++){
+      res[c][0]=randSym();
+      res[c][1]=mid[c];
+      res[c][2]=randSym();
+    }
+    return { res, mult:m, mid };
+  }
+
+  function clearTimers(){ spinTimers.forEach(t=>clearInterval(t)); spinTimers.forEach(t=>clearTimeout(t)); spinTimers=[]; }
+  function clearHighlights(){ for(let c=0;c<3;c++)for(let r=0;r<3;r++){ cells[c][r].classList.remove('hit','jack'); } }
+
+  function spin(){
+    if(spinning) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+
+    spinning=true;
+    clearTimers(); clearHighlights();
+    balance=NovaWallet.bet(bet);
+    $('winDisp').textContent=fmt(0);
+    setMsg('🎰 Girando…');
+    syncUI(); // refleja saldo y deshabilita botones
+
+    // El bote sube un poco cada giro
+    jackpot += Math.floor(Math.random()*40);
+    $('jackpot').textContent=fmtInt(jackpot);
+
+    const { res, mult, mid } = buildResult(bet);
+
+    // Animación: cada columna parpadea símbolos y se detiene escalonada
+    const stopAt=[600,820,1040]; // ms por columna
+    for(let c=0;c<3;c++){
+      const iv=setInterval(()=>{
+        for(let r=0;r<3;r++) cells[c][r].textContent=randSym();
+        sndTick();
+      }, 70);
+      spinTimers.push(iv);
+
+      const to=setTimeout(()=>{
+        clearInterval(iv);
+        for(let r=0;r<3;r++) cells[c][r].textContent=res[c][r];
+        if(c===2) settle(bet, mult, mid);
+      }, stopAt[c]);
+      spinTimers.push(to);
+    }
+  }
+
+  function settle(bet, mult, mid){
+    let win=0, isJack=false;
+    if(mult>0){
+      if(mid[0]===JACK){ isJack=true; win=jackpot; }
+      else win=bet*mult;
+    }
+
+    if(win>0){
+      // Resaltar la línea central ganadora
+      for(let c=0;c<3;c++) cells[c][1].classList.add(isJack?'jack':'hit');
+    }
+
+    // ¡Importante! reactivar antes de syncUI para no dejar GIRAR bloqueado.
+    spinning=false;
+
+    if(isJack){
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      setMsg('🎰🎰🎰 ¡BOTE MAYOR! +'+fmtInt(win));
+      sndJack();
+      if(window.Juice) Juice.bigWin(win,{label:'¡JACKPOT!',sub:'BOTE MAYOR'});
+      jackpot=50000; // reiniciar el bote
+    } else if(win>0){
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      setMsg('✅ ¡Línea de '+mid[0]+'! +'+fmt(win));
+      sndWin();
+      if(window.Juice){ if(win>=bet*10) Juice.bigWin(win,{label:'¡GRAN PREMIO!'}); else Juice.coins({count:40}); }
+    } else {
+      $('winDisp').textContent=fmt(0);
+      setMsg('Sin línea. ¡Gira de nuevo!');
+      sndLose();
+    }
+
+    clearTimers();
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); spin(); });
+  $('betUp').addEventListener('click',()=>{ if(!spinning && betIdx<BETS.length-1){ betIdx++; syncUI(); } });
+  $('betDown').addEventListener('click',()=>{ if(!spinning && betIdx>0){ betIdx--; syncUI(); } });
+
+  // estado inicial
+  for(let c=0;c<3;c++)for(let r=0;r<3;r++) cells[c][r].textContent=randSym();
+  syncUI();
+})();
+</script>
+</body>
+</html>

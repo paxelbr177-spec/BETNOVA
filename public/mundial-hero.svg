@@ -1,117 +1,103 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0c2d52"/>
-      <stop offset="0.4" stop-color="#114a82"/>
-      <stop offset="0.7" stop-color="#0e2f57"/>
-      <stop offset="1" stop-color="#091627"/>
+      <stop offset="0" stop-color="#060b16"/>
+      <stop offset="0.45" stop-color="#0d2440"/>
+      <stop offset="0.8" stop-color="#0a1a30"/>
+      <stop offset="1" stop-color="#05080f"/>
     </linearGradient>
-    <radialGradient id="flare1" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
-      <stop offset="0.25" stop-color="#bfe6ff" stop-opacity="0.6"/>
-      <stop offset="1" stop-color="#bfe6ff" stop-opacity="0"/>
+    <radialGradient id="glow" cx="0.5" cy="0.12" r="0.6">
+      <stop offset="0" stop-color="#8fd0ff" stop-opacity="0.34"/>
+      <stop offset="0.4" stop-color="#4f8fd0" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#4f8fd0" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="flare2" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#ffe9a8" stop-opacity="0.85"/>
-      <stop offset="0.3" stop-color="#ffd15c" stop-opacity="0.4"/>
-      <stop offset="1" stop-color="#ffd15c" stop-opacity="0"/>
+    <radialGradient id="flood" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="0.3" stop-color="#cfe8ff" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#cfe8ff" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="celA" x1="0" y1="0" x2="1" y2="0.2">
-      <stop offset="0" stop-color="#8fd3ff"/>
-      <stop offset="1" stop-color="#5cb3f0"/>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bfe3ff" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#bfe3ff" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="veil" x1="0" y1="0" x2="1" y2="0.35">
-      <stop offset="0" stop-color="#070d18" stop-opacity="0.9"/>
-      <stop offset="0.5" stop-color="#070d18" stop-opacity="0.62"/>
-      <stop offset="1" stop-color="#070d18" stop-opacity="0.45"/>
+    <linearGradient id="veil" x1="0" y1="0" x2="1" y2="0.3">
+      <stop offset="0" stop-color="#05080f" stop-opacity="0.92"/>
+      <stop offset="0.55" stop-color="#05080f" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#05080f" stop-opacity="0.2"/>
     </linearGradient>
     <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#070d18" stop-opacity="0"/>
-      <stop offset="1" stop-color="#070d18" stop-opacity="0.9"/>
+      <stop offset="0" stop-color="#05080f" stop-opacity="0"/>
+      <stop offset="1" stop-color="#05080f" stop-opacity="0.95"/>
     </linearGradient>
   </defs>
 
+  <rect width="1200" height="600" fill="#08111f"/>
   <rect width="1200" height="600" fill="url(#sky)"/>
+  <rect width="1200" height="600" fill="url(#glow)"/>
 
-  <!-- Reflectores de estadio (flares) -->
-  <ellipse cx="980" cy="90" rx="200" ry="150" fill="url(#flare1)"/>
-
-  <!-- Gradas estilizadas (puntos de luz del público) -->
-  <g fill="#bfe0ff" opacity="0.18">
-    <rect x="0" y="300" width="1200" height="140"/>
-  </g>
-  <g fill="#ffffff" opacity="0.5">
-    <circle cx="60" cy="330" r="1.6"/><circle cx="120" cy="345" r="1.6"/><circle cx="180" cy="325" r="1.6"/><circle cx="240" cy="350" r="1.6"/>
-    <circle cx="300" cy="332" r="1.6"/><circle cx="360" cy="348" r="1.6"/><circle cx="430" cy="328" r="1.6"/><circle cx="500" cy="346" r="1.6"/>
-    <circle cx="560" cy="330" r="1.6"/><circle cx="640" cy="350" r="1.6"/><circle cx="720" cy="332" r="1.6"/><circle cx="800" cy="347" r="1.6"/>
-    <circle cx="880" cy="329" r="1.6"/><circle cx="960" cy="349" r="1.6"/><circle cx="1040" cy="331" r="1.6"/><circle cx="1120" cy="346" r="1.6"/>
-    <circle cx="90" cy="372" r="1.4"/><circle cx="200" cy="388" r="1.4"/><circle cx="330" cy="375" r="1.4"/><circle cx="470" cy="390" r="1.4"/>
-    <circle cx="610" cy="374" r="1.4"/><circle cx="760" cy="389" r="1.4"/><circle cx="900" cy="376" r="1.4"/><circle cx="1060" cy="391" r="1.4"/>
+  <!-- Haces de luz de reflectores -->
+  <g opacity="0.7">
+    <polygon points="150,40 250,40 470,420 360,420" fill="url(#beam)"/>
+    <polygon points="1050,40 950,40 730,420 840,420" fill="url(#beam)"/>
+    <polygon points="600,20 660,20 700,400 560,400" fill="url(#beam)" opacity="0.6"/>
   </g>
 
-  <!-- Bandera ondeante: celeste / blanco / celeste con sol de mayo -->
-  <g opacity="0.6" transform="rotate(-7 700 300)">
-    <path d="M360 150 Q620 110 880 150 Q1140 190 1200 150 L1200 230 Q1140 270 880 230 Q620 190 360 230 Z" fill="url(#celA)"/>
-    <path d="M360 230 Q620 190 880 230 Q1140 270 1200 230 L1200 320 Q1140 360 880 320 Q620 280 360 320 Z" fill="#f4fbff"/>
-    <path d="M360 320 Q620 280 880 320 Q1140 360 1200 320 L1200 400 Q1140 440 880 400 Q620 360 360 400 Z" fill="url(#celA)"/>
-    <!-- Sol de mayo sobre la franja blanca -->
-    <g transform="translate(770,278)" fill="#f2b733">
-      <g>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(0)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(30)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(60)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(90)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(120)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(150)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(180)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(210)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(240)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(270)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(300)"/>
-        <polygon points="0,-46 4,-27 -4,-27" transform="rotate(330)"/>
-      </g>
-      <circle r="22" fill="#f7c84b"/>
-      <circle r="22" fill="none" stroke="#c99a2e" stroke-width="2"/>
+  <!-- Bancos de reflectores -->
+  <ellipse cx="180" cy="70" rx="150" ry="80" fill="url(#flood)"/>
+  <ellipse cx="1020" cy="70" rx="150" ry="80" fill="url(#flood)"/>
+  <g fill="#dfeeff">
+    <rect x="120" y="58" width="120" height="14" rx="4"/>
+    <rect x="960" y="58" width="120" height="14" rx="4"/>
+  </g>
+
+  <!-- Confeti celeste / blanco / dorado cayendo -->
+  <g opacity="0.85">
+    <rect x="180" y="120" width="7" height="11" rx="1.5" fill="#8fd3ff" transform="rotate(18 183 125)"/>
+    <rect x="300" y="180" width="6" height="10" rx="1.5" fill="#ffffff" transform="rotate(-22 303 185)"/>
+    <rect x="430" y="130" width="6" height="10" rx="1.5" fill="#ffd15c" transform="rotate(30 433 135)"/>
+    <rect x="560" y="210" width="7" height="11" rx="1.5" fill="#8fd3ff" transform="rotate(-14 563 215)"/>
+    <rect x="690" y="150" width="6" height="10" rx="1.5" fill="#ffffff" transform="rotate(26 693 155)"/>
+    <rect x="820" y="200" width="6" height="10" rx="1.5" fill="#ffd15c" transform="rotate(-30 823 205)"/>
+    <rect x="930" y="150" width="7" height="11" rx="1.5" fill="#8fd3ff" transform="rotate(16 933 155)"/>
+    <rect x="1050" y="220" width="6" height="10" rx="1.5" fill="#ffffff" transform="rotate(-20 1053 225)"/>
+    <circle cx="250" cy="250" r="3" fill="#8fd3ff"/>
+    <circle cx="500" cy="290" r="2.6" fill="#ffffff"/>
+    <circle cx="760" cy="270" r="3" fill="#ffd15c"/>
+    <circle cx="1000" cy="300" r="2.6" fill="#8fd3ff"/>
+    <circle cx="380" cy="320" r="2.4" fill="#ffffff"/>
+  </g>
+
+  <!-- Trofeo dorado, sutil, al fondo derecha -->
+  <g transform="translate(900,300)" opacity="0.5" fill="#caa23a">
+    <path d="M-34,-58 h68 v18 a34 30 0 0 1 -68 0 z"/>
+    <path d="M-34,-52 a-26 24 0 0 1 -22,22 a18 14 0 0 0 22,8 z"/>
+    <path d="M34,-52 a26 24 0 0 1 22,22 a18 14 0 0 1 -22,8 z"/>
+    <rect x="-7" y="-12" width="14" height="26"/>
+    <rect x="-26" y="16" width="52" height="12" rx="3"/>
+    <rect x="-34" y="28" width="68" height="12" rx="3"/>
+  </g>
+
+  <!-- Multitud (silueta anónima) con luces de celular/banderas -->
+  <g>
+    <path d="M0,470
+      q40,-26 80,-6 q40,18 80,-2 q40,-22 80,0 q40,20 80,-4 q40,-22 80,2
+      q40,18 80,-4 q40,-20 80,0 q40,18 80,-6 q40,-22 80,2 q40,20 80,-2
+      q40,-22 80,0 q40,18 80,-4 q40,-18 80,2 q40,16 40,6
+      L1200,600 L0,600 Z" fill="#0a1322"/>
+    <path d="M0,505
+      q60,-18 120,-2 q60,16 120,-4 q60,-18 120,2 q60,16 120,-2
+      q60,-18 120,0 q60,16 120,-4 q60,-16 120,2 q60,14 120,-2
+      q60,-16 120,2 q60,12 60,6 L1200,600 L0,600 Z" fill="#070e1a"/>
+    <g fill="#bfe0ff" opacity="0.85">
+      <circle cx="90" cy="452" r="2"/><circle cx="180" cy="466" r="1.8"/><circle cx="260" cy="450" r="2"/>
+      <circle cx="350" cy="470" r="1.8"/><circle cx="430" cy="452" r="2"/><circle cx="520" cy="468" r="1.8"/>
+      <circle cx="610" cy="450" r="2"/><circle cx="700" cy="470" r="1.8"/><circle cx="790" cy="452" r="2"/>
+      <circle cx="880" cy="468" r="1.8"/><circle cx="970" cy="452" r="2"/><circle cx="1060" cy="470" r="1.8"/>
+      <circle cx="1140" cy="455" r="2"/>
     </g>
-  </g>
-
-  <!-- 3 estrellas doradas (3 títulos) arriba a la derecha -->
-  <g fill="#ffd76a" opacity="0.95">
-    <path d="M1006 70 l5 15 16 0 -13 10 5 16 -13 -10 -13 10 5 -16 -13 -10 16 0z"/>
-    <path d="M1060 52 l5 15 16 0 -13 10 5 16 -13 -10 -13 10 5 -16 -13 -10 16 0z"/>
-    <path d="M1114 70 l5 15 16 0 -13 10 5 16 -13 -10 -13 10 5 -16 -13 -10 16 0z"/>
-  </g>
-
-  <!-- Confeti celeste / blanco / dorado -->
-  <g opacity="0.8">
-    <rect x="140" y="100" width="7" height="7" fill="#8fd3ff" transform="rotate(20 143 103)"/>
-    <rect x="250" y="160" width="6" height="6" fill="#ffffff" transform="rotate(40 253 163)"/>
-    <rect x="380" y="90" width="6" height="6" fill="#ffd76a" transform="rotate(15 383 93)"/>
-    <rect x="520" y="140" width="7" height="7" fill="#8fd3ff" transform="rotate(55 523 143)"/>
-    <rect x="660" y="80" width="6" height="6" fill="#ffffff" transform="rotate(25 663 83)"/>
-    <rect x="820" y="120" width="6" height="6" fill="#ffd76a" transform="rotate(35 823 123)"/>
-    <rect x="950" y="180" width="7" height="7" fill="#8fd3ff" transform="rotate(10 953 183)"/>
-    <circle cx="200" cy="220" r="3.5" fill="#ffffff"/>
-    <circle cx="430" cy="200" r="3.5" fill="#8fd3ff"/>
-    <circle cx="600" cy="240" r="3" fill="#ffd76a"/>
-    <circle cx="880" cy="250" r="3.5" fill="#ffffff"/>
-    <circle cx="1080" cy="210" r="3.5" fill="#8fd3ff"/>
-  </g>
-
-  <!-- Estadio / césped al pie -->
-  <g opacity="0.55">
-    <ellipse cx="600" cy="660" rx="660" ry="150" fill="#0f335e"/>
-    <ellipse cx="600" cy="672" rx="470" ry="104" fill="#0b2745"/>
-    <ellipse cx="600" cy="676" rx="320" ry="70" fill="#1c8a45" opacity="0.5"/>
-    <g stroke="#5aa0e0" stroke-width="6">
-      <line x1="170" y1="540" x2="150" y2="450"/>
-      <line x1="1030" y1="540" x2="1050" y2="450"/>
-    </g>
-    <ellipse cx="150" cy="445" rx="80" ry="44" fill="url(#flare2)"/>
-    <ellipse cx="1050" cy="445" rx="80" ry="44" fill="url(#flare2)"/>
-    <g fill="#cfe8ff">
-      <rect x="120" y="432" width="60" height="18" rx="4"/>
-      <rect x="1020" y="432" width="60" height="18" rx="4"/>
+    <g fill="#ffffff" opacity="0.6">
+      <circle cx="140" cy="488" r="1.6"/><circle cx="300" cy="492" r="1.6"/><circle cx="470" cy="486" r="1.6"/>
+      <circle cx="650" cy="492" r="1.6"/><circle cx="820" cy="486" r="1.6"/><circle cx="1000" cy="492" r="1.6"/>
     </g>
   </g>
 
