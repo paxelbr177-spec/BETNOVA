@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useWallet } from '../context/WalletContext.jsx'
 import { supabase, hasSupabase } from '../lib/supabase.js'
+import { createAccount } from '../lib/createAccount.js'
+import { slugUsername } from '../lib/players.js'
 
 const fmt = (n) => Number(n || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const sum = (arr, f) => arr.reduce((s, x) => s + f(x), 0)
@@ -23,6 +25,9 @@ export default function Admin() {
   const [amount, setAmount] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null)
+  // Crear cuenta (administrador / agente / usuario)
+  const [cForm, setCForm] = useState({ role: 'user', name: '', username: '', password: '' })
+  const [cBusy, setCBusy] = useState(false)
 
   const loadData = useCallback(async () => {
     if (!hasSupabase || !isAdmin) { setData((d) => ({ ...d, loading: false })); return }
@@ -76,6 +81,19 @@ export default function Admin() {
     setOpenId(null); setAmount(''); loadData()
   }
 
+  async function createCuenta(e) {
+    e.preventDefault()
+    setMsg(null)
+    setCBusy(true)
+    const { error, username } = await createAccount(cForm)
+    setCBusy(false)
+    if (error) { setMsg({ ok: false, text: error }); return }
+    const roleLabel = cForm.role === 'admin' ? 'Administrador' : cForm.role === 'agent' ? 'Agente' : 'Usuario'
+    setMsg({ ok: true, text: `✓ ${roleLabel} creado. Usuario: "${username}" · Clave: "${cForm.password}". Pasáselos para que pueda entrar.` })
+    setCForm({ role: 'user', name: '', username: '', password: '' })
+    loadData()
+  }
+
   const typeLabel = { deposit: 'Carga', withdraw: 'Devolución', bet: 'Apuesta', win: 'Premio' }
 
   return (
@@ -101,6 +119,39 @@ export default function Admin() {
       {msg && (
         <p className={`mt-5 rounded-xl p-3 text-center text-sm ${msg.ok ? 'bg-brand/10 text-brand' : 'bg-red-500/10 text-red-400'}`}>{msg.text}</p>
       )}
+
+      {/* Crear cuenta (administrador / agente / usuario) */}
+      <div className="card mt-6 p-6">
+        <h2 className="mb-1 font-display text-lg font-bold text-white">Crear cuenta</h2>
+        <p className="mb-4 text-sm text-muted">Creá un administrador, un agente o un usuario. Entrará con el usuario y la clave que pongas.</p>
+        <form onSubmit={createCuenta} className="grid gap-3 md:grid-cols-[auto_1fr_1fr_1fr_auto] md:items-end">
+          <div>
+            <label className="mb-1 block text-xs text-muted">Tipo</label>
+            <div className="flex gap-1">
+              {[{ v: 'admin', l: 'Admin' }, { v: 'agent', l: 'Agente' }, { v: 'user', l: 'Usuario' }].map((o) => (
+                <button
+                  key={o.v} type="button" onClick={() => setCForm({ ...cForm, role: o.v })}
+                  className={`rounded-lg border px-2.5 py-2 text-xs font-semibold transition ${cForm.role === o.v ? 'border-gold/50 bg-gold/10 text-gold' : 'border-white/10 text-slate-300 hover:bg-white/5'}`}
+                >{o.l}</button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted">Nombre</label>
+            <input className="input py-2" value={cForm.name} onChange={(e) => setCForm({ ...cForm, name: e.target.value })} placeholder="Nombre" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted">Usuario</label>
+            <input className="input py-2" value={cForm.username} onChange={(e) => setCForm({ ...cForm, username: e.target.value })} placeholder="ej. tio_juan" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted">Contraseña</label>
+            <input className="input py-2" value={cForm.password} onChange={(e) => setCForm({ ...cForm, password: e.target.value })} placeholder="mín. 6" />
+          </div>
+          <button type="submit" disabled={cBusy} className="btn-primary text-sm disabled:opacity-60">{cBusy ? 'Creando…' : 'Crear'}</button>
+        </form>
+        {cForm.username && <p className="mt-2 text-xs text-muted">Entrará como: <b className="text-slate-300">{slugUsername(cForm.username) || '—'}</b></p>}
+      </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         {/* Usuarios */}

@@ -19,6 +19,12 @@ returns boolean language sql security definer stable set search_path = public as
   select coalesce((select is_agent from public.profiles where id = auth.uid()), false);
 $$;
 
+-- ¿El que llama es dueño (admin con control total)?
+create or replace function public.is_admin_caller()
+returns boolean language sql security definer stable set search_path = public as $$
+  select coalesce((select is_admin from public.profiles where id = auth.uid()), false);
+$$;
+
 -- 3) RLS — el agente puede LEER los perfiles/movimientos de SUS jugadores
 drop policy if exists "agent reads own players" on public.profiles;
 create policy "agent reads own players" on public.profiles
@@ -39,21 +45,31 @@ create policy "agent reads own players bets" on public.bets
 -- 4) Vincular un jugador recién creado (signUp) a este agente.
 --    El front hace el signUp (email = usuario@dominio interno) y luego llama a esto.
 drop function if exists public.agent_create_player(text, text, text);
-create or replace function public.agent_create_player(p_email text, p_username text, p_name text, p_as_agent boolean default false)
+drop function if exists public.agent_create_player(text, text, text, boolean);
+create or replace function public.agent_create_player(
+  p_email text, p_username text, p_name text,
+  p_as_agent boolean default false, p_can_create_agents boolean default false)
 returns void language plpgsql security definer set search_path = public as $$
+declare v_is_admin boolean := public.is_admin_caller();
 begin
-  if not public.is_agent_caller() then
-    raise exception 'Solo un agente o administrador puede crear usuarios.';
+  -- Pueden crear: dueños (admin) o agentes/administradores.
+  if not (v_is_admin or public.is_agent_caller()) then
+    raise exception 'No autorizado para crear cuentas.';
   end if;
-  -- Crear AGENTES solo lo permite quien tiene can_create_agents (el Administrador).
-  if p_as_agent and not coalesce((select can_create_agents from public.profiles where id = auth.uid()), false) then
+  -- Crear AGENTES: dueños, o quien tenga can_create_agents (el Administrador).
+  if p_as_agent and not (v_is_admin or coalesce((select can_create_agents from public.profiles where id = auth.uid()), false)) then
     raise exception 'No tenés permiso para crear agentes.';
+  end if;
+  -- Crear ADMINISTRADORES (agente que puede crear agentes): solo dueños.
+  if p_can_create_agents and not v_is_admin then
+    raise exception 'Solo un dueño puede crear administradores.';
   end if;
   update public.profiles
      set created_by = auth.uid(),
          username   = p_username,
          name       = coalesce(nullif(p_name, ''), name),
-         is_agent   = (coalesce(is_agent, false) or p_as_agent)
+         is_agent   = (coalesce(is_agent, false) or p_as_agent or p_can_create_agents),
+         can_create_agents = (coalesce(can_create_agents, false) or p_can_create_agents)
    where lower(email) = lower(p_email)
      and created_by is null
      and coalesce(is_admin, false) = false;
@@ -94,10 +110,10 @@ begin
 end; $$;
 
 -- 6) Permisos
-revoke all on function public.agent_create_player(text, text, text, boolean) from public;
-revoke all on function public.agent_set_balance(uuid, numeric)              from public;
-grant execute on function public.agent_create_player(text, text, text, boolean) to authenticated;
-grant execute on function public.agent_set_balance(uuid, numeric)              to authenticated;
+revoke all on function public.agent_create_player(text, text, text, boolean, boolean) from public;
+revoke all on function public.agent_set_balance(uuid, numeric)                     from public;
+grant execute on function public.agent_create_player(text, text, text, boolean, boolean) to authenticated;
+grant execute on function public.agent_set_balance(uuid, numeric)                     to authenticated;
 
 -- ============================================================
 -- 7) Roles (cambiá los emails). El saldo/float se da con "Cargar" desde el panel de arriba.
