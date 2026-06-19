@@ -102,3 +102,28 @@ body{
 .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); font-size:15px; }
 .foot{ margin-top:6px; text-align:center; font-size:10px; color:#5e6781; }
 .err{ color:#ff7a93; }
+
+/* Móvil: compactar la rueda y la mesa para que TODO (fichas + GIRAR) entre sin scroll. */
+@media (max-width:560px){
+  body{ padding:8px; }
+  .wheelcard{ padding:8px; }
+  /* Recortar levemente el borde inferior de la rueda (flecha arriba intacta). */
+  .wheel-container{ min-height:0 !important; height:232px !important; align-items:flex-start !important; overflow:hidden !important; }
+  .result{ margin-top:2px; height:24px; }
+  .hud{ margin-top:6px; }
+  .foot{ margin-top:4px; }
+  .stat b{ font-size:15px; }
+  .boardcard{ padding:10px; }
+  .grid{ grid-template-rows:repeat(3,32px); gap:3px; }
+  .zero{ width:34px; font-size:17px; }
+  .colbets{ grid-template-rows:repeat(3,32px); width:40px; }
+  .rtable{ gap:3px; }
+  .rowbets, .outside{ margin-left:37px; gap:3px; }
+  .cell{ font-size:13px; }
+  .bet{ font-size:11px; }
+  .controls{ margin-top:10px; gap:8px; }
+  .chips{ gap:6px; }
+  .chipbtn{ width:40px; height:40px; font-size:13px; border-width:2px; }
+  .spin{ height:44px; min-width:120px; font-size:16px; }
+  .ghost{ height:44px; padding:0 12px; }
+}

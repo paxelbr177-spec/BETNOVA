@@ -68,7 +68,7 @@ export default function GameFrame({ game }) {
   return (
     <div
       ref={wrapRef}
-      className="relative h-[78vh] w-full overflow-hidden rounded-2xl border border-white/10 bg-ink shadow-card sm:h-auto sm:aspect-video"
+      className="relative h-[90vh] w-full overflow-hidden rounded-2xl border border-white/10 bg-ink shadow-card sm:h-auto sm:aspect-video"
       style={{ background: `linear-gradient(150deg, ${from}, ${to})` }}
     >
       {!user && (
