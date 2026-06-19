@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import GameCard from '../components/GameCard.jsx'
 import { games, jackpots } from '../data/games.js'
 import { useAuth } from '../context/AuthContext.jsx'
 
-// Si existe public/hero.jpg (foto propia con licencia), se usa; si no, el arte original.
+// Fondo del hero, en orden de prioridad si el archivo existe (con licencia propia):
+//   public/hero.mp4 (video en loop, mudo) → public/hero.jpg (foto) → mundial-hero.svg (arte original)
+const HERO_VIDEO = `${import.meta.env.BASE_URL}hero.mp4`
 const HERO_PHOTO = `${import.meta.env.BASE_URL}hero.jpg`
 const HERO_FALLBACK = `${import.meta.env.BASE_URL}mundial-hero.svg`
 
@@ -32,11 +35,13 @@ function Marquee() {
 export default function Home() {
   const featured = games.slice(0, 12)
   const { user } = useAuth()
+  const [videoReady, setVideoReady] = useState(false)
 
   return (
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-hero-grid">
+        {/* Capa base: foto propia (hero.jpg) o arte original (svg) */}
         <img
           src={HERO_PHOTO}
           onError={(e) => { if (!e.currentTarget.dataset.fb) { e.currentTarget.dataset.fb = '1'; e.currentTarget.src = HERO_FALLBACK } }}
@@ -44,6 +49,20 @@ export default function Home() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-90"
         />
+        {/* Capa video (solo si existe public/hero.mp4): se muestra al poder reproducir */}
+        <video
+          src={HERO_VIDEO}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          onCanPlay={() => setVideoReady(true)}
+          className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-90' : 'opacity-0'}`}
+        />
+        {/* Velo para legibilidad del texto (sirve para foto/video) */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink via-ink/75 to-ink/25" />
         <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div>
             <span className="chip mb-5 border border-brand/30 text-brand">
