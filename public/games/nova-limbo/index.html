@@ -103,7 +103,7 @@
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet); rolling=true; $('rollBtn').disabled=true; syncUI(); setMsg('🚀 Subiendo…'); sndRoll();
     // multiplicador aleatorio justo (misma distribución que crash, casa 1%)
-    const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(tg) : true);
     let res;
     if(canWin){
       // resultado >= objetivo (gana)

@@ -161,7 +161,7 @@
     const bet=BETS[betIdx];
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet); syncUI();
-    crashPoint=(window.NovaHouse&&!NovaHouse.allowWin())?1+Math.random()*0.08:genCrash(); startT=performance.now(); state='running';
+    crashPoint=(window.NovaHouse&&!NovaHouse.allowWin(2))?1+Math.random()*0.08:genCrash(); startT=performance.now(); state='running';
     $('winDisp').textContent=fmt(0);
     $('actBtn').textContent='RETIRAR'; $('actBtn').classList.add('cash');
     setMsg('🚀 ¡Despegando! Retírate a tiempo…');

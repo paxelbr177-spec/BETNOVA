@@ -98,9 +98,11 @@
     balance=NovaWallet.bet(bet); syncUI(); dropping=true; setMsg('🔵 Cayendo…'); $('dropBtn').disabled=true;
     // decidir camino: en cada fila izquierda/derecha
     // sesgo de la casa: elegir primero la cubeta final (índice = nº de derechas)
-    const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
-    const buckets=[]; for(let s=0;s<SLOTS;s++){ if(canWin ? MULT[s]>=1.5 : MULT[s]<1) buckets.push(s); }
-    const slot = buckets[Math.floor(Math.random()*buckets.length)];
+    const winB=[], loseB=[];
+    for(let s=0;s<SLOTS;s++){ if(MULT[s]>=1.5) winB.push(s); else if(MULT[s]<1) loseB.push(s); }
+    const cand = winB[Math.floor(Math.random()*winB.length)];
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(MULT[cand]) : true);
+    const slot = canWin ? cand : loseB[Math.floor(Math.random()*loseB.length)];
     // construir un camino con exactamente `slot` derechas distribuidas al azar
     let path=Array(ROWS).fill(0);
     { let idxs=[]; for(let r=0;r<ROWS;r++) idxs.push(r);

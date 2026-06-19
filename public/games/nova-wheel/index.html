@@ -95,9 +95,11 @@
     if(spinning)return; const bet=BETS[betIdx];
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet); spinning=true; $('spinBtn').disabled=true; syncUI(); setMsg('🎡 Girando…');
-    const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
-    const pool=[]; for(let i=0;i<N;i++){ if(canWin ? SEG[i]>0 : SEG[i]===0) pool.push(i); }
-    const win=pool[Math.floor(Math.random()*pool.length)]; // segmento ganador (sesgado por la casa)
+    const payIdx=[], zeroIdx=[];
+    for(let i=0;i<N;i++){ (SEG[i]>0?payIdx:zeroIdx).push(i); }
+    const cand = payIdx[Math.floor(Math.random()*payIdx.length)];
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(SEG[cand]) : true);
+    const win = canWin ? cand : zeroIdx[Math.floor(Math.random()*zeroIdx.length)]; // segmento ganador (sesgado por la casa)
     const center=(win+0.5)*segAng;
     const target=-Math.PI/2 - center + 2*Math.PI*6;       // que el centro quede arriba + 6 vueltas
     const start=rot, t0=performance.now(), dur=3600;

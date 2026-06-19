@@ -101,7 +101,7 @@
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet);
     mineSet=new Set(); while(mineSet.size<mines){ mineSet.add(Math.floor(Math.random()*T)); }
-    roundCanWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+    roundCanWin = (window.NovaHouse ? NovaHouse.allowWin(2.5) : true);
     revealed=0; mult=1; state='playing';
     tiles().forEach(t=>{ t.className='tile'; t.textContent=''; });
     $('actBtn').textContent='RETIRAR'; $('actBtn').classList.add('cash');

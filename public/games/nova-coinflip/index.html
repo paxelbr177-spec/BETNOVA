@@ -102,7 +102,7 @@
     if(flipping)return; const bet=BETS[betIdx];
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet); flipping=true; $('flipBtn').disabled=true; syncUI(); setMsg('🪙 Lanzando…'); sndFlip();
-    const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(1.96) : true);
     const other = pick==='cara' ? 'cruz' : 'cara';
     const result = canWin ? pick : other;
     // girar varias vueltas y aterrizar en la cara correcta (cara=par, cruz=impar de medias vueltas)

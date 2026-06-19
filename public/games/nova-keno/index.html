@@ -118,7 +118,7 @@
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet); busy=true; clearMarks(); $('winDisp').textContent=fmt(0); syncUI(); setMsg('🎲 Sorteando…');
     // sortear 10 únicos
-    const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(3) : true);
     // si no puede ganar, sortear sólo entre números NO elegidos (garantiza 0 aciertos)
     const pool = canWin
       ? Array.from({length:TOTAL},(_,i)=>i+1)

@@ -136,7 +136,7 @@
     const bet=BETS[betIdx];
     if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
     balance=NovaWallet.bet(bet); rolling=true; $('rollBtn').disabled=true; syncUI(); setMsg('🎲 Tirando…'); sndRoll();
-    const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(payout()) : true);
     let res;
     if(canWin){
       // generar resultado en el lado GANADOR del objetivo

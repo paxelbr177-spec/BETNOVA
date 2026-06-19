@@ -236,26 +236,21 @@ function spin() {
   syncUI();
   setMsg('Girando…');
   sndSpin();
-  // "Modo casa": decidir si esta jugada PUEDE ganar.
-  const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
-  // Conjunto de números cubiertos por alguna apuesta del jugador.
-  const covered = new Set();
-  placed.forEach((amount, betId) => {
-    const def = BETS[betId];
-    if (def) def.numbers.forEach((n) => covered.add(n));
-  });
-  const all = Array.from({ length: 37 }, (_, n) => n); // 0..36
-  let pool;
-  if (covered.size === 0) {
-    pool = all; // sin apuestas: número totalmente aleatorio
-  } else if (canWin) {
-    pool = all.filter((n) => covered.has(n)); // garantiza un ganador
+  // "Modo casa": la probabilidad de ganar depende del MULTIPLICADOR de la jugada.
+  const allNums = [];
+  for (let n = 0; n <= 36; n++) allNums.push(n);
+  const covered = allNums.filter((n) => [...placed.keys()].some((id) => BETS[id].numbers.includes(n)));
+  const notCovered = allNums.filter((n) => !covered.includes(n));
+  // Retorno (en fichas) del jugador si cae el número n.
+  const ret = (n) => { let w = 0; placed.forEach((amount, id) => { if (BETS[id].numbers.includes(n)) w += amount * (BETS[id].payout + 1); }); return w; };
+  if (covered.length === 0) {
+    pendingWin = allNums[Math.floor(Math.random() * 37)]; // sin apuestas: aleatorio
   } else {
-    pool = all.filter((n) => !covered.has(n)); // pérdida garantizada
-    if (pool.length === 0) pool = all; // por si las apuestas cubren todo 0..36
+    const cand = covered[Math.floor(Math.random() * covered.length)];
+    const mult = ret(cand) / (totalBet() || 1);
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(mult) : true);
+    pendingWin = canWin ? cand : (notCovered.length ? notCovered[Math.floor(Math.random() * notCovered.length)] : cand);
   }
-  // Número ganador JUSTO e independiente del render
-  pendingWin = pool[Math.floor(Math.random() * pool.length)];
   const idx = WHEEL.indexOf(pendingWin);
   try {
     roulette.rollByIndex(idx);

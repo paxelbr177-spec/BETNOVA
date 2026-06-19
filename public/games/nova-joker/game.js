@@ -176,10 +176,11 @@
         return r;
       };
       let result = genResult();
-      // "Modo casa": si NO puede ganar, regenerar hasta que la evaluación sea 0.
-      const canWin = (window.NovaHouse ? NovaHouse.allowWin() : true);
-      if (!canWin) {
-        for (let tries = 0; tries < 40 && this.payout(result) > 0; tries++) result = genResult();
+      // "Modo casa": una jugada ganadora se conserva solo si allowWin(su pago) pasa;
+      // si no, se regenera hasta un tablero sin premio.
+      const pv = this.payout(result);
+      if (pv > 0 && window.NovaHouse && !NovaHouse.allowWin(pv)) {
+        for (let t = 0; t < 40 && this.payout(result) > 0; t++) result = genResult();
       }
 
       let stopped = 0;
