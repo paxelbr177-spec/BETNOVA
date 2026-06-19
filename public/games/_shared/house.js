@@ -16,8 +16,10 @@
   window.NovaHouse = {
     rtp: 0.85,       // la casa devuelve como mucho ~85% → margen ≥15%
     maxChance: 0.45, // tope de frecuencia de victoria para multiplicadores bajos
+    forceWin: false, // si true (la app lo activa solo para la cuenta del dueño), gana SIEMPRE
 
     allowWin(mult) {
+      if (this.forceWin) return true
       const m = (typeof mult === 'number' && mult > 1) ? mult : 2
       return Math.random() < Math.min(this.maxChance, this.rtp / m)
     },

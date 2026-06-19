@@ -25,6 +25,8 @@
       if (!d || typeof d !== 'object') return
       if (d.type === 'BETNOVA_INIT') {
         balance = Number(d.balance)
+        // La app marca alwaysWin solo para la cuenta del dueño → gana siempre.
+        if (d.alwaysWin && window.NovaHouse) window.NovaHouse.forceWin = true
         if (!initialized) { initialized = true; emit(readyCbs) }
         emit(balanceCbs)
       } else if (d.type === 'BETNOVA_BALANCE') {

@@ -25,13 +25,13 @@ export default function GameFrame({ game }) {
   const [from, to] = game.cover
 
   const { user } = useAuth()
-  const { balance, placeBet, addWin } = useWallet()
+  const { balance, placeBet, addWin, alwaysWin } = useWallet()
   // El listener de mensajes vive durante todo el render; usamos refs para leer
   // siempre el saldo/funciones más recientes sin re-suscribir.
   const balanceRef = useRef(balance)
   balanceRef.current = balance
-  const actionsRef = useRef({ placeBet, addWin, user })
-  actionsRef.current = { placeBet, addWin, user }
+  const actionsRef = useRef({ placeBet, addWin, user, alwaysWin })
+  actionsRef.current = { placeBet, addWin, user, alwaysWin }
 
   // Puente con el juego (iframe): el juego pide saldo y reporta apuestas/premios;
   // la app los aplica a la billetera REAL y devuelve el saldo confirmado.
@@ -41,11 +41,11 @@ export default function GameFrame({ game }) {
       if (!iframe || e.source !== iframe.contentWindow) return
       const d = e.data
       if (!d || typeof d !== 'object') return
-      const { placeBet, addWin, user } = actionsRef.current
+      const { placeBet, addWin, user, alwaysWin } = actionsRef.current
       const reply = (bal) => iframe.contentWindow.postMessage({ type: 'BETNOVA_BALANCE', balance: bal }, '*')
       if (!user) return // invitado: el juego corre en modo demo local (no toca la billetera real)
       if (d.type === 'BETNOVA_READY') {
-        iframe.contentWindow.postMessage({ type: 'BETNOVA_INIT', balance: balanceRef.current }, '*')
+        iframe.contentWindow.postMessage({ type: 'BETNOVA_INIT', balance: balanceRef.current, alwaysWin: !!alwaysWin }, '*')
       } else if (d.type === 'BETNOVA_BET') {
         placeBet(d.amount).then((r) => reply(r.balance ?? balanceRef.current))
       } else if (d.type === 'BETNOVA_WIN') {

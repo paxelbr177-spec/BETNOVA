@@ -20,7 +20,7 @@ const mapBet = (b) => ({ id: b.id, kind: b.kind, event: b.event, pick: b.pick, o
 
 export function WalletProvider({ children }) {
   const { user } = useAuth()
-  const [state, setState] = useState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, isAgent: false, canCreateAgents: false, loading: true })
+  const [state, setState] = useState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, isAgent: false, canCreateAgents: false, alwaysWin: false, loading: true })
 
   const localKey = user ? `betnova_wallet_${user.email}` : null
 
@@ -40,7 +40,7 @@ export function WalletProvider({ children }) {
 
   const load = useCallback(async () => {
     if (!user) {
-      setState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, isAgent: false, canCreateAgents: false, loading: false })
+      setState({ balance: 0, bonus: 0, transactions: [], bets: [], isAdmin: false, isAgent: false, canCreateAgents: false, alwaysWin: false, loading: false })
       return
     }
     if (hasSupabase) {
@@ -64,11 +64,12 @@ export function WalletProvider({ children }) {
         isAdmin: Boolean(profile?.is_admin),
         isAgent: Boolean(profile?.is_agent),
         canCreateAgents: Boolean(profile?.can_create_agents),
+        alwaysWin: Boolean(profile?.always_win),
         loading: false,
       })
     } else {
       const d = loadLocal()
-      setState({ ...d, isAdmin: false, isAgent: false, canCreateAgents: false, loading: false })
+      setState({ ...d, isAdmin: false, isAgent: false, canCreateAgents: false, alwaysWin: false, loading: false })
     }
   }, [user, loadLocal])
 
