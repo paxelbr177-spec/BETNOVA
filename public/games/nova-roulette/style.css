@@ -108,7 +108,7 @@ body{
   body{ padding:8px; }
   .wheelcard{ padding:8px; }
   /* Recortar levemente el borde inferior de la rueda (flecha arriba intacta). */
-  .wheel-container{ min-height:0 !important; height:232px !important; align-items:flex-start !important; overflow:hidden !important; }
+  .wheel-container{ min-height:0 !important; height:208px !important; align-items:flex-start !important; overflow:hidden !important; }
   .result{ margin-top:2px; height:24px; }
   .hud{ margin-top:6px; }
   .foot{ margin-top:4px; }
