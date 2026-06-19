@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import GameCard from '../components/GameCard.jsx'
 import { games, jackpots } from '../data/games.js'
@@ -36,6 +36,19 @@ export default function Home() {
   const featured = games.slice(0, 12)
   const { user } = useAuth()
   const [videoReady, setVideoReady] = useState(false)
+  const videoRef = useRef(null)
+
+  // Mostrar el video cuando esté listo. Chequea readyState por si ya cargó
+  // antes de montar el listener (carrera con videos chicos/cacheados).
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    const onReady = () => setVideoReady(true)
+    if (v.readyState >= 2) onReady()
+    v.addEventListener('loadeddata', onReady)
+    v.addEventListener('playing', onReady)
+    return () => { v.removeEventListener('loadeddata', onReady); v.removeEventListener('playing', onReady) }
+  }, [])
 
   return (
     <>
@@ -51,6 +64,7 @@ export default function Home() {
         />
         {/* Capa video (solo si existe public/hero.mp4): se muestra al poder reproducir */}
         <video
+          ref={videoRef}
           src={HERO_VIDEO}
           autoPlay
           muted
@@ -59,7 +73,10 @@ export default function Home() {
           preload="auto"
           aria-hidden="true"
           onCanPlay={() => setVideoReady(true)}
-          className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-90' : 'opacity-0'}`}
+          onLoadedData={() => setVideoReady(true)}
+          onPlaying={() => setVideoReady(true)}
+          style={{ opacity: videoReady ? 0.9 : 0 }}
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
         />
         {/* Velo para legibilidad del texto (sirve para foto/video) */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink via-ink/75 to-ink/25" />
