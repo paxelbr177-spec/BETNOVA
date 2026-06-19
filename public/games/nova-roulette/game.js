@@ -192,12 +192,14 @@ function settle(winNum) {
   $('#result').innerHTML =
     `<span class="ball ${col}">${winNum}</span><span class="lbl">${col === 'green' ? 'Cero' : col === 'red' ? 'Rojo' : 'Negro'}${winNum === 0 ? '' : winNum % 2 ? ' · Impar' : ' · Par'}</span>`;
   if (win > 0) {
+    const tb = totalBet();
+    const winMult = tb > 0 ? win / tb : 1;
     balance = window.NovaWallet ? NovaWallet.win(win) : balance + win;
     $('#lastWin').textContent = fmt(win);
     const big = win >= totalBet() * 5;
     setMsg(`🎉 ¡Salió el ${winNum}! Ganaste ${fmt(win)}`);
     sndWin(big);
-    if (window.Juice) { if (big) Juice.bigWin(win, { label: '¡GANASTE!', sub: '#' + winNum + ' ' + col }); else Juice.coins({ count: 50 }); }
+    if (window.Juice) { Juice.win(win, { mult: winMult, el: $('#lastWin') }); }
   } else {
     $('#lastWin').textContent = fmt(0);
     setMsg(`Salió el ${winNum}. Sin premio esta vez.`);

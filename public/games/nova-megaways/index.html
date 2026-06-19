@@ -26,6 +26,7 @@
     border:1px solid rgba(255,255,255,.06); line-height:1; }
   .tile.win{ background:rgba(25,229,127,.18); border-color:var(--brand); box-shadow:0 0 10px rgba(25,229,127,.45); }
   .tile.spin{ filter:blur(1px); opacity:.85; }
+  .tile svg{ width:82%; height:82%; display:block; filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
   .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
   .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px; text-align:center; }
   .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
@@ -72,6 +73,17 @@
   // símbolos y su valor base (por "way", pequeño)
   const SYMS=['🔥','💎','🍋','🔔','⭐'];
   const VAL={ '🔥':2, '💎':1.5, '🍋':1, '🔔':0.8, '⭐':2.5 };
+
+  // ---- Iconos SVG profesionales (set cohesivo de casino premium) ----
+  // Mapean cada IDENTIFICADOR a su SVG. NO cambia la lógica de premios.
+  const ICONS={
+    '🔥':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="mw_fl" cx=".5" cy=".72" r=".75"><stop offset="0" stop-color="#fff3a0"/><stop offset=".4" stop-color="#ffb13d"/><stop offset=".75" stop-color="#ff5b2e"/><stop offset="1" stop-color="#c81818"/></radialGradient></defs><path d="M50 8c4 16-10 22-12 34-2 10 4 16 4 16-8-2-12-10-12-10-3 6-6 12-6 20a26 26 0 0 0 52 0c0-18-14-26-16-40-1-6 0-12 4-18-8 2-14 8-18 14-2-6-1-12 4-16z" fill="url(#mw_fl)" stroke="#8a1010" stroke-width="2"/><path d="M50 52c3 4 6 9 6 15a8 8 0 0 1-16 0c0-4 2-7 4-10z" fill="#ffe89a" fill-opacity=".9"/></svg>',
+    '💎':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mw_dia" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eafdff"/><stop offset=".45" stop-color="#3fe0ff"/><stop offset="1" stop-color="#0c9fd6"/></linearGradient></defs><g stroke="#0a4a63" stroke-width="2.2" stroke-linejoin="round"><path d="M28 20h44l16 20-38 42L12 40z" fill="url(#mw_dia)"/><path d="M28 20 40 40H12zM72 20 60 40h28zM40 40h20l-10 42zM40 40 50 24 60 40z" fill="#ffffff" fill-opacity=".22"/></g><path d="M33 24 24 38" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/></svg>',
+    '🍋':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="mw_lem" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#fff8c0"/><stop offset=".5" stop-color="#ffe23d"/><stop offset="1" stop-color="#d6a00c"/></radialGradient></defs><ellipse cx="50" cy="52" rx="36" ry="30" fill="url(#mw_lem)" stroke="#9a7308" stroke-width="2.4" transform="rotate(-20 50 52)"/><path d="M14 44c-5 1-8 3-8 3M86 60c5-1 8-3 8-3" stroke="#7a5c06" stroke-width="4" stroke-linecap="round"/><ellipse cx="38" cy="40" rx="11" ry="6" fill="#fff" fill-opacity=".55" transform="rotate(-20 38 40)"/></svg>',
+    '🔔':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mw_bel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3c4"/><stop offset=".5" stop-color="#ffc83d"/><stop offset="1" stop-color="#c8860a"/></linearGradient></defs><g stroke="#7a5108" stroke-width="2.4" stroke-linejoin="round"><path d="M50 14a7 7 0 0 1 7 7c14 5 12 26 14 38 1 7 5 10 9 13H20c4-3 8-6 9-13 2-12 0-33 14-38a7 7 0 0 1 7-7z" fill="url(#mw_bel)"/><ellipse cx="50" cy="84" rx="9" ry="7" fill="url(#mw_bel)"/></g><path d="M40 30c-4 6-5 14-5 22" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".7" fill="none"/></svg>',
+    '⭐':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="mw_star" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#fff6cf"/><stop offset=".5" stop-color="#ffc83d"/><stop offset="1" stop-color="#d18f0a"/></radialGradient></defs><path d="M50 8 62 38 94 40 69 60 78 92 50 73 22 92 31 60 6 40 38 38z" fill="url(#mw_star)" stroke="#8a5c06" stroke-width="2.4" stroke-linejoin="round"/><path d="M50 8 62 38 38 38z" fill="#fff" fill-opacity=".35"/></svg>',
+  };
+  const iconFor=(sym)=> ICONS[sym] || sym;
 
   const $=(id)=>document.getElementById(id);
   const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -158,7 +170,7 @@
       const reel=document.createElement('div'); reel.className='reel'; reel.dataset.r=r;
       for(let i=0;i<b[r].length;i++){
         const t=document.createElement('div'); t.className='tile'; t.dataset.cell=r+'-'+i;
-        t.textContent=b[r][i];
+        t.innerHTML=iconFor(b[r][i]);
         reel.appendChild(t);
       }
       g.appendChild(reel);
@@ -186,12 +198,12 @@
       let ticks=8+r*3; // columnas de la izq se paran antes
       const spin=()=>{
         if(ticks<=0){
-          tiles.forEach((t,i)=>{ t.textContent=finalBoard[r][i]; t.classList.remove('spin'); });
+          tiles.forEach((t,i)=>{ t.innerHTML=iconFor(finalBoard[r][i]); t.classList.remove('spin'); });
           settled++;
           if(settled===REELS) done();
           return;
         }
-        tiles.forEach(t=>{ t.textContent=SYMS[rnd(0,SYMS.length-1)]; });
+        tiles.forEach(t=>{ t.innerHTML=iconFor(SYMS[rnd(0,SYMS.length-1)]); });
         sndTick();
         ticks--;
         setTimeout(spin, 55);
@@ -227,7 +239,7 @@
         $('winDisp').textContent=fmt(res.payout);
         setMsg('¡Ganaste '+fmt(res.payout)+' ('+res.mult.toFixed(2)+'x)!');
         sndWin();
-        if(window.Juice){ if(res.mult>=10) Juice.bigWin(res.payout,{label:'¡MEGA WIN!',sub:res.mult.toFixed(2)+'x'}); else Juice.coins({count:40}); }
+        if(window.Juice) Juice.win(res.payout,{ mult: res.mult, el: $('winDisp') });
       } else {
         setMsg('Sin premio. ¡Gira de nuevo!');
         sndLose();

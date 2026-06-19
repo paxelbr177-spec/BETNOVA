@@ -140,7 +140,7 @@
     else setMsg(`Cayó en ${m}x · recuperas ${fmt(win)}`);
     sndLand(big);
     // efectos visuales
-    if(window.Juice){ if(big) Juice.bigWin(win,{label:'¡GANASTE!',sub:m+'x'}); else if(win>0) Juice.coins({count:50}); }
+    if(window.Juice && win>0){ Juice.win(win,{ mult:m, el:$('winDisp') }); }
     dropping=false; $('dropBtn').disabled=false;
     syncUI();
   }

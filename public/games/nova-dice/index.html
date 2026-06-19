@@ -157,7 +157,7 @@
   function finish(res,bet){
     const won = over ? (res>target) : (res<target);
     if(won){ const win=bet*payout(); balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win); $('result').className='result win'; setMsg(`✅ ${res.toFixed(2)} · ¡Ganaste ${fmt(win)}!`); sndWin();
-      if(window.Juice){ if(payout()>=5) Juice.bigWin(win,{label:'¡GRAN PREMIO!',sub:payout().toFixed(2)+'x'}); else Juice.coins({count:50}); } }
+      if(window.Juice) Juice.win(win,{ mult:payout(), el:$('winDisp') }); }
     else{ $('winDisp').textContent=fmt(0); $('result').className='result lose'; setMsg(`❌ ${res.toFixed(2)} · Sin premio`); sndLose(); }
     rolling=false; $('rollBtn').disabled=false; syncUI();
   }

@@ -158,7 +158,7 @@
       else { win=bet; txt=`${pv} vs ${dv} · Empate (devuelto).`; }
     }
     if(win>0){ balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
-      const net=win-bet; if(net>0){ sndWin(kind==='pbj'); if(window.Juice){ if(kind==='pbj') Juice.bigWin(win,{label:'¡BLACKJACK!'}); else Juice.coins({count:50}); } } }
+      const net=win-bet; if(net>0){ sndWin(kind==='pbj'); if(window.Juice){ Juice.win(win,{ mult:win/bet, el:$('winDisp') }); } } }
     else { sndLose(); }
     setMsg(txt); phase='idle'; syncUI();
   }

@@ -252,7 +252,7 @@
         this.showWin(totalWin, winLines, winningCells, big);
         sndWin(big);
         setMessage(big ? '🎉 ¡GRAN PREMIO!' : '✨ ¡Has ganado!');
-        if (window.Juice) { if (big) Juice.bigWin(totalWin, { label: '🎉 ¡GRAN PREMIO!' }); else Juice.coins({ count: 50 }); }
+        if (window.Juice) Juice.win(totalWin, { mult: totalWin / bet });
       } else {
         setMessage('¡Suerte la próxima!');
       }

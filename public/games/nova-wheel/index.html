@@ -119,7 +119,7 @@
     const m=SEG[idx], win=bet*m;
     if(win>0){ balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
       const big=m>=3; setMsg(`Cayó en ${m}x · +${fmt(win)} 🎉`); sndWin(big);
-      if(window.Juice){ if(big) Juice.bigWin(win,{label:'¡GANASTE!',sub:m+'x'}); else Juice.coins({count:50}); } }
+      if(window.Juice) Juice.win(win,{ mult:m, el:$('winDisp') }); }
     else{ $('winDisp').textContent=fmt(0); setMsg('Cayó en 0x · 😕 sin premio'); sndLose(); }
     spinning=false; $('spinBtn').disabled=false; syncUI();
   }

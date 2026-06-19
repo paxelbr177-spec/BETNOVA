@@ -141,7 +141,7 @@
     $('hitInfo').textContent=`${hits} aciertos · ${mult}x`;
     if(win>0){ balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
       const big=mult>=10; setMsg(`🎯 ${hits} aciertos · +${fmt(win)}`); sndWin(big);
-      if(window.Juice){ if(big) Juice.bigWin(win,{label:'¡GRAN PREMIO!',sub:hits+' aciertos'}); else Juice.coins({count:50}); } }
+      if(window.Juice){ Juice.win(win,{ mult:mult, el:$('winDisp') }); } }
     else{ setMsg(`${hits} aciertos · sin premio`); sndLose(); }
     busy=false; syncUI();
   }

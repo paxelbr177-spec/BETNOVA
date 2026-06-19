@@ -188,7 +188,7 @@
     balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
     $('mult').textContent=mult.toFixed(2)+'x'; $('mult').className='mult win';
     setMsg(`✅ Retiraste en ${mult.toFixed(2)}x · +${fmt(win)}`); sndCash();
-    if(window.Juice){ if(mult>=3) Juice.bigWin(win,{label:'¡RETIRO ÉPICO!',sub:mult.toFixed(2)+'x'}); else Juice.coins({count:50}); }
+    if(window.Juice) Juice.win(win,{ mult, el:$('winDisp') });
     finalize(); // ← cierra la ronda al instante: puedes volver a apostar ya
   }
 

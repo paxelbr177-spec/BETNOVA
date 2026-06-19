@@ -32,6 +32,7 @@
   .cell.mid{ background:linear-gradient(180deg,#15203c,#101a32); border-color:rgba(25,229,127,.25); }
   .cell.hit{ animation:pulse .5s ease; box-shadow:0 0 18px rgba(25,229,127,.55); border-color:var(--brand); }
   .cell.jack{ box-shadow:0 0 22px rgba(255,200,61,.7); border-color:var(--gold); }
+  .cell svg{ width:80%; height:80%; display:block; filter:drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
   @keyframes pulse{ 0%{ transform:scale(.85);} 60%{ transform:scale(1.12);} 100%{ transform:scale(1);} }
   .payline{ position:absolute; left:6px; right:6px; top:50%; height:2px; transform:translateY(-1px);
     background:linear-gradient(90deg,transparent,rgba(25,229,127,.55),transparent); pointer-events:none; }
@@ -98,12 +99,21 @@
   const ALL=SYMBOLS.concat([{s:JACK, v:0}]); // 🎰 paga el bote, no un múltiplo fijo
   const valueOf=(sym)=>{ const f=SYMBOLS.find(x=>x.s===sym); return f?f.v:0; };
 
+  // ---- Iconos SVG profesionales (set cohesivo de casino premium) ----
+  // Mapean cada IDENTIFICADOR de símbolo a su SVG. NO cambia la lógica de premios.
+  const ICONS={
+    '💎':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="jk_dia" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eafdff"/><stop offset=".45" stop-color="#3fe0ff"/><stop offset="1" stop-color="#0c9fd6"/></linearGradient></defs><g stroke="#0a4a63" stroke-width="2.2" stroke-linejoin="round"><path d="M28 20h44l16 20-38 42L12 40z" fill="url(#jk_dia)"/><path d="M28 20 40 40H12zM72 20 60 40h28zM40 40h20l-10 42zM40 40 50 24 60 40z" fill="#ffffff" fill-opacity=".22"/></g><path d="M33 24 24 38" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/></svg>',
+    '7️⃣':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="jk_sev" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8b97"/><stop offset=".5" stop-color="#ff4d5e"/><stop offset="1" stop-color="#c01828"/></linearGradient></defs><text x="50" y="78" font-family="Georgia,\'Times New Roman\',serif" font-size="74" font-weight="900" text-anchor="middle" fill="url(#jk_sev)" stroke="#ffc83d" stroke-width="3" paint-order="stroke" style="font-style:italic">7</text></svg>',
+    '🔔':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="jk_bel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3c4"/><stop offset=".5" stop-color="#ffc83d"/><stop offset="1" stop-color="#c8860a"/></linearGradient></defs><g stroke="#7a5108" stroke-width="2.4" stroke-linejoin="round"><path d="M50 14a7 7 0 0 1 7 7c14 5 12 26 14 38 1 7 5 10 9 13H20c4-3 8-6 9-13 2-12 0-33 14-38a7 7 0 0 1 7-7z" fill="url(#jk_bel)"/><ellipse cx="50" cy="84" rx="9" ry="7" fill="url(#jk_bel)"/></g><path d="M40 30c-4 6-5 14-5 22" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".7" fill="none"/></svg>',
+    '⭐':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="jk_star" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#fff6cf"/><stop offset=".5" stop-color="#ffc83d"/><stop offset="1" stop-color="#d18f0a"/></radialGradient></defs><path d="M50 8 62 38 94 40 69 60 78 92 50 73 22 92 31 60 6 40 38 38z" fill="url(#jk_star)" stroke="#8a5c06" stroke-width="2.4" stroke-linejoin="round"/><path d="M50 8 62 38 38 38z" fill="#fff" fill-opacity=".35"/></svg>',
+    '🍒':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="jk_ch" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ff8b97"/><stop offset=".5" stop-color="#ff4d5e"/><stop offset="1" stop-color="#a8121f"/></radialGradient></defs><path d="M30 30C46 38 58 48 36 60M70 24C58 40 60 54 66 62" stroke="#2c7a2c" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M62 18c8-3 16-2 22 4" stroke="#3a9a3a" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="34" cy="70" r="17" fill="url(#jk_ch)" stroke="#7a0d16" stroke-width="2.2"/><circle cx="68" cy="68" r="17" fill="url(#jk_ch)" stroke="#7a0d16" stroke-width="2.2"/><circle cx="29" cy="65" r="4.5" fill="#fff" fill-opacity=".7"/><circle cx="63" cy="63" r="4.5" fill="#fff" fill-opacity=".7"/></svg>',
+    '🎰':'<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="jk_coin" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#fff3c4"/><stop offset=".55" stop-color="#ffc83d"/><stop offset="1" stop-color="#b9820a"/></radialGradient></defs><circle cx="50" cy="50" r="42" fill="url(#jk_coin)" stroke="#7a5108" stroke-width="3"/><circle cx="50" cy="50" r="33" fill="none" stroke="#fff" stroke-width="1.6" opacity=".5"/><text x="50" y="46" font-family="\'Arial Black\',Arial,sans-serif" font-size="15" font-weight="900" text-anchor="middle" fill="#7a3b00">JACK</text><text x="50" y="64" font-family="\'Arial Black\',Arial,sans-serif" font-size="15" font-weight="900" text-anchor="middle" fill="#7a3b00">POT</text><path d="M22 34a40 40 0 0 1 18-14" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".6" fill="none"/></svg>',
+  };
+  const iconFor=(sym)=> ICONS[sym] || sym;
+
   const BETS=[50,100,250,500,1000]; let betIdx=0;
   let balance=1000, spinning=false, jackpot=50000;
   let spinTimers=[];
-
-  NovaWallet.ready(b=>{ balance=b; syncUI(); });
-  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
 
   const $=(id)=>document.getElementById(id);
   const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -214,14 +224,14 @@
     const stopAt=[600,820,1040]; // ms por columna
     for(let c=0;c<3;c++){
       const iv=setInterval(()=>{
-        for(let r=0;r<3;r++) cells[c][r].textContent=randSym();
+        for(let r=0;r<3;r++) cells[c][r].innerHTML=iconFor(randSym());
         sndTick();
       }, 70);
       spinTimers.push(iv);
 
       const to=setTimeout(()=>{
         clearInterval(iv);
-        for(let r=0;r<3;r++) cells[c][r].textContent=res[c][r];
+        for(let r=0;r<3;r++) cells[c][r].innerHTML=iconFor(res[c][r]);
         if(c===2) settle(bet, mult, mid);
       }, stopAt[c]);
       spinTimers.push(to);
@@ -248,14 +258,14 @@
       $('winDisp').textContent=fmt(win);
       setMsg('🎰🎰🎰 ¡BOTE MAYOR! +'+fmtInt(win));
       sndJack();
-      if(window.Juice) Juice.bigWin(win,{label:'¡JACKPOT!',sub:'BOTE MAYOR'});
+      if(window.Juice) Juice.win(win,{ mult: win/bet, el: $('winDisp') });
       jackpot=50000; // reiniciar el bote
     } else if(win>0){
       balance=NovaWallet.win(win);
       $('winDisp').textContent=fmt(win);
       setMsg('✅ ¡Línea de '+mid[0]+'! +'+fmt(win));
       sndWin();
-      if(window.Juice){ if(win>=bet*10) Juice.bigWin(win,{label:'¡GRAN PREMIO!'}); else Juice.coins({count:40}); }
+      if(window.Juice) Juice.win(win,{ mult: mult, el: $('winDisp') });
     } else {
       $('winDisp').textContent=fmt(0);
       setMsg('Sin línea. ¡Gira de nuevo!');
@@ -271,8 +281,12 @@
   $('betDown').addEventListener('click',()=>{ if(!spinning && betIdx>0){ betIdx--; syncUI(); } });
 
   // estado inicial
-  for(let c=0;c<3;c++)for(let r=0;r<3;r++) cells[c][r].textContent=randSym();
+  for(let c=0;c<3;c++)for(let r=0;r<3;r++) cells[c][r].innerHTML=iconFor(randSym());
   syncUI();
+
+  // Billetera al final: '$' y syncUI ya están definidos (evita el TDZ que abortaba el script).
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
 })();
 </script>
 </body>

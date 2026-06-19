@@ -146,7 +146,7 @@
     state='idle';
     $('actBtn').textContent='JUGAR'; $('actBtn').classList.remove('cash');
     setMsg(`✅ Retiraste ${mult.toFixed(2)}x · +${fmt(win)}`);
-    if(window.Juice){ if(mult>=3) Juice.bigWin(win,{label:'¡GANASTE!',sub:mult.toFixed(2)+'x'}); else Juice.coins({count:50}); }
+    if(window.Juice){ Juice.win(win,{ mult:mult, el:$('potDisp') }); }
     tiles().forEach((t,idx)=>{ if(mineSet.has(idx)){ t.classList.add('dim'); } });
     syncUI();
   }

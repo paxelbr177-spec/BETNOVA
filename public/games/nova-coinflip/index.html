@@ -117,7 +117,7 @@
     const won = result===pick;
     if(won){ const win=bet*PAYOUT; balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
       setMsg(`✅ ¡Salió ${result.toUpperCase()}! Ganaste ${fmt(win)}`); sndWin();
-      if(window.Juice) Juice.coins({count:60}); }
+      if(window.Juice) Juice.win(win,{ mult:PAYOUT, el:$('winDisp') }); }
     else{ $('winDisp').textContent=fmt(0); setMsg(`❌ Salió ${result.toUpperCase()}. Perdiste.`); sndLose(); }
     flipping=false; $('flipBtn').disabled=false; syncUI();
   }
