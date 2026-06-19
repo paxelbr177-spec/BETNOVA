@@ -1,11 +1,11 @@
 /* ============================================================
    Nova Roulette — ruleta europea para BetNova
-   Rueda: @theblindhawk/roulette (licencia ISC) vía CDN.
+   Rueda: @theblindhawk/roulette (licencia ISC), AUTO-ALOJADA (roulette.esm.js)
+   para no depender de un CDN externo (en móvil/redes con bloqueo fallaba).
    Mesa de apuestas, fichas, pagos y lógica: originales de BetNova.
-   Solo demostración · saldo ficticio · sin dinero real.
    ============================================================ */
 // La librería exporta la clase como DEFAULT (no como named export) → import por defecto.
-import Roulette from 'https://cdn.jsdelivr.net/npm/@theblindhawk/roulette@3.1.1/+esm';
+import Roulette from './roulette.esm.js';
 
 // ---- Datos de la ruleta europea ----
 const WHEEL = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23,

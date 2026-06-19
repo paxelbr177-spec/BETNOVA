@@ -24,7 +24,7 @@ body{
 
 /* Rueda */
 .wheelcard{ background:linear-gradient(180deg, rgba(18,24,41,.92), rgba(8,28,18,.92)); border:1px solid rgba(255,200,61,.28); border-radius:16px; padding:16px; text-align:center; box-shadow:0 14px 40px rgba(0,0,0,.5), inset 0 0 30px rgba(255,200,61,.04); }
-.wheel-container{ display:flex; align-items:center; justify-content:center; min-height:316px; overflow:hidden; }
+.wheel-container{ display:flex; align-items:center; justify-content:center; min-height:316px; overflow:hidden; touch-action:pan-y; }
 /* La rueda mide 300px (radius 150). No la escalamos por CSS para no desfasar la flecha. */
 
 /* Números de la rueda: la librería los pone en negro y a 16px (se salen y no se ven).
