@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Baccarat — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; border:1px solid rgba(255,255,255,.08);
+    background:#0a1120; box-shadow:0 12px 34px rgba(0,0,0,.5); padding:12px 10px;
+    display:flex; flex-direction:column; gap:8px; }
+  .side{ display:flex; flex-direction:column; gap:5px; }
+  .side .lbl{ display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .side .lbl b{ font-size:16px; color:var(--gold); }
+  .side.win .lbl b{ color:var(--brand); }
+  .hand{ display:flex; gap:6px; min-height:84px; justify-content:center; }
+  .card{ width:58px; height:82px; border-radius:9px; position:relative; }
+  .card.deal{ animation:deal .32s ease; }
+  @keyframes deal{ 0%{ transform:translateY(-18px) scale(.9); opacity:0; } 100%{ transform:none; opacity:1; } }
+  .cardface{ width:100%; height:100%; border-radius:9px; background:#f6f8ff;
+    box-shadow:0 5px 14px rgba(0,0,0,.4); position:relative; overflow:hidden; }
+  .cardface .corner{ position:absolute; font-weight:800; line-height:1; }
+  .cardface .corner.tl{ top:5px; left:6px; }
+  .cardface .corner.br{ bottom:5px; right:6px; transform:rotate(180deg); }
+  .cardface .corner .r{ font-size:14px; }
+  .cardface .corner svg{ width:10px; height:10px; display:block; margin:1px auto 0; }
+  .cardface .center{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+  .cardface .center svg{ width:32px; height:32px; }
+  .picks{ display:flex; gap:6px; }
+  .pbtn{ flex:1; height:50px; border:2px solid transparent; border-radius:11px; cursor:pointer;
+    font-weight:800; color:#e8eefc; background:var(--panel2); transition:.15s; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+  .pbtn small{ font-size:10px; color:var(--muted); font-weight:700; }
+  .pbtn.player.sel{ border-color:#5b8cff; box-shadow:0 0 14px rgba(91,140,255,.4); }
+  .pbtn.banker.sel{ border-color:var(--red); box-shadow:0 0 14px rgba(255,77,94,.4); }
+  .pbtn.tie.sel{ border-color:var(--gold); box-shadow:0 0 14px rgba(255,200,61,.4); }
+  .pbtn:disabled{ opacity:.5; cursor:not-allowed; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:9px; padding:7px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:8px; margin-top:9px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:11px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:7px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:12px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--gold),#e0a90c); box-shadow:0 0 18px rgba(255,200,61,.35); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:18px; margin-top:8px; font-weight:700; color:var(--gold); font-size:12px; }
+  .foot{ margin-top:6px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Baccarat</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="side" id="bankerSide">
+        <div class="lbl"><span>Banca</span><b id="bankerPts">—</b></div>
+        <div class="hand" id="bankerHand"></div>
+      </div>
+      <div class="side" id="playerSide">
+        <div class="lbl"><span>Jugador</span><b id="playerPts">—</b></div>
+        <div class="hand" id="playerHand"></div>
+      </div>
+      <div class="picks">
+        <button class="pbtn player" id="pickPlayer">JUGADOR<small>paga 2x</small></button>
+        <button class="pbtn tie" id="pickTie">EMPATE<small>paga 9x</small></button>
+        <button class="pbtn banker" id="pickBanker">BANCA<small>paga 1.95x</small></button>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">REPARTIR</button>
+    </div>
+    <div class="msg" id="message">Elige Jugador, Banca o Empate 🃏</div>
+    <div class="foot">Nova Baccarat · juego original de BetNova · Jugador / Banca / Empate</div>
+  </div>
+<script src="../_shared/house.js"></script>
+<script src="../_shared/wallet-bridge.js"></script>
+<script src="../_shared/juice.js"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let playing=false;
+  let pick='player'; // 'player' | 'banker' | 'tie'
+
+  const PAYOUT={ player:2, banker:1.95, tie:9 };
+
+  // Ranks: A=1 used as 1 point, 2..9 face, 10/J/Q/K = 0 points.
+  const SUITS=['S','H','D','C'];
+  const rankLabel=(r)=> r===1 ? 'A' : (r<=10 ? String(r) : ({11:'J',12:'Q',13:'K'})[r]);
+  const cardPoints=(r)=> r>=10 ? 0 : r; // 10,J,Q,K -> 0 ; A -> 1 ; 2..9 -> face
+
+  // --- inline SVG suits (no emojis) ---
+  function suitSVG(s,size){
+    const red=(s==='H'||s==='D');
+    const col=red?'#e3304a':'#11151f';
+    const w=size||32;
+    let path='';
+    if(s==='S') path='<path d="M50 8 C30 30 12 42 12 60 a16 16 0 0 0 30 8 C40 78 34 86 28 92 l44 0 C66 86 60 78 58 76 a16 16 0 0 0 30 -8 C88 42 70 30 50 8 Z"/>';
+    else if(s==='H') path='<path d="M50 88 C18 64 10 48 10 34 A22 22 0 0 1 50 24 A22 22 0 0 1 90 34 C90 48 82 64 50 88 Z"/>';
+    else if(s==='D') path='<path d="M50 8 L86 50 L50 92 L14 50 Z"/>';
+    else path='<path d="M50 14 a15 15 0 1 1 -0.1 0 M30 44 a15 15 0 1 1 -0.1 0 M70 44 a15 15 0 1 1 -0.1 0 M44 60 l12 0 l4 28 l-20 0 Z"/>';
+    return `<svg viewBox="0 0 100 100" width="${w}" height="${w}" fill="${col}" xmlns="http://www.w3.org/2000/svg">${path}</svg>`;
+  }
+  function cardHTML(rank,suit){
+    const red=(suit==='H'||suit==='D');
+    const col=red?'#e3304a':'#11151f';
+    const lbl=rankLabel(rank);
+    return `<div class="card deal"><div class="cardface">`+
+      `<div class="corner tl" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,10)}</div>`+
+      `<div class="center">${suitSVG(suit,32)}</div>`+
+      `<div class="corner br" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,10)}</div>`+
+      `</div></div>`;
+  }
+  const randSuit=()=>SUITS[(Math.random()*4)|0];
+
+  // --- subtle card-deal synth (shared system handles win/bet sounds) ---
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.08,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndDeal=()=>tone(520,0.06,'triangle',0.06,300);
+
+  // --- card generation helpers consistent with a target total ---
+  // pick two ranks whose (sum mod 10) === target
+  function twoCardsForTotal(target){
+    const a=1+((Math.random()*13)|0);            // 1..13
+    const pa=cardPoints(a);
+    const need=((target-pa)%10+10)%10;           // points needed from 2nd card
+    // ranks giving 'need' points: if need is 0 -> 10/J/Q/K ; else that face (or A if need==1)
+    let opts;
+    if(need===0) opts=[10,11,12,13];
+    else opts=[need];                            // single face value (need in 1..9)
+    const b=opts[(Math.random()*opts.length)|0];
+    return [a,b];
+  }
+  const handTotal=(cards)=> cards.reduce((s,r)=>s+cardPoints(r),0)%10;
+
+  // generate Jugador & Banca totals consistent with a desired outcome:
+  // outcome 'player' -> P>B ; 'banker' -> B>P ; 'tie' -> P===B
+  function totalsForOutcome(outcome){
+    let p,b;
+    if(outcome==='tie'){ p=(Math.random()*10)|0; b=p; }
+    else {
+      const hi=1+((Math.random()*9)|0);          // 1..9
+      const lo=(Math.random()*hi)|0;             // 0..hi-1
+      if(outcome==='player'){ p=hi; b=lo; } else { p=lo; b=hi; }
+    }
+    return { p, b };
+  }
+
+  function dealHand(elId, total){
+    const cards=twoCardsForTotal(total);
+    $(elId).innerHTML = cards.map(r=>cardHTML(r,randSuit())).join('');
+    return cards;
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('pickPlayer').classList.toggle('sel', pick==='player');
+    $('pickBanker').classList.toggle('sel', pick==='banker');
+    $('pickTie').classList.toggle('sel', pick==='tie');
+    const lock=playing;
+    $('pickPlayer').disabled=lock; $('pickBanker').disabled=lock; $('pickTie').disabled=lock;
+    $('betUp').disabled=lock; $('betDown').disabled=lock;
+    $('actBtn').disabled=false;
+    $('actBtn').textContent='REPARTIR';
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+
+  function deal(){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    playing=true;
+    $('winDisp').textContent=fmt(0);
+    $('bankerSide').classList.remove('win'); $('playerSide').classList.remove('win');
+    syncUI();
+
+    const payoutMult=PAYOUT[pick];
+    const canWin=(window.NovaHouse ? NovaHouse.allowWin(payoutMult) : true);
+
+    // Decide the round outcome consistent with the chosen bet + house gate.
+    let outcome;
+    if(canWin){
+      outcome=pick; // chosen bet wins
+    } else {
+      // chosen bet loses: pick a different outcome
+      if(pick==='tie'){ outcome=Math.random()<0.5?'player':'banker'; }
+      else { outcome=Math.random()<0.6?(pick==='player'?'banker':'player'):'tie'; }
+    }
+
+    const t=totalsForOutcome(outcome);
+    const pCards=dealHand('playerHand', t.p);
+    const bCards=dealHand('bankerHand', t.b);
+    sndDeal();
+    setTimeout(sndDeal,140);
+
+    const pPts=handTotal(pCards), bPts=handTotal(bCards);
+    $('playerPts').textContent=pPts;
+    $('bankerPts').textContent=bPts;
+
+    setTimeout(()=>resolve(pPts,bPts), 420);
+  }
+
+  function resolve(pPts,bPts){
+    const bet=BETS[betIdx];
+    let result; // 'player' | 'banker' | 'tie'
+    if(pPts>bPts) result='player'; else if(bPts>pPts) result='banker'; else result='tie';
+
+    if(result==='player') $('playerSide').classList.add('win');
+    else if(result==='banker') $('bankerSide').classList.add('win');
+
+    let win=0, push=false;
+    if(result===pick){
+      win=bet*PAYOUT[pick];
+    } else if((pick==='player'||pick==='banker') && result==='tie'){
+      // tie pushes Jugador/Banca bets: return the stake
+      win=bet; push=true;
+    }
+
+    if(win>0){
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      if(push){
+        setMsg(`Empate — apuesta devuelta (Jugador ${pPts} · Banca ${bPts})`);
+      } else {
+        const payoutMult=PAYOUT[pick];
+        setMsg(`✅ ¡Ganó ${pick==='player'?'JUGADOR':pick==='banker'?'BANCA':'EMPATE'}! +${fmt(win)} (J ${pPts} · B ${bPts})`);
+        if(window.Juice) Juice.win(win,{ mult:payoutMult, el:$('winDisp') });
+      }
+    } else {
+      const rl=result==='player'?'JUGADOR':result==='banker'?'BANCA':'EMPATE';
+      setMsg(`❌ Salió ${rl} (Jugador ${pPts} · Banca ${bPts}). Perdiste.`);
+    }
+
+    playing=false;   // reset BEFORE syncUI
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(!playing) deal(); });
+  $('pickPlayer').addEventListener('click',()=>{ if(!playing){ pick='player'; syncUI(); } });
+  $('pickBanker').addEventListener('click',()=>{ if(!playing){ pick='banker'; syncUI(); } });
+  $('pickTie').addEventListener('click',()=>{ if(!playing){ pick='tie'; syncUI(); } });
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render BEFORE wallet hooks
+  syncUI();
+
+  // wallet hooks at the VERY END (avoid TDZ on $/consts)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

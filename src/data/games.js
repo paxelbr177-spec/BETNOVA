@@ -22,8 +22,8 @@ const names = [
   'Nova Fortune', 'Nova Blackjack', 'Nova Limbo', 'Nova Roulette', 'Nova Crash',
   'Nova Keno', 'Nova Wheel', 'Nova Joker', 'Nova Coinflip', 'Nova Jackpot',
   'Nova Megaways', 'Nova Mines', 'Nova Dice', 'Nova Tower', 'Nova HiLo',
-  'Nova Scratch', 'Ocean Treasure', 'Royal Crown', 'Thunder Zeus', 'Nova Plinko',
-  'Bull Run', 'Phoenix Fire', 'Jungle Jackpot', 'Viking Saga',
+  'Nova Scratch', 'Nova Cups', 'Nova SicBo', 'Nova Penalty', 'Nova Plinko',
+  'Nova War', 'Nova RPS', 'Nova Baccarat', 'Viking Saga',
 ]
 
 const catPool = ['slots', 'live', 'crash', 'table', 'jackpot', 'slots', 'slots', 'live']
@@ -52,6 +52,12 @@ const embeds = {
   'nova-tower': '/games/nova-tower/index.html',     // ★ torre del dragón (climb)
   'nova-scratch': '/games/nova-scratch/index.html', // ★ raspadita
   'nova-hilo': '/games/nova-hilo/index.html',       // ★ mayor/menor de cartas
+  'nova-cups': '/games/nova-cups/index.html',       // ★ juego del trile (3 vasos)
+  'nova-sicbo': '/games/nova-sicbo/index.html',     // ★ sic bo (3 dados)
+  'nova-penalty': '/games/nova-penalty/index.html', // ★ penales (atajada/gol)
+  'nova-war': '/games/nova-war/index.html',         // ★ casino war (guerra de cartas)
+  'nova-rps': '/games/nova-rps/index.html',         // ★ piedra papel o tijera
+  'nova-baccarat': '/games/nova-baccarat/index.html', // ★ baccarat / punto y banca
 }
 
 // Miniaturas (arte original 3:4) para las tarjetas de los juegos jugables.
@@ -73,6 +79,12 @@ const thumbs = {
   'nova-tower': '/games/nova-tower/thumb.svg',
   'nova-scratch': '/games/nova-scratch/thumb.svg',
   'nova-hilo': '/games/nova-hilo/thumb.svg',
+  'nova-cups': '/games/nova-cups/thumb.svg',
+  'nova-sicbo': '/games/nova-sicbo/thumb.svg',
+  'nova-penalty': '/games/nova-penalty/thumb.svg',
+  'nova-war': '/games/nova-war/thumb.svg',
+  'nova-rps': '/games/nova-rps/thumb.svg',
+  'nova-baccarat': '/games/nova-baccarat/thumb.svg',
 }
 
 // Categoría real de cada juego jugable (los tabs son: slots / crash / table).
@@ -94,6 +106,12 @@ const cats = {
   'nova-tower': 'crash',
   'nova-scratch': 'crash',
   'nova-hilo': 'table',
+  'nova-cups': 'crash',
+  'nova-sicbo': 'table',
+  'nova-penalty': 'crash',
+  'nova-war': 'table',
+  'nova-rps': 'crash',
+  'nova-baccarat': 'table',
 }
 
 // Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs

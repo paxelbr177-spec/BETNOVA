@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova RPS — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:420px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,255,255,.08); background:#0a1120; box-shadow:0 14px 40px rgba(0,0,0,.5); padding:14px 10px; }
+  .arena{ display:flex; align-items:center; justify-content:space-around; gap:6px; }
+  .slot{ text-align:center; flex:1; }
+  .slot .lab{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+  .hand{ width:78px; height:78px; margin:0 auto; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--panel2); border:1px solid rgba(255,255,255,.07); }
+  .hand svg{ width:46px; height:46px; }
+  .hand.shake{ animation:shake .12s linear 0 6; }
+  .hand.pop{ animation:pop .3s ease; }
+  @keyframes shake{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes pop{ 0%{transform:scale(.7)} 60%{transform:scale(1.12)} 100%{transform:scale(1)} }
+  .vs{ font-size:14px; font-weight:800; color:var(--gold); }
+  .ico-rock{ color:#cfe0ff; } .ico-paper{ color:#fff; } .ico-scissors{ color:var(--gold); }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:17px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .choices{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .ch{ display:flex; flex-direction:column; align-items:center; gap:4px; height:62px; justify-content:center; border:1px solid rgba(255,255,255,.08); border-radius:12px; cursor:pointer; background:var(--panel); color:#e8eefc; font-size:11px; font-weight:700; transition:filter .12s, transform .08s; }
+  .ch svg{ width:26px; height:26px; }
+  .ch:active{ transform:scale(.96); }
+  .ch:disabled{ opacity:.45; cursor:not-allowed; }
+  .ch.sel{ border-color:var(--brand); box-shadow:0 0 16px rgba(25,229,127,.35); }
+  .controls{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet button:disabled{ opacity:.4; cursor:not-allowed; }
+  .bet .v{ min-width:50px; text-align:center; font-weight:700; }
+  .lab-bet{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; font-size:13px; color:var(--gold); }
+  .foot{ margin-top:7px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>RPS</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="arena">
+        <div class="slot">
+          <div class="lab">Tú</div>
+          <div class="hand" id="handYou"></div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="slot">
+          <div class="lab">La Casa</div>
+          <div class="hand" id="handHouse"></div>
+        </div>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="choices">
+      <button class="ch" id="ch0" data-i="0"></button>
+      <button class="ch" id="ch1" data-i="1"></button>
+      <button class="ch" id="ch2" data-i="2"></button>
+    </div>
+    <div class="controls">
+      <span class="lab-bet">Apuesta</span>
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+    </div>
+    <div class="msg" id="message">Elige piedra, papel o tijera 🤜</div>
+    <div class="foot">Nova RPS · juego original de BetNova · gana paga 1.97x · empate devuelve</div>
+  </div>
+<script src="../_shared/house.js"></script>
+<script src="../_shared/wallet-bridge.js"></script>
+<script src="../_shared/juice.js"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000, playing=false;
+
+  // 0=PIEDRA 1=PAPEL 2=TIJERA. (i+1)%3 = lo que LE GANA a i.
+  const NAMES=['PIEDRA','PAPEL','TIJERA'];
+  const SVG={
+    // puño / piedra
+    0:'<svg viewBox="0 0 24 24" fill="currentColor" class="ico-rock"><path d="M7 11V8.5a1.5 1.5 0 0 1 3 0V11h.5V7.5a1.5 1.5 0 0 1 3 0V11h.5V8.5a1.5 1.5 0 0 1 3 0V13c0 3.3-2.7 6-6 6h-1a6 6 0 0 1-6-6v-1.2a1.4 1.4 0 0 1 2.8 0V12H7Z"/><path d="M6.2 11.8a1.4 1.4 0 0 0-1.4 1.4c0 .9.3 1.8.8 2.6l1.2-.5a4 4 0 0 1-.6-2.1v-1.4Z" opacity=".55"/></svg>',
+    // mano abierta / papel
+    1:'<svg viewBox="0 0 24 24" fill="currentColor" class="ico-paper"><path d="M7 13V5.5a1.25 1.25 0 0 1 2.5 0V11h.5V4.5a1.25 1.25 0 0 1 2.5 0V11h.5V5a1.25 1.25 0 0 1 2.5 0v6h.5V7.5a1.25 1.25 0 0 1 2.5 0V14c0 3.3-2.7 6-6 6h-1.2c-1.7 0-3.3-.8-4.4-2.1l-2-2.6a1.3 1.3 0 0 1 1.9-1.7L7 14.3V13Z"/></svg>',
+    // tijera
+    2:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ico-scissors"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><line x1="7.8" y1="7.6" x2="20" y2="18"/><line x1="7.8" y1="16.4" x2="20" y2="6"/><line x1="13" y1="12" x2="20" y2="12" opacity=".5"/></svg>'
+  };
+  const QMARK='<svg viewBox="0 0 24 24" fill="currentColor" style="color:#5e6781"><path d="M12 3a5 5 0 0 0-5 5h2.4A2.6 2.6 0 1 1 12 10.6c-.9 0-1.4.6-1.4 1.5V14h2v-1.2c1.9-.5 3.4-2 3.4-4A4 4 0 0 0 12 3Zm-1 13.2h2V18h-2v-1.8Z"/></svg>';
+
+  // pintar botones de elección
+  for(let i=0;i<3;i++){ $('ch'+i).innerHTML=SVG[i]+'<span>'+NAMES[i]+'</span>'; }
+  $('handYou').innerHTML=QMARK;
+  $('handHouse').innerHTML=QMARK;
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('betDown').disabled = playing || betIdx===0;
+    $('betUp').disabled   = playing || betIdx===BETS.length-1;
+    for(let i=0;i<3;i++){ $('ch'+i).disabled = playing; if(!playing) $('ch'+i).classList.remove('sel'); }
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function play(you){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    playing=true;
+    $('ch'+you).classList.add('sel');
+    balance=NovaWallet.bet(bet); $('winDisp').textContent=fmt(0); syncUI();
+
+    // decidir resultado vía modo casa
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(1.97) : true);
+    // si gana: la casa juega lo que PIERDE contra ti = (you+2)%3
+    // si pierde: la casa juega lo que TE GANA = (you+1)%3
+    const house = canWin ? (you+2)%3 : (you+1)%3;
+
+    // animación: ambas manos "tiemblan", luego se revelan
+    $('handYou').innerHTML=SVG[you]; $('handYou').classList.remove('pop');
+    $('handHouse').innerHTML=QMARK;
+    $('handYou').classList.add('shake'); $('handHouse').classList.add('shake');
+    setMsg('¡Piedra, papel o tijera!');
+
+    setTimeout(()=>{
+      $('handYou').classList.remove('shake'); $('handHouse').classList.remove('shake');
+      $('handHouse').innerHTML=SVG[house];
+      $('handYou').classList.add('pop'); $('handHouse').classList.add('pop');
+      setTimeout(()=>resolve(you, house, canWin, bet), 320);
+    }, 760);
+  }
+
+  function resolve(you, house, win, bet){
+    // re-habilitar ANTES de syncUI
+    playing=false;
+    if(win){
+      const amount=bet*1.97;
+      balance=NovaWallet.win(amount); $('winDisp').textContent=fmt(amount);
+      setMsg('✅ ¡Ganaste! +'+fmt(amount));
+      if(window.Juice) Juice.win(amount,{ mult:1.97, el:$('winDisp') });
+    } else {
+      setMsg('❌ La casa gana. Inténtalo otra vez.');
+    }
+    syncUI();
+  }
+
+  // listeners
+  for(let i=0;i<3;i++){ $('ch'+i).addEventListener('click',()=>play(i)); }
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // render inicial
+  syncUI();
+
+  // *** wallet wiring al FINAL del IIFE (evita TDZ) ***
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>
