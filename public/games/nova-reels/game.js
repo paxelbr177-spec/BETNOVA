@@ -305,8 +305,12 @@
     $('autoBtn').classList.toggle('on', autoplay);
   }
 
-  window.addEventListener('load', () => {
-    new Phaser.Game({
+  function bootPhaser() {
+    const parent = document.getElementById('game');
+    // Esperar a que el contenedor tenga tamaño: si Phaser (FIT) inicia con ancho 0,
+    // crea un canvas invisible y el juego "no aparece hasta recargar".
+    if (!parent || parent.clientWidth < 10) { requestAnimationFrame(bootPhaser); return; }
+    const game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: 'game',
       width: BOARD_W,
@@ -315,11 +319,20 @@
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_HORIZONTALLY },
       scene: [Slot],
     });
+    const refresh = () => { try { game.scale && game.scale.refresh(); } catch (e) {} };
+    window.addEventListener('resize', refresh);
+    setTimeout(refresh, 150); setTimeout(refresh, 500);
+  }
 
+  function initControls() {
     $('spinBtn').addEventListener('click', () => { audio(); window.NovaReels && window.NovaReels.spin(); });
     $('autoBtn').addEventListener('click', () => { audio(); autoplay = !autoplay; window.NovaReels && window.NovaReels.setAuto(autoplay); syncUI(); });
     $('betUp').addEventListener('click', () => { if (!spinning && betIndex < BET_LEVELS.length - 1) { betIndex++; syncUI(); } });
     $('betDown').addEventListener('click', () => { if (!spinning && betIndex > 0) { betIndex--; syncUI(); } });
     document.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); audio(); window.NovaReels && window.NovaReels.spin(); } });
-  });
+  }
+
+  function startGame() { initControls(); bootPhaser(); }
+  if (document.readyState === 'complete') startGame();
+  else window.addEventListener('load', startGame);
 })();
