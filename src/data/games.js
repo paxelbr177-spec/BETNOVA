@@ -90,6 +90,9 @@ const cats = {
 // Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs
 // usan rutas absolutas, así que hay que anteponer la base para que carguen.
 const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+// Versión de assets de juegos: bumpear cuando se corrige un juego, así el iframe
+// pide el index.html fresco (evita que el celular sirva una versión vieja cacheada).
+const ASSET_V = '20260615b'
 
 export const games = names
   .map((name, i) => {
@@ -104,7 +107,7 @@ export const games = names
       hot: i % 5 === 0,
       rtp: (94 + (i % 6)).toFixed(1),
       players: 50 + ((i * 37) % 950),
-      embed: embeds[slug] ? base + embeds[slug] : null,
+      embed: embeds[slug] ? base + embeds[slug] + '?v=' + ASSET_V : null,
       thumb: thumbs[slug] ? base + thumbs[slug] : null,
     }
   })
