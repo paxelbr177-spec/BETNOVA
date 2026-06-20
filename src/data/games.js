@@ -21,8 +21,8 @@ const covers = [
 const names = [
   'Nova Fortune', 'Nova Blackjack', 'Nova Limbo', 'Nova Roulette', 'Nova Crash',
   'Nova Keno', 'Nova Wheel', 'Nova Joker', 'Nova Coinflip', 'Nova Jackpot',
-  'Nova Megaways', 'Nova Mines', 'Nova Dice', 'Wolf Moon', 'Samba Heat',
-  'Inferno 7s', 'Ocean Treasure', 'Royal Crown', 'Thunder Zeus', 'Nova Plinko',
+  'Nova Megaways', 'Nova Mines', 'Nova Dice', 'Nova Tower', 'Nova HiLo',
+  'Nova Scratch', 'Ocean Treasure', 'Royal Crown', 'Thunder Zeus', 'Nova Plinko',
   'Bull Run', 'Phoenix Fire', 'Jungle Jackpot', 'Viking Saga',
 ]
 
@@ -49,6 +49,9 @@ const embeds = {
   'nova-coinflip': '/games/nova-coinflip/index.html', // ★ coinflip original
   'nova-jackpot': '/games/nova-jackpot/index.html', // ★ slot con jackpot progresivo
   'nova-megaways': '/games/nova-megaways/index.html', // ★ slot estilo Megaways (ways-to-win)
+  'nova-tower': '/games/nova-tower/index.html',     // ★ torre del dragón (climb)
+  'nova-scratch': '/games/nova-scratch/index.html', // ★ raspadita
+  'nova-hilo': '/games/nova-hilo/index.html',       // ★ mayor/menor de cartas
 }
 
 // Miniaturas (arte original 3:4) para las tarjetas de los juegos jugables.
@@ -67,6 +70,9 @@ const thumbs = {
   'nova-coinflip': '/games/nova-coinflip/thumb.svg',
   'nova-jackpot': '/games/nova-jackpot/thumb.svg',
   'nova-megaways': '/games/nova-megaways/thumb.svg',
+  'nova-tower': '/games/nova-tower/thumb.svg',
+  'nova-scratch': '/games/nova-scratch/thumb.svg',
+  'nova-hilo': '/games/nova-hilo/thumb.svg',
 }
 
 // Categoría real de cada juego jugable (los tabs son: slots / crash / table).
@@ -85,6 +91,9 @@ const cats = {
   'nova-coinflip': 'crash',
   'nova-jackpot': 'slots',
   'nova-megaways': 'slots',
+  'nova-tower': 'crash',
+  'nova-scratch': 'crash',
+  'nova-hilo': 'table',
 }
 
 // Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs

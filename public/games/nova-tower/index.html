@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Tower — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:420px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:#0a1120; box-shadow:0 12px 34px rgba(0,0,0,.5); padding:8px; }
+  .tower{ display:flex; flex-direction:column-reverse; gap:5px; }
+  .floor{ display:grid; grid-template-columns:34px repeat(3,1fr); gap:5px; align-items:stretch; }
+  .flbl{ display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--muted); }
+  .flbl .mx{ color:var(--gold); font-size:10px; }
+  .tile{ height:38px; border-radius:9px; border:1px solid rgba(255,255,255,.08); background:var(--panel2);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .1s, background .15s, box-shadow .15s; }
+  .tile svg{ width:24px; height:24px; display:block; }
+  .floor.active .tile{ background:linear-gradient(180deg,#21304f,#16203a); box-shadow:0 0 0 1px rgba(25,229,127,.35) inset; }
+  .floor.active .tile:hover{ transform:translateY(-1px); background:#26395e; }
+  .tile.safe{ background:linear-gradient(180deg,#10502f,#0c3a22); box-shadow:0 0 14px rgba(25,229,127,.35); }
+  .tile.trap{ background:linear-gradient(180deg,#5a1622,#3a0e16); box-shadow:0 0 14px rgba(255,77,94,.4); }
+  .tile.dim{ opacity:.4; }
+  .floor.done .flbl{ color:var(--brand); }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:17px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:10px; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:48px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act.cash{ background:linear-gradient(180deg,var(--gold),#e0a90c); }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:20px; margin-top:8px; font-weight:700; color:var(--gold); font-size:13px; }
+  .foot{ margin-top:6px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Tower</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="tower" id="tower"></div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">JUGAR</button>
+    </div>
+    <div class="msg" id="message">Elige tu apuesta y escala la torre 🐉</div>
+    <div class="foot">Nova Tower · juego original de BetNova · sube y retírate antes de la trampa</div>
+  </div>
+<script src="../_shared/house.js"></script>
+<script src="../_shared/wallet-bridge.js"></script>
+<script src="../_shared/juice.js"></script>
+<script>
+(function(){
+  const FLOORS=8, TILES=3;
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let playing=false;      // ronda en curso
+  let level=0;            // pisos completados (0..FLOORS)
+  let trapMap=[];         // por piso: índice del tile que es trampa (-1 sin asignar)
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  // multiplicador tras escalar k pisos
+  const multAt=(k)=> 0.99*Math.pow(3/2,k);
+
+  // ---- Audio (Web Audio sintetizado) ----
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.12,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndStep =()=>tone(420,0.08,'square',0.06,620);
+  const sndClimb=(k)=>tone(440+k*60,0.16,'triangle',0.10,760+k*60);
+  const sndWin  =()=>{ [660,880,1175].forEach((f,i)=>setTimeout(()=>tone(f,0.18,'triangle',0.12),i*70)); };
+  const sndBoom =()=>{ tone(200,0.5,'sawtooth',0.16,55); setTimeout(()=>tone(120,0.4,'square',0.12,50),60); };
+
+  // ---- Iconos SVG (gradientes, sin emojis) ----
+  const SVG_GEM = '<svg viewBox="0 0 24 24"><defs><linearGradient id="gG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5bffb0"/><stop offset="1" stop-color="#0fb863"/></linearGradient></defs><path d="M6 3h12l4 6-10 12L2 9z" fill="url(#gG)" stroke="#0a2e1c" stroke-width="1" stroke-linejoin="round"/><path d="M6 3l6 6 6-6M2 9h20M12 9l0 12" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1"/></svg>';
+  const SVG_TRAP= '<svg viewBox="0 0 24 24"><defs><linearGradient id="gT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a88"/><stop offset="1" stop-color="#c41f33"/></linearGradient></defs><path d="M12 2c4.2 0 7 2.9 7 6.8 0 2.6-1.3 4-1.3 6.2 0 1.2.6 1.9.6 3 0 1.9-2.6 3-6.3 3s-6.3-1.1-6.3-3c0-1.1.6-1.8.6-3C6.3 12.8 5 11.4 5 8.8 5 4.9 7.8 2 12 2z" fill="url(#gT)" stroke="#3a0c14" stroke-width="1"/><circle cx="9.2" cy="9" r="1.7" fill="#1a0608"/><circle cx="14.8" cy="9" r="1.7" fill="#1a0608"/><path d="M8.5 16.5l1.5 2 2-2 2 2 1.5-2" fill="none" stroke="#3a0c14" stroke-width="1.3" stroke-linecap="round"/></svg>';
+  const SVG_DOT = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" fill="rgba(255,255,255,.18)"/></svg>';
+
+  // ---- Render ----
+  function buildTower(){
+    const t=$('tower'); t.innerHTML='';
+    for(let f=0; f<FLOORS; f++){
+      const row=document.createElement('div');
+      row.className='floor'; row.dataset.floor=f;
+      const lbl=document.createElement('div');
+      lbl.className='flbl';
+      lbl.innerHTML='P'+(f+1)+'<br><span class="mx">'+multAt(f+1).toFixed(2)+'x</span>';
+      row.appendChild(lbl);
+      for(let i=0;i<TILES;i++){
+        const tile=document.createElement('div');
+        tile.className='tile'; tile.dataset.floor=f; tile.dataset.idx=i;
+        tile.innerHTML=SVG_DOT;
+        tile.addEventListener('click',()=>onPick(f,i));
+        row.appendChild(tile);
+      }
+      t.appendChild(row);
+    }
+  }
+
+  function highlightActive(){
+    document.querySelectorAll('.floor').forEach(row=>{
+      const f=+row.dataset.floor;
+      row.classList.toggle('active', playing && f===level);
+    });
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const btn=$('actBtn');
+    if(playing && level>0){
+      const cashVal=BETS[betIdx]*multAt(level);
+      btn.textContent='RETIRAR '+fmt(cashVal);
+      btn.classList.add('cash');
+    }else if(playing){
+      btn.textContent='RETIRAR';
+      btn.classList.add('cash');
+    }else{
+      btn.textContent='JUGAR';
+      btn.classList.remove('cash');
+    }
+    highlightActive();
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  // ---- Juego ----
+  function startRound(){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    playing=true; level=0;
+    trapMap=new Array(FLOORS).fill(-1);
+    buildTower();
+    $('winDisp').textContent=fmt(0);
+    setMsg('Sube por un cofre seguro 💎');
+    syncUI();
+  }
+
+  function onPick(f,i){
+    if(!playing || f!==level) return;
+    sndStep();
+    const bet=BETS[betIdx];
+    const nextMult=multAt(level+1);                       // multiplicador si acierta este piso
+    const canWin=(window.NovaHouse ? NovaHouse.allowWin(nextMult) : true);
+
+    if(canWin){
+      // El tile elegido es SEGURO; la trampa va en otro de los dos.
+      const others=[0,1,2].filter(x=>x!==i);
+      trapMap[f]=others[Math.floor(Math.random()*others.length)];
+    }else{
+      // El tile elegido es la TRAMPA.
+      trapMap[f]=i;
+    }
+
+    const row=document.querySelector('.floor[data-floor="'+f+'"]');
+    if(trapMap[f]===i){
+      // Perdió: revela trampas y termina.
+      lose(f,i,row);
+      return;
+    }
+
+    // Acertó: marca el tile seguro, deshabilita la fila, sube de piso.
+    const tile=row.querySelector('.tile[data-idx="'+i+'"]');
+    tile.classList.add('safe'); tile.innerHTML=SVG_GEM;
+    row.querySelectorAll('.tile').forEach(t=>{ if(t!==tile) t.classList.add('dim'); });
+    row.classList.add('done');
+    level++;
+    sndClimb(level);
+
+    if(level>=FLOORS){
+      // Llegó a la cima: pago automático.
+      cashOut(true);
+    }else{
+      const cashVal=bet*multAt(level);
+      setMsg('¡Piso '+level+'! Retira '+fmt(cashVal)+' o sigue 🐉');
+      syncUI();
+    }
+  }
+
+  function cashOut(top){
+    if(!playing || level<1) {            // nada que retirar todavía
+      if(playing) setMsg('Sube al menos un piso para retirar.');
+      return;
+    }
+    const win=BETS[betIdx]*multAt(level);
+    const mult=multAt(level);
+    balance=NovaWallet.win(win);
+    $('winDisp').textContent=fmt(win);
+    revealTraps();
+    sndWin();
+    if(window.Juice) Juice.win(win,{ mult, el:$('winDisp') });
+    setMsg((top?'🏆 ¡Cima! ':'✅ Retiraste en ')+mult.toFixed(2)+'x · +'+fmt(win));
+    playing=false;                       // reset ANTES de syncUI
+    level=0;
+    syncUI();
+  }
+
+  function lose(f,i,row){
+    // Revela la trampa elegida + traza el resto de trampas conocidas.
+    const tile=row.querySelector('.tile[data-idx="'+i+'"]');
+    tile.classList.add('trap'); tile.innerHTML=SVG_TRAP;
+    row.querySelectorAll('.tile').forEach(t=>{ if(t!==tile) t.classList.add('dim'); });
+    revealTraps();
+    sndBoom();
+    if(window.Juice) Juice.shake(document.body,420);
+    setMsg('💀 ¡Trampa en el piso '+(f+1)+'! Perdiste.');
+    playing=false;                       // reset ANTES de syncUI
+    level=0;
+    syncUI();
+  }
+
+  // Muestra los iconos en pisos completados (seguros) y dibuja la trampa del piso final si aplica.
+  function revealTraps(){
+    document.querySelectorAll('.floor').forEach(row=>{
+      row.classList.remove('active');
+    });
+  }
+
+  // ---- Controles ----
+  $('actBtn').addEventListener('click',()=>{
+    ac();
+    if(!playing) startRound();
+    else cashOut(false);
+  });
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // ---- Init: render primero, wallet AL FINAL (evita TDZ) ----
+  buildTower();
+  syncUI();
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>
