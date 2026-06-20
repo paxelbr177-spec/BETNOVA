@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Race — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,#0d2438,#0a1120); box-shadow:0 12px 34px rgba(0,0,0,.5); padding:6px; }
+  .track{ position:relative; display:flex; flex-direction:column; gap:5px; }
+  .lane{ position:relative; height:54px; border-radius:10px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color .15s, filter .15s; }
+  .lane.shade0{ background:repeating-linear-gradient(90deg,#11324a,#11324a 26px,#0f2c41 26px,#0f2c41 52px); }
+  .lane.shade1{ background:repeating-linear-gradient(90deg,#0e2c41,#0e2c41 26px,#0c2638 26px,#0c2638 52px); }
+  .lane.picked{ border-color:var(--brand); filter:brightness(1.15); box-shadow:inset 0 0 14px rgba(25,229,127,.25); }
+  .lane:disabled{ cursor:not-allowed; }
+  /* línea de meta */
+  .finish{ position:absolute; top:0; right:8px; width:12px; height:100%; z-index:2;
+    background:repeating-linear-gradient(45deg,#fff,#fff 4px,#0a0e1a 4px,#0a0e1a 8px);
+    opacity:.85; border-radius:2px; }
+  .runner{ position:absolute; top:50%; left:6px; transform:translate(0,-50%); z-index:3; will-change:transform; }
+  .runner.go{ transition:transform var(--dur,2.4s) cubic-bezier(.45,.05,.55,1); }
+  .laneLabel{ position:absolute; left:8px; top:4px; z-index:4; font-size:10px; font-weight:800; letter-spacing:.4px; color:#dfe8fb; text-shadow:0 1px 2px rgba(0,0,0,.6); }
+  .laneOdds{ position:absolute; left:8px; bottom:4px; z-index:4; font-size:9px; color:var(--muted); text-shadow:0 1px 2px rgba(0,0,0,.6); }
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; color:var(--gold); font-size:13px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .betrow{ display:flex; justify-content:center; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:52px; text-align:center; font-weight:700; }
+  .go-wrap{ margin-top:10px; }
+  .run{ width:100%; height:48px; border:0; border-radius:12px; cursor:pointer; font-size:15px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 18px rgba(25,229,127,.32); transition:filter .15s, transform .1s; }
+  .run:active{ transform:translateY(2px); }
+  .run:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+  .foot{ margin-top:7px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Race</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="track" id="track">
+        <div class="finish"></div>
+        <!-- 4 carriles, generados por JS -->
+      </div>
+    </div>
+    <div class="msg" id="message">Elige un corredor y presiona CORRER</div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="betrow">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+    </div>
+    <div class="go-wrap">
+      <button class="run" id="runBtn">CORRER</button>
+    </div>
+    <div class="foot">Nova Race · juego original de BetNova · ganador paga 3.8x</div>
+  </div>
+
+<!-- plantilla SVG del corredor (caballo estilizado) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="horseIcon" viewBox="0 0 48 32">
+    <g>
+      <!-- patas -->
+      <path d="M14 20 L11 30 M18 22 L16 30 M28 22 L30 30 M33 20 L36 30" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <!-- cuerpo -->
+      <path d="M10 18 Q20 12 33 14 Q40 14 41 19 Q40 23 32 23 L14 23 Q9 23 10 18 Z" fill="currentColor"/>
+      <!-- cuello y cabeza -->
+      <path d="M38 16 Q44 13 45 6 Q45 4 42 4 Q39 9 36 12 Z" fill="currentColor"/>
+      <circle cx="43.5" cy="6" r="1.1" fill="#0a0e1a"/>
+      <!-- crin -->
+      <path d="M38 14 Q41 11 40 6 L37 8 Q37 12 35 14 Z" fill="rgba(0,0,0,.35)"/>
+      <!-- cola -->
+      <path d="M9 18 Q3 17 2 24 Q6 21 10 22 Z" fill="currentColor"/>
+    </g>
+  </symbol>
+</svg>
+
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT=3.8;
+
+  // 4 corredores
+  const RUNNERS=[
+    { name:'RAYO',    color:'#19e57f' },
+    { name:'TRUENO',  color:'#ffc83d' },
+    { name:'SOMBRA',  color:'#5aa9ff' },
+    { name:'FUEGO',   color:'#ff4d5e' }
+  ];
+
+  let balance=1000, racing=false, pick=0;
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio: solo un "silbato" sutil de salida; win/bet los pone el sistema compartido.
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function whistle(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type='square'; o.frequency.setValueAtTime(880,c.currentTime); o.frequency.exponentialRampToValueAtTime(1320,c.currentTime+0.12); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.14,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.22); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.24); }
+
+  // construir carriles
+  function buildLanes(){
+    const track=$('track');
+    for(let i=0;i<RUNNERS.length;i++){
+      const r=RUNNERS[i];
+      const lane=document.createElement('button');
+      lane.type='button';
+      lane.className='lane shade'+(i%2)+(i===pick?' picked':'');
+      lane.id='lane'+i;
+      lane.setAttribute('data-i', i);
+      lane.innerHTML =
+        '<span class="laneLabel">'+(i+1)+' · '+r.name+'</span>'+
+        '<span class="laneOdds">'+PAYOUT.toFixed(1)+'x</span>'+
+        '<span class="runner" id="runner'+i+'">'+
+          '<svg width="46" height="30" viewBox="0 0 48 32" style="color:'+r.color+';filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))"><use href="#horseIcon"/></svg>'+
+        '</span>';
+      lane.addEventListener('click',()=>{ if(!racing){ pick=i; refreshPick(); } });
+      track.appendChild(lane);
+    }
+  }
+
+  function refreshPick(){
+    for(let i=0;i<RUNNERS.length;i++){
+      const lane=$('lane'+i);
+      if(!lane) continue;
+      lane.className='lane shade'+(i%2)+(i===pick?' picked':'');
+    }
+  }
+
+  // distancia útil (px) que recorre un corredor hasta la meta
+  function finishDistance(){
+    const lane=$('lane0');
+    const w=lane?lane.clientWidth:300;
+    return Math.max(120, w-58); // margen para meta + ancho del icono
+  }
+
+  function resetRunners(){
+    for(let i=0;i<RUNNERS.length;i++){
+      const el=$('runner'+i);
+      if(!el) continue;
+      el.classList.remove('go');
+      el.style.transition='none';
+      el.style.transform='translate(0,-50%)';
+      void el.offsetWidth; // forzar reflow
+    }
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const dis=racing;
+    $('runBtn').disabled=dis;
+    $('betUp').disabled=dis; $('betDown').disabled=dis;
+    for(let i=0;i<RUNNERS.length;i++){ const l=$('lane'+i); if(l) l.disabled=dis; }
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function startRace(){
+    if(racing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    ac();
+    racing=true;
+    syncUI();
+    resetRunners();
+    balance=NovaWallet.bet(bet);
+    $('winDisp').textContent=fmt(0);
+    setMsg('¡Y salieron!');
+    whistle();
+
+    // ¿Permite la casa esta victoria?
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(PAYOUT) : true);
+    // Elegir ganador ANTES de animar.
+    let winner;
+    if(canWin){
+      winner=pick;
+    } else {
+      const others=[0,1,2,3].filter(z=>z!==pick);
+      winner=others[Math.floor(Math.random()*others.length)];
+    }
+
+    const dist=finishDistance();
+    const baseDur=2.4;
+
+    // asignar duraciones: el ganador es el más rápido (menor duración)
+    const durs=[];
+    for(let i=0;i<RUNNERS.length;i++){
+      durs[i]= i===winner ? baseDur : baseDur + 0.35 + Math.random()*0.9;
+    }
+
+    // lanzar animación: todos llegan a la meta, pero a distinta velocidad
+    requestAnimationFrame(()=>{
+      for(let i=0;i<RUNNERS.length;i++){
+        const el=$('runner'+i);
+        if(!el) continue;
+        el.style.setProperty('--dur', durs[i].toFixed(2)+'s');
+        el.classList.add('go');
+        el.style.transition='transform '+durs[i].toFixed(2)+'s cubic-bezier(.45,.05,.55,1)';
+        el.style.transform='translate('+dist+'px,-50%)';
+      }
+    });
+
+    const winMs=durs[winner]*1000;
+
+    setTimeout(()=>{
+      const won = (winner===pick);
+      // reset estado ANTES de syncUI
+      racing=false;
+      if(won){
+        const win=bet*PAYOUT;
+        balance=NovaWallet.win(win);
+        $('winDisp').textContent=fmt(win);
+        setMsg('¡GANASTE! '+RUNNERS[pick].name+' +'+fmt(win));
+        if(window.Juice) Juice.win(win,{ mult:PAYOUT, el:$('winDisp') });
+      } else {
+        setMsg('Ganó '+RUNNERS[winner].name+'. Suerte la próxima.');
+      }
+      syncUI();
+      // volver a colocar tras un momento
+      setTimeout(()=>{ if(!racing){ resetRunners(); } }, 1200);
+    }, winMs+60);
+  }
+
+  $('runBtn').addEventListener('click', startRace);
+  $('betUp').addEventListener('click',()=>{ if(!racing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!racing&&betIdx>0){betIdx--;syncUI();} });
+
+  // construir y render inicial
+  buildLanes();
+  resetRunners();
+  racing=false;
+  syncUI();
+
+  // ¡SIEMPRE AL FINAL! evitar TDZ con const $ definido arriba
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#073d1f"/><stop offset="0.5" stop-color="#0d7a45"/><stop offset="1" stop-color="#03160d"/></linearGradient>
+    <radialGradient id="s" cx="0.5" cy="0.28" r="0.6"><stop offset="0" stop-color="#c0ff5b" stop-opacity="0.35"/><stop offset="1" stop-color="#c0ff5b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#g)"/><rect width="300" height="400" fill="url(#s)"/>
+  <g>
+    <rect x="30" y="90" width="240" height="150" rx="10" fill="#0b3a22" opacity="0.6"/>
+    <g opacity="0.85">
+      <rect x="30" y="90" width="240" height="37" fill="#ffffff" opacity="0.05"/>
+      <rect x="30" y="164" width="240" height="38" fill="#ffffff" opacity="0.05"/>
+    </g>
+    <g fill="#ffffff"><rect x="244" y="90" width="10" height="150" opacity="0.15"/>
+      <rect x="244" y="90" width="5" height="15"/><rect x="249" y="105" width="5" height="15"/><rect x="244" y="120" width="5" height="15"/><rect x="249" y="135" width="5" height="15"/><rect x="244" y="150" width="5" height="15"/><rect x="249" y="165" width="5" height="15"/><rect x="244" y="180" width="5" height="15"/><rect x="249" y="195" width="5" height="15"/><rect x="244" y="210" width="5" height="15"/><rect x="249" y="225" width="5" height="15"/>
+    </g>
+    <g stroke="#0a2d1a" stroke-width="2.5" stroke-linejoin="round">
+      <g transform="translate(70 108)" fill="#ff5b8c"><ellipse cx="0" cy="0" rx="22" ry="13"/><path d="M16 -6 q12 -2 14 -14 q-10 6 -16 8 z"/><rect x="-20" y="10" width="5" height="12"/><rect x="14" y="10" width="5" height="12"/></g>
+      <g transform="translate(120 145)" fill="#5b8cff"><ellipse cx="0" cy="0" rx="22" ry="13"/><path d="M16 -6 q12 -2 14 -14 q-10 6 -16 8 z"/><rect x="-20" y="10" width="5" height="12"/><rect x="14" y="10" width="5" height="12"/></g>
+      <g transform="translate(95 182)" fill="#ffc83d"><ellipse cx="0" cy="0" rx="22" ry="13"/><path d="M16 -6 q12 -2 14 -14 q-10 6 -16 8 z"/><rect x="-20" y="10" width="5" height="12"/><rect x="14" y="10" width="5" height="12"/></g>
+      <g transform="translate(60 218)" fill="#5bf0ff"><ellipse cx="0" cy="0" rx="22" ry="13"/><path d="M16 -6 q12 -2 14 -14 q-10 6 -16 8 z"/><rect x="-20" y="10" width="5" height="12"/><rect x="14" y="10" width="5" height="12"/></g>
+    </g>
+  </g>
+  <g font-family="system-ui,Segoe UI,sans-serif" text-anchor="middle">
+    <text x="150" y="330" font-size="28" font-weight="900" fill="#fff">Nova Race</text>
+    <text x="150" y="358" font-size="14" fill="#d7ff9e">Elige tu corredor</text>
+  </g>
+</svg>

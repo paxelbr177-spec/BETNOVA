@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova 777 — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--gold); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(180deg,#1a0f14,#0a1120 70%); box-shadow:0 14px 40px rgba(0,0,0,.5);
+    padding:14px 12px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .cabinet{ width:100%; border-radius:14px; padding:12px;
+    background:linear-gradient(180deg,#3a1014,#220a0e);
+    border:1px solid rgba(255,200,61,.25); box-shadow:inset 0 0 24px rgba(0,0,0,.55), 0 0 18px rgba(255,77,94,.18); }
+  .reels{ display:flex; justify-content:center; gap:8px; }
+  .reel{ width:84px; height:96px; border-radius:11px; overflow:hidden; position:relative;
+    background:linear-gradient(180deg,#fbfcff,#dfe6f6);
+    border:2px solid var(--gold); box-shadow:inset 0 6px 14px rgba(0,0,0,.28), inset 0 -6px 14px rgba(0,0,0,.28); }
+  .reel::before,.reel::after{ content:""; position:absolute; left:0; right:0; height:22px; z-index:3; pointer-events:none; }
+  .reel::before{ top:0; background:linear-gradient(180deg,rgba(10,17,32,.45),transparent); }
+  .reel::after{ bottom:0; background:linear-gradient(0deg,rgba(10,17,32,.45),transparent); }
+  .strip{ position:absolute; left:0; top:0; width:100%; display:flex; flex-direction:column; }
+  .cell{ width:100%; height:96px; display:flex; align-items:center; justify-content:center; }
+  .cell svg{ width:58px; height:58px; display:block; }
+  .payline{ position:absolute; left:6px; right:6px; top:50%; height:3px; transform:translateY(-50%);
+    background:linear-gradient(90deg,transparent,var(--red),transparent); z-index:4; opacity:.85;
+    box-shadow:0 0 10px rgba(255,77,94,.6); pointer-events:none; }
+  .reels.win .reel{ border-color:#fff; box-shadow:inset 0 0 0 2px var(--gold), 0 0 18px rgba(255,200,61,.7); animation:pulse .5s ease 2; }
+  @keyframes pulse{ 50%{ box-shadow:inset 0 0 0 2px #fff, 0 0 26px rgba(255,200,61,.95);} }
+  .mult{ font-size:15px; font-weight:800; color:var(--gold); min-height:18px; letter-spacing:.3px; text-align:center; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:7px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:9px; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:46px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--gold),#e0a90c); box-shadow:0 0 20px rgba(255,200,61,.35); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:18px; margin-top:8px; font-weight:700; color:var(--gold); font-size:12px; }
+  .foot{ margin-top:6px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>777</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="cabinet">
+        <div class="reels" id="reels">
+          <div class="reel"><div class="strip" id="strip0"></div></div>
+          <div class="reel"><div class="strip" id="strip1"></div></div>
+          <div class="reel"><div class="strip" id="strip2"></div></div>
+          <div class="payline"></div>
+        </div>
+      </div>
+      <div class="mult" id="mult">777 paga 30x · diamante 15x · trío 8x</div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">GIRAR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y pulsa GIRAR 🍒</div>
+    <div class="foot">Nova 777 · tragaperras original de BetNova · 3 rodillos, una línea, alinea el 777</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let spinning=false;
+
+  // --- symbols (inline SVG, no emojis). 'seven' is the lucky 777. ---
+  const SYMBOLS=['cherry','lemon','bell','star','diamond','seven'];
+
+  function symSVG(s){
+    if(s==='cherry') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M52 14 C60 26 78 24 80 40" fill="none" stroke="#2f7d32" stroke-width="6" stroke-linecap="round"/><path d="M52 14 C44 26 26 24 24 40" fill="none" stroke="#2f7d32" stroke-width="6" stroke-linecap="round"/><path d="M50 12 q14 -2 22 8 q-12 4 -22 -2 q-10 6 -22 2 q8 -10 22 -8Z" fill="#3fae46"/><circle cx="30" cy="64" r="20" fill="#e3304a"/><circle cx="70" cy="64" r="20" fill="#c41f36"/><circle cx="24" cy="58" r="5" fill="#ff8a99" opacity=".7"/></svg>';
+    if(s==='lemon') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="52" rx="34" ry="26" fill="#ffd21f"/><ellipse cx="50" cy="52" rx="34" ry="26" fill="none" stroke="#d9a800" stroke-width="3"/><path d="M84 52 q8 0 10 -3 q-2 6 -10 6Z" fill="#caa000"/><path d="M16 52 q-8 0 -10 -3 q2 6 10 6Z" fill="#caa000"/><ellipse cx="42" cy="44" rx="12" ry="7" fill="#fff3a0" opacity=".7"/></svg>';
+    if(s==='bell') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 16 a6 6 0 0 1 6 6 c14 4 18 18 18 34 c0 10 4 14 8 18 l-64 0 c4 -4 8 -8 8 -18 c0 -16 4 -30 18 -34 a6 6 0 0 1 6 -6Z" fill="#ffc83d"/><path d="M50 16 a6 6 0 0 1 6 6 c14 4 18 18 18 34 c0 10 4 14 8 18 l-64 0 c4 -4 8 -8 8 -18 c0 -16 4 -30 18 -34 a6 6 0 0 1 6 -6Z" fill="none" stroke="#c98e08" stroke-width="3"/><ellipse cx="50" cy="86" rx="9" ry="7" fill="#e0a90c"/><ellipse cx="42" cy="40" rx="6" ry="14" fill="#fff0c0" opacity=".6"/></svg>';
+    if(s==='star') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 L61 38 L92 40 L67 60 L76 90 L50 72 L24 90 L33 60 L8 40 L39 38 Z" fill="#ffd84d" stroke="#d9a800" stroke-width="3" stroke-linejoin="round"/><path d="M50 22 L57 40 L46 52 L43 36 Z" fill="#fff4b0" opacity=".7"/></svg>';
+    if(s==='diamond') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M24 26 L76 26 L92 44 L50 90 L8 44 Z" fill="#46e0ff"/><path d="M24 26 L76 26 L92 44 L8 44 Z" fill="#7fefff"/><path d="M8 44 L50 90 L34 44 Z" fill="#2bb6e0"/><path d="M92 44 L50 90 L66 44 Z" fill="#1f9ec7"/><path d="M24 26 L34 44 L50 26Z" fill="#bdf6ff" opacity=".8"/></svg>';
+    // seven (golden 777 lucky)
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset="1" stop-color="#e0a90c"/></linearGradient></defs><path d="M28 18 L78 18 L78 30 L54 86 L36 86 L60 32 L28 32 Z" fill="url(#g7)" stroke="#b8780a" stroke-width="3" stroke-linejoin="round"/></svg>';
+  }
+
+  // --- payout table (multiplier × bet) ---
+  const TOP_MULT = 30;
+  const PAY = {
+    seven3:   30,   // three 7s
+    diamond3: 15,   // three diamonds
+    trio:      8,   // three of any other matching symbol
+    seven2:    3,   // any two 7s
+    seven1:  1.5    // exactly one 7
+  };
+  // outcomes weighted toward small wins (used to pick the target before spinning)
+  const WIN_OUTCOMES=[
+    { mult:PAY.seven1,   w:34 },
+    { mult:PAY.seven2,   w:22 },
+    { mult:PAY.trio,     w:24 },
+    { mult:PAY.diamond3, w:14 },
+    { mult:PAY.seven3,   w:6  }
+  ];
+  function pickTarget(){
+    let tot=0; WIN_OUTCOMES.forEach(o=>tot+=o.w);
+    let r=Math.random()*tot;
+    for(const o of WIN_OUTCOMES){ if((r-=o.w)<0) return o.mult; }
+    return PAY.seven1;
+  }
+
+  // build a winning reel combination for a given target multiplier
+  const other=()=>['cherry','lemon','bell','star'][(Math.random()*4)|0];
+  function comboForMult(m){
+    if(m===PAY.seven3)   return ['seven','seven','seven'];
+    if(m===PAY.diamond3) return ['diamond','diamond','diamond'];
+    if(m===PAY.trio){ const s=other(); return [s,s,s]; }
+    if(m===PAY.seven2){ // exactly two 7s, third non-7
+      const t=other(); const arr=['seven','seven',t];
+      // shuffle the position of the non-7
+      const p=(Math.random()*3)|0; const tmp=arr[2]; arr[2]=arr[p]; arr[p]=tmp; return arr;
+    }
+    // seven1: exactly one 7, the other two are different non-7 non-matching
+    let a=other(), b=other(); while(b===a) b=other();
+    const arr=['seven',a,b]; const p=(Math.random()*3)|0; const tmp=arr[0]; arr[0]=arr[p]; arr[p]=tmp; return arr;
+  }
+  // build a guaranteed losing (no-payout) combination
+  function comboLose(){
+    while(true){
+      const a=SYMBOLS[(Math.random()*6)|0], b=SYMBOLS[(Math.random()*6)|0], c=SYMBOLS[(Math.random()*6)|0];
+      if(evalCombo([a,b,c])===0) return [a,b,c];
+    }
+  }
+  // evaluate a final combo -> multiplier (0 = no win). Single source of truth.
+  function evalCombo(r){
+    const sevens=r.filter(x=>x==='seven').length;
+    if(r[0]===r[1]&&r[1]===r[2]){
+      if(r[0]==='seven')   return PAY.seven3;
+      if(r[0]==='diamond') return PAY.diamond3;
+      return PAY.trio;
+    }
+    if(sevens===2) return PAY.seven2;
+    if(sevens===1) return PAY.seven1;
+    return 0;
+  }
+
+  // --- reel rendering: a strip = many random cells + final cell at bottom ---
+  const SPIN_CELLS=24, CELL_H=96;
+  function buildStrip(idx, finalSym){
+    const strip=$('strip'+idx);
+    let html='';
+    for(let i=0;i<SPIN_CELLS;i++) html+=`<div class="cell">${symSVG(SYMBOLS[(Math.random()*6)|0])}</div>`;
+    html+=`<div class="cell">${symSVG(finalSym)}</div>`;
+    strip.innerHTML=html;
+    strip.style.transition='none';
+    strip.style.transform='translateY(0px)';
+  }
+  function setStatic(idx, sym){
+    const strip=$('strip'+idx);
+    strip.style.transition='none';
+    strip.innerHTML=`<div class="cell">${symSVG(sym)}</div>`;
+    strip.style.transform='translateY(0px)';
+  }
+  function spinReel(idx, finalSym, dur, cb){
+    buildStrip(idx, finalSym);
+    const strip=$('strip'+idx);
+    const dist=SPIN_CELLS*CELL_H; // travel up so the final cell lands on the payline
+    // force reflow then animate
+    void strip.offsetHeight;
+    strip.style.transition=`transform ${dur}ms cubic-bezier(.18,.7,.16,1)`;
+    strip.style.transform=`translateY(-${dist}px)`;
+    setTimeout(()=>{ if(cb) cb(); }, dur+20);
+  }
+
+  // --- audio: subtle reel-stop tick only (win/bet handled by shared NovaSound) ---
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.1,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndTick=()=>tone(300,0.07,'square',0.06,180);
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    if(spinning){
+      $('actBtn').textContent='GIRANDO…';
+      $('actBtn').disabled=true;
+      $('betUp').disabled=true; $('betDown').disabled=true;
+    } else {
+      $('actBtn').textContent='GIRAR'; $('actBtn').disabled=false;
+      $('betUp').disabled=false; $('betDown').disabled=false;
+    }
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+
+  function spin(){
+    if(spinning) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    spinning=true;
+    $('winDisp').textContent=fmt(0);
+    $('reels').classList.remove('win');
+    syncUI();
+
+    // decide the win via the house BEFORE spinning
+    const target=pickTarget();
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(target) : true);
+    const combo = canWin ? comboForMult(target) : comboLose();
+    const landedMult = evalCombo(combo);  // displayed reels MUST match payout
+
+    // stagger the three reels stopping left-to-right
+    const durs=[900,1150,1400];
+    spinReel(0, combo[0], durs[0], ()=>sndTick());
+    spinReel(1, combo[1], durs[1], ()=>sndTick());
+    spinReel(2, combo[2], durs[2], ()=>{ sndTick(); resolve(combo, landedMult, bet); });
+  }
+
+  function symName(s){ return {cherry:'cereza',lemon:'limón',bell:'campana',star:'estrella',diamond:'diamante',seven:'7'}[s]; }
+
+  function resolve(combo, landedMult, bet){
+    if(landedMult>0){
+      const win=bet*landedMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      $('reels').classList.add('win');
+      let label;
+      if(landedMult===PAY.seven3) label='¡777! ¡PREMIO MAYOR!';
+      else if(landedMult===PAY.diamond3) label='¡Triple diamante!';
+      else if(landedMult===PAY.trio) label='¡Trío de '+symName(combo[0])+'!';
+      else if(landedMult===PAY.seven2) label='¡Dos 7!';
+      else label='Un 7 de la suerte';
+      setMsg(`✅ ${label} · ${landedMult}x · +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult:landedMult, el:$('winDisp') });
+    } else {
+      setMsg(`❌ ${symName(combo[0])} · ${symName(combo[1])} · ${symName(combo[2])} · Sin premio`);
+    }
+    spinning=false;          // reset BEFORE syncUI so GIRAR re-enables
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(!spinning) spin(); });
+  $('betUp').addEventListener('click',()=>{ if(!spinning&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!spinning&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial static reels (cherry · 7 · cherry) so it never looks empty
+  setStatic(0,'cherry'); setStatic(1,'seven'); setStatic(2,'cherry');
+
+  // initial render BEFORE wallet hooks
+  syncUI();
+
+  // wallet hooks at the VERY END (avoid TDZ on $/consts)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

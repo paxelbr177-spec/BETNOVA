@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Andar Bahar — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; border:1px solid rgba(255,255,255,.08);
+    background:#0a1120; box-shadow:0 12px 34px rgba(0,0,0,.5); padding:12px 10px;
+    display:flex; flex-direction:column; gap:8px; }
+  .joker{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .joker .lbl{ font-size:10px; color:var(--gold); text-transform:uppercase; letter-spacing:.5px; font-weight:800; }
+  .row{ display:flex; flex-direction:column; gap:4px; }
+  .row .lbl{ display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .row .lbl b{ font-size:13px; color:var(--gold); }
+  .row.andar .lbl b{ color:#5b8cff; }
+  .row.bahar .lbl b{ color:var(--red); }
+  .row.win .lbl b{ color:var(--brand); }
+  .strip{ display:flex; gap:4px; min-height:60px; overflow-x:auto; padding:2px;
+    border-radius:9px; background:rgba(255,255,255,.03); scrollbar-width:thin; }
+  .strip::-webkit-scrollbar{ height:4px; }
+  .strip::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.15); border-radius:4px; }
+  .card{ flex:0 0 auto; width:40px; height:56px; border-radius:7px; position:relative; }
+  .card.deal{ animation:deal .26s ease; }
+  @keyframes deal{ 0%{ transform:translateY(-14px) scale(.85); opacity:0; } 100%{ transform:none; opacity:1; } }
+  .card.match .cardface{ box-shadow:0 0 0 2px var(--brand), 0 5px 14px rgba(0,0,0,.4); }
+  .jcard{ width:64px; height:90px; }
+  .cardface{ width:100%; height:100%; border-radius:7px; background:#f6f8ff;
+    box-shadow:0 5px 14px rgba(0,0,0,.4); position:relative; overflow:hidden; }
+  .jcard .cardface{ border-radius:10px; }
+  .cardface .corner{ position:absolute; font-weight:800; line-height:1; }
+  .cardface .corner.tl{ top:3px; left:4px; }
+  .cardface .corner.br{ bottom:3px; right:4px; transform:rotate(180deg); }
+  .cardface .corner .r{ font-size:11px; }
+  .jcard .cardface .corner .r{ font-size:15px; }
+  .cardface .corner svg{ width:8px; height:8px; display:block; margin:1px auto 0; }
+  .jcard .cardface .corner svg{ width:11px; height:11px; }
+  .cardface .center{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+  .cardface .center svg{ width:22px; height:22px; }
+  .jcard .cardface .center svg{ width:34px; height:34px; }
+  .picks{ display:flex; gap:6px; }
+  .pbtn{ flex:1; height:50px; border:2px solid transparent; border-radius:11px; cursor:pointer;
+    font-weight:800; color:#e8eefc; background:var(--panel2); transition:.15s; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+  .pbtn small{ font-size:10px; color:var(--muted); font-weight:700; }
+  .pbtn.andar.sel{ border-color:#5b8cff; box-shadow:0 0 14px rgba(91,140,255,.4); }
+  .pbtn.bahar.sel{ border-color:var(--red); box-shadow:0 0 14px rgba(255,77,94,.4); }
+  .pbtn:disabled{ opacity:.5; cursor:not-allowed; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:9px; padding:7px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:8px; margin-top:9px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:11px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:7px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:12px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--gold),#e0a90c); box-shadow:0 0 18px rgba(255,200,61,.35); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:18px; margin-top:8px; font-weight:700; color:var(--gold); font-size:12px; }
+  .foot{ margin-top:6px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Andar Bahar</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="joker">
+        <div class="lbl">Carta Joker</div>
+        <div class="jcard"><div class="cardface" id="jokerFace"></div></div>
+      </div>
+      <div class="row andar" id="andarRow">
+        <div class="lbl"><span>Andar (izq.)</span><b id="andarPick">paga 1.97x</b></div>
+        <div class="strip" id="andarStrip"></div>
+      </div>
+      <div class="row bahar" id="baharRow">
+        <div class="lbl"><span>Bahar (der.)</span><b id="baharPick">paga 1.97x</b></div>
+        <div class="strip" id="baharStrip"></div>
+      </div>
+      <div class="picks">
+        <button class="pbtn andar sel" id="pickAndar">ANDAR<small>paga 1.97x</small></button>
+        <button class="pbtn bahar" id="pickBahar">BAHAR<small>paga 1.97x</small></button>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">REPARTIR</button>
+    </div>
+    <div class="msg" id="message">Elige Andar o Bahar y reparte 🃏</div>
+    <div class="foot">Nova Andar Bahar · juego original de BetNova · la carta que iguala al Joker decide el lado</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let playing=false;
+  let pick='andar'; // 'andar' | 'bahar'
+
+  const PAYOUT={ andar:1.97, bahar:1.97 };
+
+  const MAX_CARDS=7; // per side cap so the strips never overflow
+
+  // Ranks 1..13 (A=1, J=11, Q=12, K=13). Suits ♠♥♦♣ as inline SVG.
+  const SUITS=['S','H','D','C'];
+  const rankLabel=(r)=> r===1 ? 'A' : (r<=10 ? String(r) : ({11:'J',12:'Q',13:'K'})[r]);
+  const randSuit=()=>SUITS[(Math.random()*4)|0];
+  const randRank=()=>1+((Math.random()*13)|0);
+
+  // --- inline SVG suits (no emojis) ---
+  function suitSVG(s,size){
+    const red=(s==='H'||s==='D');
+    const col=red?'#e3304a':'#11151f';
+    const w=size||22;
+    let path='';
+    if(s==='S') path='<path d="M50 8 C30 30 12 42 12 60 a16 16 0 0 0 30 8 C40 78 34 86 28 92 l44 0 C66 86 60 78 58 76 a16 16 0 0 0 30 -8 C88 42 70 30 50 8 Z"/>';
+    else if(s==='H') path='<path d="M50 88 C18 64 10 48 10 34 A22 22 0 0 1 50 24 A22 22 0 0 1 90 34 C90 48 82 64 50 88 Z"/>';
+    else if(s==='D') path='<path d="M50 8 L86 50 L50 92 L14 50 Z"/>';
+    else path='<path d="M50 14 a15 15 0 1 1 -0.1 0 M30 44 a15 15 0 1 1 -0.1 0 M70 44 a15 15 0 1 1 -0.1 0 M44 60 l12 0 l4 28 l-20 0 Z"/>';
+    return `<svg viewBox="0 0 100 100" width="${w}" height="${w}" fill="${col}" xmlns="http://www.w3.org/2000/svg">${path}</svg>`;
+  }
+  function cardHTML(rank,suit,opts){
+    const red=(suit==='H'||suit==='D');
+    const col=red?'#e3304a':'#11151f';
+    const lbl=rankLabel(rank);
+    const cls='card deal'+((opts&&opts.match)?' match':'');
+    const cw=(opts&&opts.corner)||8, sw=(opts&&opts.center)||22;
+    return `<div class="${cls}"><div class="cardface">`+
+      `<div class="corner tl" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,cw)}</div>`+
+      `<div class="center">${suitSVG(suit,sw)}</div>`+
+      `<div class="corner br" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,cw)}</div>`+
+      `</div></div>`;
+  }
+  function renderJoker(rank,suit){
+    const red=(suit==='H'||suit==='D');
+    const col=red?'#e3304a':'#11151f';
+    const lbl=rankLabel(rank);
+    $('jokerFace').innerHTML=
+      `<div class="corner tl" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,11)}</div>`+
+      `<div class="center">${suitSVG(suit,34)}</div>`+
+      `<div class="corner br" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,11)}</div>`;
+  }
+
+  // --- subtle card-deal synth (shared system handles win/bet sounds) ---
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.08,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndDeal=()=>tone(520,0.06,'triangle',0.06,300);
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('pickAndar').classList.toggle('sel', pick==='andar');
+    $('pickBahar').classList.toggle('sel', pick==='bahar');
+    const lock=playing;
+    $('pickAndar').disabled=lock; $('pickBahar').disabled=lock;
+    $('betUp').disabled=lock; $('betDown').disabled=lock;
+    if(playing){
+      $('actBtn').textContent='REPARTIENDO…'; $('actBtn').disabled=true;
+    } else {
+      $('actBtn').textContent='REPARTIR'; $('actBtn').disabled=false;
+    }
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+
+  // Build the deal sequence. Andar gets the 1st card; sides alternate.
+  // winningSide receives the matching (joker-rank) card on its turn.
+  // Returns { andar:[{rank,suit,match}], bahar:[...], winningSide }.
+  function buildSequence(jokerRank, winningSide){
+    const andar=[], bahar=[];
+    // how many non-matching cards land before the winning match
+    // both sides start empty; andar deals first.
+    // we cap total so strips don't overflow.
+    const maxPre=MAX_CARDS-1;
+    let preCount; // non-matching cards dealt before the match
+    // sequence order: andar,bahar,andar,bahar...
+    // index i (0-based) -> andar if i even, else bahar.
+    // winningSide andar -> match at an even index ; bahar -> odd index.
+    if(winningSide==='andar'){
+      // even index: 0,2,4,... -> 0 means immediate andar match
+      const slots=[0,2,4,6,8,10].filter(i=>Math.floor(i/2)<maxPre || i===0);
+      preCount=pickFromSlots(slots,maxPre);
+    } else {
+      const slots=[1,3,5,7,9,11].filter(i=>Math.floor(i/2)<maxPre);
+      preCount=pickFromSlots(slots,maxPre);
+    }
+    const nonMatch=()=>{ let r; do{ r=randRank(); }while(r===jokerRank); return r; };
+    const matchIdx=preCount; // index where match happens
+    for(let i=0;i<=matchIdx;i++){
+      const toAndar=(i%2===0);
+      const isMatch=(i===matchIdx);
+      const rank=isMatch?jokerRank:nonMatch();
+      const card={ rank, suit:randSuit(), match:isMatch };
+      (toAndar?andar:bahar).push(card);
+    }
+    return { andar, bahar };
+  }
+  // choose a match index among valid slots, biased toward shorter deals
+  function pickFromSlots(slots,maxPre){
+    // slots are sequence indices; keep those that keep per-side count <= MAX_CARDS
+    const valid=slots.filter(i=>{
+      const andarCount=Math.floor(i/2)+ (i%2===0?1:0);
+      const baharCount=Math.floor(i/2)+ (i%2===1?1:0);
+      return andarCount<=MAX_CARDS && baharCount<=MAX_CARDS;
+    });
+    if(!valid.length) return slots[0];
+    // weight earlier indices more (shorter, snappier rounds)
+    const weights=valid.map((_,k)=>1/(k+1));
+    let total=weights.reduce((a,b)=>a+b,0), r=Math.random()*total;
+    for(let k=0;k<valid.length;k++){ r-=weights[k]; if(r<=0) return valid[k]; }
+    return valid[valid.length-1];
+  }
+
+  function deal(){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    playing=true;
+    $('winDisp').textContent=fmt(0);
+    $('andarStrip').innerHTML=''; $('baharStrip').innerHTML='';
+    $('andarRow').classList.remove('win'); $('baharRow').classList.remove('win');
+    setMsg('Repartiendo…');
+    syncUI();
+
+    const payoutMult=PAYOUT[pick];
+    const canWin=(window.NovaHouse ? NovaHouse.allowWin(payoutMult) : true);
+    const winningSide = canWin ? pick : (pick==='andar'?'bahar':'andar');
+
+    const jokerRank=randRank(), jokerSuit=randSuit();
+    renderJoker(jokerRank, jokerSuit);
+
+    const seq=buildSequence(jokerRank, winningSide);
+
+    // flatten into a timed alternating reveal
+    const steps=[];
+    const maxLen=Math.max(seq.andar.length, seq.bahar.length);
+    for(let i=0;i<maxLen;i++){
+      if(seq.andar[i]) steps.push({ side:'andar', card:seq.andar[i] });
+      if(seq.bahar[i]) steps.push({ side:'bahar', card:seq.bahar[i] });
+    }
+
+    let s=0;
+    function step(){
+      if(s>=steps.length){ setTimeout(()=>resolve(winningSide, jokerRank, bet), 260); return; }
+      const st=steps[s++];
+      const stripId=st.side==='andar'?'andarStrip':'baharStrip';
+      $(stripId).insertAdjacentHTML('beforeend', cardHTML(st.card.rank, st.card.suit, { match:st.card.match }));
+      const strip=$(stripId); strip.scrollLeft=strip.scrollWidth;
+      sndDeal();
+      setTimeout(step, 300);
+    }
+    step();
+  }
+
+  function resolve(winningSide, jokerRank, bet){
+    const won=(winningSide===pick);
+    if(winningSide==='andar') $('andarRow').classList.add('win');
+    else $('baharRow').classList.add('win');
+
+    if(won){
+      const payoutMult=PAYOUT[pick];
+      const win=bet*payoutMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      setMsg(`✅ Joker ${rankLabel(jokerRank)} cayó en ${winningSide.toUpperCase()} · ¡Ganaste! +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult:payoutMult, el:$('winDisp') });
+    } else {
+      setMsg(`❌ Joker ${rankLabel(jokerRank)} cayó en ${winningSide.toUpperCase()} · Perdiste`);
+    }
+    playing=false;   // reset BEFORE syncUI
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(!playing) deal(); });
+  $('pickAndar').addEventListener('click',()=>{ if(!playing){ pick='andar'; syncUI(); } });
+  $('pickBahar').addEventListener('click',()=>{ if(!playing){ pick='bahar'; syncUI(); } });
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render BEFORE wallet hooks
+  syncUI();
+
+  // wallet hooks at the VERY END (avoid TDZ on $/consts)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

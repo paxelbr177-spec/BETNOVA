@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Color — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e;
+    --c-rojo:#ff4d5e; --c-azul:#2f7bff; --c-verde:#27d07a; --c-amarillo:#ffd23d; --c-blanco:#f4f8ff; --c-morado:#9b5cff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(160deg,#13203a,#0a1120); box-shadow:0 14px 40px rgba(0,0,0,.5); padding:16px 10px; overflow:hidden; }
+  .stage::before{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(circle at 18% 12%, rgba(255,210,61,.10), transparent 40%),
+               radial-gradient(circle at 82% 88%, rgba(155,92,255,.12), transparent 42%); }
+  .dice{ position:relative; display:flex; gap:12px; justify-content:center; align-items:center; }
+  .die{ width:72px; height:72px; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45)); transition:transform .08s; }
+  .die.spin{ animation:tumble .12s linear infinite; }
+  @keyframes tumble{ 0%{transform:rotate(-9deg) scale(.95);} 50%{transform:rotate(9deg) scale(1.05);} 100%{transform:rotate(-9deg) scale(.95);} }
+  .sum{ position:relative; text-align:center; margin-top:10px; font-size:13px; color:var(--muted); min-height:18px; }
+  .sum b{ color:var(--gold); font-size:16px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .lbl{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin:12px 0 6px; }
+  .colors{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .colors button{ display:flex; flex-direction:column; align-items:center; gap:5px; border:1px solid rgba(255,255,255,.08);
+    background:var(--panel); color:#e8eefc; border-radius:12px; padding:9px 4px; font-size:11px; font-weight:700; cursor:pointer; transition:all .12s; }
+  .colors button .chip{ width:30px; height:30px; }
+  .colors button.sel{ border-color:var(--brand); background:linear-gradient(180deg,rgba(25,229,127,.22),rgba(25,229,127,.08)); box-shadow:0 0 14px rgba(25,229,127,.25); }
+  .colors button.sel span{ color:var(--brand); }
+  .controls{ display:flex; gap:8px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 8px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:20px; margin-top:10px; font-weight:700; color:var(--gold); font-size:13px; }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Color</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="dice" id="dice"></div>
+      <div class="sum" id="sum">Elige un color y tira los 3 dados</div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+
+    <div class="lbl">Elige tu color (1 acierto 2x · 2 aciertos 3x · 3 aciertos 4x)</div>
+    <div class="colors" id="colorPicks"></div>
+
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">TIRAR</button>
+    </div>
+    <div class="msg" id="message">¡Suerte en la perya! 🎡</div>
+    <div class="foot">Nova Color · juego original de BetNova · acierta tu color en los 3 dados</div>
+  </div>
+
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000, rolling=false;
+
+  // 6 colors of the perya color game
+  const COLORS=[
+    {id:'rojo',     name:'Rojo',     hex:'var(--c-rojo)'},
+    {id:'azul',     name:'Azul',     hex:'var(--c-azul)'},
+    {id:'verde',    name:'Verde',    hex:'var(--c-verde)'},
+    {id:'amarillo', name:'Amarillo', hex:'var(--c-amarillo)'},
+    {id:'blanco',   name:'Blanco',   hex:'var(--c-blanco)'},
+    {id:'morado',   name:'Morado',   hex:'var(--c-morado)'}
+  ];
+  let pick='rojo';
+
+  // payout by number of matching dice
+  const PAYOUT = { 1:2, 2:3, 3:4 };
+  const TOP_MULT = 4;
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  const colorOf=(id)=>COLORS.find(c=>c.id===id);
+
+  // ---- color chip SVG (inline disc — NO emojis) ----
+  function chipSVG(hex, cls){
+    return `<svg class="${cls||'chip'}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="42" fill="${hex}" stroke="rgba(0,0,0,.25)" stroke-width="4"/>
+      <ellipse cx="40" cy="34" rx="20" ry="13" fill="rgba(255,255,255,.35)"/>
+    </svg>`;
+  }
+  // ---- color die SVG (rounded square showing one color face) ----
+  function dieSVG(hex){
+    return `<svg class="die" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="6" width="88" height="88" rx="18" fill="${hex}"/>
+      <rect x="6" y="6" width="88" height="88" rx="18" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="3"/>
+      <ellipse cx="38" cy="30" rx="22" ry="13" fill="rgba(255,255,255,.30)"/>
+    </svg>`;
+  }
+
+  function renderDice(ids, spin){
+    $('dice').innerHTML = ids.map(id=>dieSVG(colorOf(id).hex)).join('');
+    if(spin){ Array.from($('dice').children).forEach(e=>e.classList.add('spin')); }
+  }
+
+  function buildPicks(){
+    $('colorPicks').innerHTML = COLORS.map(c=>
+      `<button data-color="${c.id}" class="${c.id===pick?'sel':''}">${chipSVG(c.hex)}<span>${c.name}</span></button>`
+    ).join('');
+  }
+
+  // ---- audio: subtle dice-roll synth (no win/bet sounds; shared handles those) ----
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function clack(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(120+Math.random()*180,c.currentTime);
+    g.gain.setValueAtTime(0.08,c.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.07);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.08); }
+
+  // random color id different from the chosen one
+  function otherColor(exclude){
+    let id;
+    do{ id=COLORS[ri(0,COLORS.length-1)].id; }while(id===exclude);
+    return id;
+  }
+
+  // build 3 dice colors so the chosen color appears exactly `matches` times
+  function buildDice(chosen, matches){
+    const arr=[];
+    for(let i=0;i<matches;i++) arr.push(chosen);
+    for(let i=matches;i<3;i++) arr.push(otherColor(chosen));
+    // shuffle
+    for(let i=arr.length-1;i>0;i--){ const j=ri(0,i); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+    return arr;
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('actBtn').disabled=rolling;
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function selectColor(id){
+    if(rolling) return;
+    pick=id;
+    Array.from(document.querySelectorAll('.colors button')).forEach(b=>{
+      b.classList.toggle('sel', b.getAttribute('data-color')===id);
+    });
+  }
+
+  function resolve(diceIds){
+    const matches = diceIds.filter(id=>id===pick).length;
+    const bet=BETS[betIdx];
+    const landedMult = PAYOUT[matches] || 0;
+    $('sum').innerHTML = matches>0
+      ? `Aciertos: <b>${matches}</b> de 3`
+      : `Sin aciertos`;
+    if(landedMult>0){
+      const win=bet*landedMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      setMsg(`✅ ¡${matches} acierto${matches>1?'s':''}! ${landedMult}x · +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult:landedMult, el:$('winDisp') });
+    }else{
+      $('winDisp').textContent=fmt(0);
+      setMsg('❌ Ningún acierto. ¡Vuelve a tirar!');
+    }
+    rolling=false;          // reset BEFORE syncUI
+    syncUI();
+  }
+
+  function roll(){
+    if(rolling) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    rolling=true;
+    $('winDisp').textContent=fmt(0);
+    setMsg('Rodando los dados…');
+    syncUI();
+
+    // ---- house gate ----
+    // pick a target winning match count, weighted toward 1
+    const r=Math.random();
+    const targetMatches = r<0.78 ? 1 : (r<0.95 ? 2 : 3);
+    const targetMult = PAYOUT[targetMatches];
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(targetMult) : true);
+    const finalMatches = canWin ? targetMatches : 0;
+    const finalDice = buildDice(pick, finalMatches);
+
+    // quick tumble animation
+    let ticks=0;
+    const randIds=()=>[COLORS[ri(0,5)].id,COLORS[ri(0,5)].id,COLORS[ri(0,5)].id];
+    renderDice(randIds(), true);
+    clack();
+    const iv=setInterval(()=>{
+      ticks++;
+      renderDice(randIds(), true);
+      if(ticks%2===0) clack();
+      if(ticks>=8){
+        clearInterval(iv);
+        renderDice(finalDice, false);
+        resolve(finalDice);
+      }
+    },90);
+  }
+
+  // ---- wiring ----
+  $('colorPicks').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ ac(); selectColor(b.getAttribute('data-color')); } });
+  $('actBtn').addEventListener('click',()=>{ ac(); roll(); });
+  $('betUp').addEventListener('click',()=>{ if(!rolling&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!rolling&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render
+  buildPicks();
+  renderDice(['rojo','azul','verde'], false);
+  syncUI();
+
+  // NovaWallet hooks at the VERY END (after $ and all funcs are defined → no TDZ)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

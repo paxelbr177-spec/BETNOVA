@@ -23,7 +23,8 @@ const names = [
   'Nova Keno', 'Nova Wheel', 'Nova Joker', 'Nova Coinflip', 'Nova Jackpot',
   'Nova Megaways', 'Nova Mines', 'Nova Dice', 'Nova Tower', 'Nova HiLo',
   'Nova Scratch', 'Nova Cups', 'Nova SicBo', 'Nova Penalty', 'Nova Plinko',
-  'Nova War', 'Nova RPS', 'Nova Baccarat', 'Viking Saga',
+  'Nova War', 'Nova RPS', 'Nova Baccarat', 'Nova Dragon Tiger',
+  'Nova 777', 'Nova Andar Bahar', 'Nova Race', 'Nova Color', 'Nova Poker',
 ]
 
 const catPool = ['slots', 'live', 'crash', 'table', 'jackpot', 'slots', 'slots', 'live']
@@ -58,6 +59,12 @@ const embeds = {
   'nova-war': '/games/nova-war/index.html',         // ★ casino war (guerra de cartas)
   'nova-rps': '/games/nova-rps/index.html',         // ★ piedra papel o tijera
   'nova-baccarat': '/games/nova-baccarat/index.html', // ★ baccarat / punto y banca
+  'nova-dragon-tiger': '/games/nova-dragon/index.html', // ★ dragon tiger (carta más alta)
+  'nova-777': '/games/nova-777/index.html',         // ★ slot clásico 3 rodillos
+  'nova-andar-bahar': '/games/nova-andarbahar/index.html', // ★ andar bahar (juego indio)
+  'nova-race': '/games/nova-race/index.html',       // ★ carrera de corredores
+  'nova-color': '/games/nova-color/index.html',     // ★ juego de colores (perya)
+  'nova-poker': '/games/nova-poker/index.html',     // ★ video póker (jacks or better)
 }
 
 // Miniaturas (arte original 3:4) para las tarjetas de los juegos jugables.
@@ -85,6 +92,12 @@ const thumbs = {
   'nova-war': '/games/nova-war/thumb.svg',
   'nova-rps': '/games/nova-rps/thumb.svg',
   'nova-baccarat': '/games/nova-baccarat/thumb.svg',
+  'nova-dragon-tiger': '/games/nova-dragon/thumb.svg',
+  'nova-777': '/games/nova-777/thumb.svg',
+  'nova-andar-bahar': '/games/nova-andarbahar/thumb.svg',
+  'nova-race': '/games/nova-race/thumb.svg',
+  'nova-color': '/games/nova-color/thumb.svg',
+  'nova-poker': '/games/nova-poker/thumb.svg',
 }
 
 // Categoría real de cada juego jugable (los tabs son: slots / crash / table).
@@ -112,6 +125,12 @@ const cats = {
   'nova-war': 'table',
   'nova-rps': 'crash',
   'nova-baccarat': 'table',
+  'nova-dragon-tiger': 'table',
+  'nova-777': 'slots',
+  'nova-andar-bahar': 'table',
+  'nova-race': 'crash',
+  'nova-color': 'crash',
+  'nova-poker': 'table',
 }
 
 // Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs
