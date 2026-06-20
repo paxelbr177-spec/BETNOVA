@@ -66,7 +66,7 @@
     };
     function play(name){
       const f = FILES[name];
-      if(f){ try{ const a=f.cloneNode(); a.volume=0.6; a.play().catch(()=>{}); return; }catch(e){} }
+      if(f && !f.error){ try{ const a=f.cloneNode(); a.volume=0.6; a.play().catch(()=>{}); return; }catch(e){} }
       (SEQ[name]||SEQ.win).forEach(([fr,w,d,v])=> bell(fr,w,d,v));
       if(name==='jackpot'){ noise(.42,.5,.06,5000); noise(0,.25,.04,7000); }
       else if(name==='bigwin'){ noise(0,.2,.035,7000); }
@@ -74,11 +74,20 @@
     }
     return {
       play, resume: ac,
-      chip(){ const c=ac(); if(!c) return; bell(1200,0,.12,.28); noise(0,.03,.05,5000); },
+      chip(){ const f=FILES.chip; if(f && !f.error){ try{ const a=f.cloneNode(); a.volume=0.6; a.play().catch(()=>{}); return; }catch(e){} } const c=ac(); if(!c) return; bell(1200,0,.12,.28); noise(0,.03,.05,5000); },
       useFiles(map){ Object.keys(map||{}).forEach(k=>{ try{ const a=new Audio(map[k]); a.preload='auto'; FILES[k]=a; }catch(e){} }); },
     };
   })();
   window.NovaSound = NovaSound;
+  // Sonidos reales (mp3 con licencia, en _shared/sounds/). Si alguno falla, cae al sintetizado.
+  NovaSound.useFiles({
+    win:     '../_shared/sounds/win.mp3',
+    bigwin:  '../_shared/sounds/bigwin.mp3',
+    jackpot: '../_shared/sounds/jackpot.mp3',
+    coin:    '../_shared/sounds/coin.mp3',
+    chip:    '../_shared/sounds/chip.mp3',
+    lose:    '../_shared/sounds/lose.mp3',
+  });
 
   const PALETTE = ['#19e57f','#3fe0ff','#ffc83d','#ff5b8c','#a45bff','#ffffff','#ff8c3d','#5bffb0'];
   const GOLD = ['#ffc83d','#ffe89a','#e0a90c','#fff7dd','#ffb43d'];

@@ -101,7 +101,7 @@ const cats = {
 const base = import.meta.env.BASE_URL.replace(/\/$/, '')
 // Versión de assets de juegos: bumpear cuando se corrige un juego, así el iframe
 // pide el index.html fresco (evita que el celular sirva una versión vieja cacheada).
-const ASSET_V = '20260615c'
+const ASSET_V = '20260615d'
 
 export const games = names
   .map((name, i) => {
