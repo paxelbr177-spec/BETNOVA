@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Chicken — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,#0d2438,#0a1120); box-shadow:0 12px 34px rgba(0,0,0,.5); padding:8px; }
+  /* tira horizontal compacta de carriles */
+  .road{ position:relative; display:flex; gap:4px; overflow-x:hidden; }
+  .lane{ position:relative; flex:1 0 0; min-width:0; height:118px; border-radius:9px; overflow:hidden;
+    border:2px solid transparent; transition:border-color .15s, filter .15s, background .2s; }
+  .lane.shade0{ background:linear-gradient(180deg,#22282f,#171c22); }
+  .lane.shade1{ background:linear-gradient(180deg,#1d232a,#13181d); }
+  /* marcas de asfalto */
+  .lane::before{ content:""; position:absolute; left:50%; top:8px; bottom:8px; width:2px; margin-left:-1px;
+    background:repeating-linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.22) 9px,transparent 9px,transparent 20px); }
+  .lane.start{ background:linear-gradient(180deg,#13351f,#0c2415); }
+  .lane.start::before{ display:none; }
+  .lane.current{ border-color:var(--brand); filter:brightness(1.12); box-shadow:inset 0 0 16px rgba(25,229,127,.3); }
+  .lane.done{ background:linear-gradient(180deg,#123c25,#0c2817); }
+  .lane.crash{ border-color:var(--red); box-shadow:inset 0 0 18px rgba(255,77,94,.45); }
+  .laneMult{ position:absolute; left:0; right:0; top:6px; z-index:4; text-align:center;
+    font-size:10px; font-weight:800; letter-spacing:.2px; color:#dfe8fb; text-shadow:0 1px 2px rgba(0,0,0,.7); }
+  .lane.current .laneMult{ color:var(--brand); }
+  .lane.done .laneMult{ color:#7fe6a8; }
+  .chicken{ position:absolute; left:50%; top:54%; transform:translate(-50%,-50%); z-index:5;
+    transition:opacity .2s; will-change:transform; }
+  .chicken.hop{ animation:hop .32s ease; }
+  @keyframes hop{ 0%{ transform:translate(-50%,-50%);} 50%{ transform:translate(-50%,-86%);} 100%{ transform:translate(-50%,-50%);} }
+  .splat{ position:absolute; left:50%; top:54%; transform:translate(-50%,-50%); z-index:6; opacity:0; transition:opacity .15s; }
+  .splat.show{ opacity:1; }
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; color:var(--gold); font-size:13px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .betrow{ display:flex; justify-content:center; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet button:disabled{ opacity:.4; cursor:not-allowed; }
+  .bet .v{ min-width:52px; text-align:center; font-weight:700; }
+  .acts{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .btn{ height:48px; border:0; border-radius:12px; cursor:pointer; font-size:15px; font-weight:800; color:var(--ink);
+    transition:filter .15s, transform .1s; }
+  .btn:active{ transform:translateY(2px); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; box-shadow:none; }
+  .btn.go{ background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 18px rgba(25,229,127,.32); }
+  .btn.cash{ background:linear-gradient(180deg,var(--gold),#e0a417); box-shadow:0 0 18px rgba(255,200,61,.28); }
+  .btn.full{ grid-column:1 / -1; }
+  .foot{ margin-top:7px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Chicken</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="road" id="road">
+        <!-- carriles generados por JS -->
+      </div>
+    </div>
+    <div class="msg" id="message">Coloca tu apuesta y presiona EMPEZAR</div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Multiplicador</span><b id="multDisp">1.00x</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="betrow">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+    </div>
+    <div class="acts">
+      <button class="btn go full" id="startBtn">EMPEZAR</button>
+      <button class="btn go" id="advBtn" style="display:none">AVANZAR</button>
+      <button class="btn cash" id="cashBtn" style="display:none">RETIRAR</button>
+    </div>
+    <div class="foot">Nova Chicken · juego original de BetNova · cruza y retira antes de perder</div>
+  </div>
+
+<!-- plantilla SVG del pollo -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="chickenIcon" viewBox="0 0 40 40">
+    <g>
+      <!-- patas -->
+      <path d="M16 32 L16 38 M16 38 L13 40 M16 38 L19 40 M24 32 L24 38 M24 38 L21 40 M24 38 L27 40"
+            stroke="#ffae2b" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <!-- cuerpo -->
+      <ellipse cx="20" cy="24" rx="12" ry="11" fill="#fdfdfd" stroke="#d8dee8" stroke-width="1"/>
+      <!-- ala -->
+      <path d="M14 22 Q9 24 13 30 Q16 28 17 24 Z" fill="#e7ecf3"/>
+      <!-- cabeza -->
+      <circle cx="20" cy="11" r="7" fill="#fdfdfd" stroke="#d8dee8" stroke-width="1"/>
+      <!-- cresta -->
+      <path d="M16 5 Q17 1 19 4 Q20 1 22 4 Q24 1 24 6 Z" fill="#ff4d5e"/>
+      <!-- pico -->
+      <path d="M27 11 L33 12 L27 14 Z" fill="#ffae2b"/>
+      <!-- moco -->
+      <path d="M25 14 Q26 17 24 17 Z" fill="#ff4d5e"/>
+      <!-- ojo -->
+      <circle cx="22" cy="9.5" r="1.6" fill="#0a0e1a"/>
+    </g>
+  </symbol>
+  <symbol id="splatIcon" viewBox="0 0 40 40">
+    <g>
+      <path d="M20 8 Q26 10 24 16 Q31 13 31 20 Q37 22 32 27 Q35 33 28 33 Q27 39 21 35 Q15 39 13 33 Q6 34 8 27 Q3 22 9 19 Q8 12 15 14 Q15 8 20 8 Z"
+            fill="#ff4d5e" opacity="0.85"/>
+      <circle cx="20" cy="22" r="6" fill="#c8303f"/>
+    </g>
+  </symbol>
+</svg>
+
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  // escalera de multiplicadores: carril 0 = salida (1.00x), luego 8 pasos
+  const LADDER=[1.00, 1.18, 1.42, 1.70, 2.10, 2.60, 3.30, 4.50, 6.50];
+  const STEPS=LADDER.length-1; // 8 pasos cruzables
+
+  let balance=1000, state='idle', lane=0, bet=0;
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio: solo un "cluck/paso" sutil; win/bet los pone el sistema compartido.
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function cluck(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type='triangle'; o.frequency.setValueAtTime(620,c.currentTime); o.frequency.exponentialRampToValueAtTime(880,c.currentTime+0.06); o.frequency.exponentialRampToValueAtTime(540,c.currentTime+0.12); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.13,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.16); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.18); }
+  function thud(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(160,c.currentTime); o.frequency.exponentialRampToValueAtTime(40,c.currentTime+0.18); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.22,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.22); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.24); }
+
+  // construir carriles
+  function buildLanes(){
+    const road=$('road');
+    road.innerHTML='';
+    for(let i=0;i<LADDER.length;i++){
+      const el=document.createElement('div');
+      el.className='lane shade'+(i%2)+(i===0?' start':'');
+      el.id='lane'+i;
+      el.innerHTML =
+        '<span class="laneMult">'+LADDER[i].toFixed(2)+'x</span>'+
+        '<span class="chicken" id="chk'+i+'" style="display:none">'+
+          '<svg width="34" height="34" viewBox="0 0 40 40" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))"><use href="#chickenIcon"/></svg>'+
+        '</span>'+
+        '<span class="splat" id="splat'+i+'">'+
+          '<svg width="34" height="34" viewBox="0 0 40 40"><use href="#splatIcon"/></svg>'+
+        '</span>';
+      road.appendChild(el);
+    }
+  }
+
+  function placeChicken(){
+    for(let i=0;i<LADDER.length;i++){
+      const c=$('chk'+i); if(c) c.style.display = (i===lane)?'block':'none';
+      const s=$('splat'+i); if(s) s.classList.remove('show');
+    }
+  }
+
+  function hop(i){ const c=$('chk'+i); if(!c)return; c.classList.remove('hop'); void c.offsetWidth; c.classList.add('hop'); }
+
+  function refreshLanes(){
+    for(let i=0;i<LADDER.length;i++){
+      const el=$('lane'+i);
+      if(!el) continue;
+      let cls='lane shade'+(i%2);
+      if(i===0) cls+=' start';
+      if(state!=='idle' && i>0 && i<lane) cls+=' done';
+      if(state==='running' && i===lane+1 && lane<STEPS) cls+=' current';
+      el.className=cls;
+    }
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp')&&($('betDisp').textContent=fmt(BETS[betIdx]));
+    $('betVal').textContent=BETS[betIdx];
+    const running = (state==='running');
+    const idle = (state==='idle');
+    $('betUp').disabled=!idle; $('betDown').disabled=!idle;
+    $('startBtn').style.display = idle ? '' : 'none';
+    $('advBtn').style.display   = running ? '' : 'none';
+    $('cashBtn').style.display  = running ? '' : 'none';
+    // sin pasos restantes => sólo se puede retirar
+    $('advBtn').disabled = !(running && lane<STEPS);
+    $('cashBtn').disabled = !(running && lane>0);
+    // multiplicador y ganancia potencial en vivo
+    const m=LADDER[lane];
+    $('multDisp').textContent=m.toFixed(2)+'x';
+    if(running && lane>0){ $('winDisp').textContent=fmt(bet*m); }
+    refreshLanes();
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function startRound(){
+    if(state!=='idle') return;
+    const stake=BETS[betIdx];
+    if(balance<stake){ setMsg('Saldo insuficiente.'); return; }
+    ac();
+    bet=stake;
+    balance=NovaWallet.bet(bet);
+    lane=0;
+    state='running';
+    $('winDisp').textContent=fmt(0);
+    placeChicken();
+    setMsg('¡Cruza! Avanza o retira.');
+    syncUI();
+  }
+
+  function advance(){
+    if(state!=='running' || lane>=STEPS) return;
+    ac();
+    const nextLane=lane+1;
+    const nextMult=LADDER[nextLane];
+    // Compuerta de la casa: ¿es seguro el siguiente paso?
+    const safe = (window.NovaHouse ? NovaHouse.allowWin(nextMult) : true);
+    if(safe){
+      lane=nextLane;
+      placeChicken();
+      hop(lane);
+      cluck();
+      if(lane>=STEPS){
+        setMsg('¡Final! Multiplicador máximo '+LADDER[lane].toFixed(2)+'x. Retira.');
+      } else {
+        setMsg('¡Bien! '+LADDER[lane].toFixed(2)+'x — avanza o retira.');
+      }
+      syncUI();
+    } else {
+      // atropellado: pierde la apuesta
+      state='ended';
+      const crashLane=nextLane;
+      const cur=$('chk'+lane); if(cur) cur.style.display='none';
+      const sp=$('splat'+crashLane); if(sp) sp.classList.add('show');
+      const cl=$('lane'+crashLane); if(cl) cl.className='lane shade'+(crashLane%2)+' crash';
+      thud();
+      $('winDisp').textContent=fmt(0);
+      $('multDisp').textContent='0.00x';
+      setMsg('¡Atropellado! Perdiste '+fmt(bet)+'.');
+      endSoon();
+    }
+  }
+
+  function cashOut(){
+    if(state!=='running' || lane<1) return;
+    ac();
+    const mult=LADDER[lane];
+    const win=bet*mult;
+    state='ended';
+    balance=NovaWallet.win(win);
+    $('winDisp').textContent=fmt(win);
+    setMsg('¡Retiraste! +'+fmt(win)+' ('+mult.toFixed(2)+'x)');
+    if(window.Juice) Juice.win(win,{ mult:mult, el:$('winDisp') });
+    endSoon();
+  }
+
+  // tras crash o cashout: volver a idle y re-habilitar botones
+  function endSoon(){
+    syncUI(); // refleja estado 'ended' (oculta avanzar/retirar mientras se ve el resultado)
+    setTimeout(()=>{
+      lane=0;
+      state='idle';
+      bet=0;
+      $('multDisp').textContent='1.00x';
+      placeChicken();
+      setMsg('Coloca tu apuesta y presiona EMPEZAR');
+      syncUI();
+    }, 1400);
+  }
+
+  // en estado 'ended' ocultamos los tres botones de acción salvo dejar ver el resultado;
+  // syncUI sólo muestra start en idle, avanzar/retirar en running => 'ended' no muestra ninguno.
+
+  $('startBtn').addEventListener('click', startRound);
+  $('advBtn').addEventListener('click', advance);
+  $('cashBtn').addEventListener('click', cashOut);
+  $('betUp').addEventListener('click',()=>{ if(state==='idle'&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(state==='idle'&&betIdx>0){betIdx--;syncUI();} });
+
+  // construir y render inicial
+  buildLanes();
+  lane=0; state='idle'; bet=0;
+  placeChicken();
+  syncUI();
+
+  // ¡SIEMPRE AL FINAL! evitar TDZ con const $ definido arriba
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

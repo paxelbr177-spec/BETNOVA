@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Treasure — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #4a3413, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .head h1{ font-size:20px; font-weight:800; } .head h1 span{ color:var(--gold); }
+  .head .tag{ font-size:11px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 10px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.08);
+    background:radial-gradient(circle at 50% 20%, #2a2110, #0a1120 70%); box-shadow:0 14px 40px rgba(0,0,0,.5);
+    padding:16px 8px 18px; }
+  .mult{ text-align:center; font-size:13px; font-weight:700; color:var(--gold); opacity:.9; margin-bottom:10px; }
+  .chests{ display:flex; justify-content:center; gap:6px; align-items:flex-end; min-height:130px; }
+  .slot{ position:relative; flex:1; max-width:64px; cursor:default; }
+  .chest{ width:100%; display:block; transition:transform .18s ease; transform-origin:bottom center; }
+  .slot.pickable{ cursor:pointer; }
+  .slot.pickable:hover .chest{ transform:translateY(-6px); }
+  .slot.shake .chest{ animation:wob .3s ease; }
+  @keyframes wob{ 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-4px) rotate(-4deg)} 75%{transform:translateY(-4px) rotate(4deg)} }
+  .lid{ transition:transform .35s cubic-bezier(.3,1.4,.5,1); transform-origin:50% 100%; }
+  .slot.open .lid{ transform:translateY(-6px) rotate(-46deg); }
+  .glow{ opacity:0; transition:opacity .3s; }
+  .slot.open .glow{ opacity:1; }
+  .prize{ position:absolute; top:-6px; left:50%; transform:translateX(-50%) scale(0); opacity:0;
+    transition:transform .3s cubic-bezier(.3,1.5,.5,1), opacity .25s;
+    font-size:13px; font-weight:800; color:var(--gold); text-shadow:0 0 8px rgba(255,200,61,.7); white-space:nowrap; pointer-events:none; }
+  .slot.open .prize{ transform:translateX(-50%) scale(1); opacity:1; }
+  .slot.open.lose .prize{ color:var(--muted); text-shadow:none; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px; text-align:center; }
+  .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:17px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:8px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--gold),#d99a00); box-shadow:0 0 22px rgba(255,200,61,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); font-size:14px; }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Treasure</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="mult">Elige un cofre · ¡hasta 10x el premio mayor!</div>
+      <div class="chests" id="chests"></div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">JUGAR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y elige un cofre.</div>
+    <div class="foot">Nova Treasure · juego original de BetNova · 1 de 5 cofres</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const N=5;
+  // Prize table (multiplier x bet). Weighted toward 0/small wins.
+  const PRIZES=[
+    { mult:0,    w:46 },
+    { mult:1.5,  w:24 },
+    { mult:2,    w:16 },
+    { mult:3,    w:8  },
+    { mult:5,    w:4  },
+    { mult:10,   w:2  }
+  ];
+  const WIN_PRIZES=PRIZES.filter(p=>p.mult>0); // used when canWin
+  let balance=1000, playing=false;
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio (subtle synth for taps/shimmer only; win/bet sounds handled by shared NovaSound)
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.06,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndOpen=()=>tone(420,0.18,'triangle',0.06,720);
+  const sndTap =()=>tone(260,0.07,'sine',0.05);
+
+  function pickWeighted(list){
+    let total=0; list.forEach(p=>total+=p.w);
+    let r=Math.random()*total;
+    for(const p of list){ if((r-=p.w)<0) return p.mult; }
+    return list[0].mult;
+  }
+
+  function chestSVG(i){
+    return ''+
+      '<svg class="chest" viewBox="0 0 100 100">'+
+        '<defs>'+
+          '<linearGradient id="wood'+i+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9a5a22"/><stop offset="100%" stop-color="#5e3413"/></linearGradient>'+
+          '<linearGradient id="lid'+i+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b06e2c"/><stop offset="100%" stop-color="#7a451a"/></linearGradient>'+
+          '<radialGradient id="gl'+i+'" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#fff6cf"/><stop offset="60%" stop-color="#ffc83d"/><stop offset="100%" stop-color="rgba(255,200,61,0)"/></radialGradient>'+
+        '</defs>'+
+        '<circle class="glow" cx="50" cy="52" r="30" fill="url(#gl'+i+')"/>'+
+        // box body
+        '<rect x="18" y="52" width="64" height="36" rx="4" fill="url(#wood'+i+')" stroke="#3d220c" stroke-width="2"/>'+
+        '<rect x="22" y="56" width="56" height="28" rx="2" fill="#3d220c" opacity=".35"/>'+
+        '<rect x="44" y="60" width="12" height="20" rx="2" fill="#ffc83d" stroke="#a07a00" stroke-width="1.5"/>'+
+        '<circle cx="50" cy="70" r="3" fill="#7a5200"/>'+
+        // lid (animated)
+        '<g class="lid">'+
+          '<path d="M18 56 Q50 30 82 56 L82 60 L18 60 Z" fill="url(#lid'+i+')" stroke="#3d220c" stroke-width="2"/>'+
+          '<path d="M18 56 Q50 30 82 56" fill="none" stroke="#ffc83d" stroke-width="2" opacity=".8"/>'+
+          '<rect x="44" y="50" width="12" height="10" rx="2" fill="#ffc83d" stroke="#a07a00" stroke-width="1.5"/>'+
+        '</g>'+
+      '</svg>'+
+      '<div class="prize"></div>';
+  }
+
+  function buildBoard(){
+    const c=$('chests'); c.innerHTML='';
+    for(let i=0;i<N;i++){
+      const d=document.createElement('div');
+      d.className='slot'; d.setAttribute('data-i',i);
+      d.innerHTML=chestSVG(i);
+      c.appendChild(d);
+    }
+  }
+
+  const slots=()=>Array.from(document.querySelectorAll('.slot'));
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('actBtn').disabled=playing;
+    $('betUp').disabled=playing; $('betDown').disabled=playing;
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function resetBoard(){
+    slots().forEach(s=>{
+      s.classList.remove('open','lose','pickable','shake');
+      const p=s.querySelector('.prize'); if(p) p.textContent='';
+    });
+  }
+
+  function prizeLabel(mult){ return mult>0 ? mult+'x' : 'Vacío'; }
+
+  function openSlot(s, mult){
+    s.classList.add('open');
+    if(mult<=0) s.classList.add('lose');
+    s.querySelector('.prize').textContent=prizeLabel(mult);
+    sndOpen();
+  }
+
+  function startRound(){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    resetBoard();
+    $('winDisp').textContent=fmt(0);
+    setMsg('¡Elige un cofre!');
+    playing=true; // round active; bet deducts on pick
+    syncUI();
+    slots().forEach(s=>s.classList.add('pickable'));
+  }
+
+  function pick(idx){
+    if(!playing) return;
+    const slot=slots()[idx];
+    if(!slot.classList.contains('pickable')) return;
+    slots().forEach(s=>s.classList.remove('pickable'));
+    sndTap();
+
+    const bet=BETS[betIdx];
+    balance=NovaWallet.bet(bet); syncUI();
+
+    // Decide the prize AFTER the pick so the reveal matches the house gate.
+    const targetMult=pickWeighted(PRIZES);
+    const canWin=(window.NovaHouse ? NovaHouse.allowWin(targetMult) : true);
+    // If house denies (or target was already 0), the chosen chest is empty.
+    let prizeMult = (canWin && targetMult>0) ? targetMult : 0;
+    // If somehow target was 0 but house allowed a win, fall back to a weighted small win.
+    if(canWin && prizeMult===0 && targetMult>0) prizeMult=targetMult;
+
+    // assign filler prizes to the other chests (for excitement, not paid)
+    const others=[];
+    for(let i=0;i<N;i++) if(i!==idx) others.push(i);
+
+    slot.classList.add('shake');
+    setTimeout(()=>slot.classList.remove('shake'),300);
+
+    setTimeout(()=>{
+      openSlot(slot, prizeMult);
+      if(prizeMult>0){
+        const win=bet*prizeMult;
+        balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
+        setMsg('¡Tesoro! '+prizeMult+'x · +'+fmt(win));
+        if(window.Juice) Juice.win(win,{ mult:prizeMult, el:$('winDisp') });
+      } else {
+        setMsg('Cofre vacío. ¡Suerte la próxima!');
+      }
+
+      // briefly reveal the other chests' contents
+      let k=0;
+      others.forEach((oi)=>{
+        const fill=pickWeighted(PRIZES);
+        setTimeout(()=>openSlot(slots()[oi], fill), 260 + (k++)*180);
+      });
+
+      // end the round after the cascade
+      setTimeout(()=>{
+        playing=false;
+        syncUI();
+      }, 260 + others.length*180 + 200);
+    }, 360);
+  }
+
+  // Wiring
+  $('actBtn').addEventListener('click',()=>{ ac(); startRound(); });
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+  $('chests').addEventListener('click',(e)=>{
+    const s=e.target.closest('.slot'); if(!s) return;
+    ac(); pick(parseInt(s.getAttribute('data-i'),10));
+  });
+
+  // initial render
+  buildBoard();
+  syncUI();
+
+  // *** wallet hooks LAST (after $ + functions + initial render) to avoid TDZ ***
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

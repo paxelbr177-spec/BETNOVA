@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Bingo — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --brand:#19e57f; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%); min-height:100%; padding:14px; user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .head h1{ font-size:20px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:11px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 10px; border-radius:999px; }
+  .card{ display:grid; grid-template-columns:repeat(5,1fr); gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:10px; }
+  .cell{ aspect-ratio:1; border-radius:8px; background:var(--panel2); border:1px solid rgba(255,255,255,.06); color:#cdd6ea;
+    font-weight:700; font-size:15px; display:grid; place-items:center; transition:transform .08s, background .15s; position:relative; }
+  .cell.free{ background:linear-gradient(180deg,#2b3552,#1a2238); color:var(--muted); font-size:10px; }
+  .cell.hit{ background:linear-gradient(180deg,var(--brand),#0fb863); color:#0a0e1a; transform:scale(1.04); }
+  .cell.hit.free{ color:#0a0e1a; }
+  .meta{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin:10px 2px 0; }
+  .balls{ display:flex; flex-wrap:wrap; gap:5px; min-height:34px; margin-top:10px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px; }
+  .ball{ display:inline-flex; align-items:center; gap:3px; background:var(--panel2); border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:2px 8px 2px 4px; font-size:12px; font-weight:700; color:#e8eefc; }
+  .ball.match{ background:linear-gradient(180deg,var(--brand),#0fb863); color:#0a0e1a; border-color:transparent; }
+  .ball svg{ width:14px; height:14px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px; text-align:center; }
+  .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; }
+  .stat b{ font-size:17px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 10px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:40px; text-align:center; font-weight:700; }
+  .act{ flex:1; min-width:120px; height:48px; border:0; border-radius:12px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Bingo</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="card" id="card"></div>
+    <div class="meta"><span>Cartón 5×5 · centro GRATIS</span><span id="lineInfo">0 líneas</span></div>
+    <div class="balls" id="balls"></div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Líneas</span><b id="lines">0</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet"><button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button></div>
+      <button class="act" id="playBtn">JUGAR</button>
+    </div>
+    <div class="msg" id="message">Coloca tu apuesta y juega al bingo</div>
+    <div class="foot">Nova Bingo · juego original de BetNova · se sortean 30 bolas · más líneas, más paga · BINGO paga 100x</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const DRAW=30, TOP_MULT=100;
+  // multiplicador por número de líneas completadas (filas/columnas/diagonales)
+  const PAY={ 0:0, 1:2, 2:4, 3:10, 4:25 }; // 4+ => 25, BINGO => 100
+  const BINGO_MULT=TOP_MULT;
+  // pesos para elegir nº de líneas objetivo (sesgado a 0/1)
+  const TARGETS=[
+    {lines:0, w:46}, {lines:1, w:30}, {lines:2, w:14},
+    {lines:3, w:6},  {lines:4, w:3},  {lines:99, w:1} // 99 = BINGO
+  ];
+
+  let balance=1000, playing=false;
+  let card=[];        // 25 valores (índice 12 = FREE / 0)
+  let marked=[];      // 25 booleanos
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const BALL_SVG='<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.18"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="2.4" fill="currentColor" opacity="0.55"/></svg>';
+
+  // 8 líneas posibles, cada una con sus 5 índices de celda
+  const LINES=(function(){
+    const L=[];
+    for(let r=0;r<5;r++) L.push([r*5+0,r*5+1,r*5+2,r*5+3,r*5+4]);     // filas
+    for(let c=0;c<5;c++) L.push([0*5+c,1*5+c,2*5+c,3*5+c,4*5+c]);     // columnas
+    L.push([0,6,12,18,24]);                                          // diagonal \
+    L.push([4,8,12,16,20]);                                          // diagonal /
+    return L;
+  })();
+
+  function newCard(){
+    // 24 números únicos 1..75, centro FREE
+    const pool=[]; for(let i=1;i<=75;i++) pool.push(i);
+    for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+    card=new Array(25); marked=new Array(25).fill(false);
+    let k=0;
+    for(let i=0;i<25;i++){
+      if(i===12){ card[i]=0; marked[i]=true; }   // FREE siempre marcado
+      else card[i]=pool[k++];
+    }
+  }
+
+  function buildCard(){
+    const g=$('card'); g.innerHTML='';
+    for(let i=0;i<25;i++){
+      const c=document.createElement('div');
+      c.className='cell'+(i===12?' free':'')+(marked[i]?' hit':'');
+      c.dataset.i=i;
+      c.textContent=(i===12)?'FREE':card[i];
+      g.appendChild(c);
+    }
+  }
+  const cellEl=(i)=>$('card').querySelector(`[data-i="${i}"]`);
+
+  function countLines(){
+    let n=0;
+    for(const ln of LINES){ if(ln.every(i=>marked[i])) n++; }
+    return n;
+  }
+
+  function weightedTarget(){
+    let tot=0; TARGETS.forEach(t=>tot+=t.w);
+    let r=Math.random()*tot;
+    for(const t of TARGETS){ if((r-=t.w)<0) return t.lines; }
+    return 0;
+  }
+
+  // elige índices de celda a marcar (excl. FREE) para lograr exactamente `target` líneas.
+  // target 99 = BINGO (todas). Devuelve array de índices a "acertar".
+  function planHits(target){
+    const FREE=12;
+    if(target===99){ const all=[]; for(let i=0;i<25;i++) if(i!==FREE) all.push(i); return all; }
+    if(target<=0) return [];
+    // baraja las líneas y ve completándolas hasta alcanzar `target` líneas exactas
+    const order=[...LINES.keys()];
+    for(let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
+    const want=Math.min(target,4);
+    let best=null;
+    // intentos: probar combinaciones sencillas eligiendo líneas que no se solapen mucho
+    for(let attempt=0; attempt<40 && !best; attempt++){
+      const hit=new Set();
+      let made=0;
+      const shuffled=[...order];
+      for(let i=shuffled.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]; }
+      for(const li of shuffled){
+        if(made>=want) break;
+        const ln=LINES[li];
+        ln.forEach(idx=>{ if(idx!==FREE) hit.add(idx); });
+        made++;
+      }
+      // verificar líneas reales conseguidas con este set
+      const tmp=new Array(25).fill(false); tmp[FREE]=true; hit.forEach(idx=>tmp[idx]=true);
+      let real=0; for(const ln of LINES){ if(ln.every(idx=>tmp[idx])) real++; }
+      if(real===want) best=hit;
+    }
+    if(!best){
+      // fallback determinista: marca filas completas desde arriba
+      const hit=new Set();
+      for(let r=0;r<want;r++){ for(let c=0;c<5;c++){ const idx=r*5+c; if(idx!==FREE) hit.add(idx); } }
+      best=hit;
+    }
+    return [...best];
+  }
+
+  function resetRound(){
+    newCard();
+    buildCard();
+    $('balls').innerHTML='';
+    $('lineInfo').textContent='0 líneas';
+    $('lines').textContent='0';
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betVal').textContent=BETS[betIdx];
+    $('lines').textContent=String(countLines());
+    $('lineInfo').textContent=countLines()+' líneas';
+    $('playBtn').disabled=playing;
+  }
+  const setMsg=(t)=>$('message').textContent=t;
+
+  function play(){
+    if(playing)return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    playing=true;
+    resetRound();
+    $('winDisp').textContent=fmt(0);
+    $('playBtn').disabled=true;
+    setMsg('Sorteando bolas…');
+
+    // decidir resultado vía la casa
+    let target=weightedTarget();
+    const targetLinesForMult = (target===99)?5:target; // sólo para mirar el multiplicador
+    const targetMult = (target===99)?BINGO_MULT : (target>=4?25:(PAY[target]||0));
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(targetMult) : true);
+    if(!canWin) target=0; // forzar perder
+
+    const hitIdx = planHits(target);                 // celdas que vamos a acertar
+    const hitNums = hitIdx.map(i=>card[i]).filter(v=>v>0);
+
+    // construir las 30 bolas: las bolas "objetivo" + relleno que NO esté en el cartón
+    const cardNums=new Set(card.filter(v=>v>0));
+    const filler=[];
+    for(let n=1;n<=75;n++){ if(!cardNums.has(n)) filler.push(n); }
+    for(let i=filler.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [filler[i],filler[j]]=[filler[j],filler[i]]; }
+
+    let balls=[...hitNums];
+    let fi=0;
+    while(balls.length<DRAW && fi<filler.length){ balls.push(filler[fi++]); }
+    // mezclar el orden de revelado
+    for(let i=balls.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [balls[i],balls[j]]=[balls[j],balls[i]]; }
+    const hitSet=new Set(hitNums);
+
+    // revelar bola a bola
+    const cellByNum=new Map();
+    for(let i=0;i<25;i++){ if(card[i]>0) cellByNum.set(card[i],i); }
+    const ballsEl=$('balls');
+    let i=0;
+    const iv=setInterval(()=>{
+      const num=balls[i];
+      const isMatch=hitSet.has(num);
+      const b=document.createElement('span');
+      b.className='ball'+(isMatch?' match':'');
+      b.innerHTML=BALL_SVG+'<span>'+num+'</span>';
+      ballsEl.appendChild(b);
+      if(isMatch){
+        const ci=cellByNum.get(num);
+        if(ci!=null){ marked[ci]=true; const ce=cellEl(ci); if(ce) ce.classList.add('hit'); }
+        $('lines').textContent=String(countLines());
+        $('lineInfo').textContent=countLines()+' líneas';
+      }
+      if(++i>=balls.length){ clearInterval(iv); settle(bet); }
+    }, 70);
+  }
+
+  function settle(bet){
+    const lines=countLines();
+    const allMarked=marked.every(Boolean); // BINGO completo
+    let mult;
+    if(allMarked) mult=BINGO_MULT;
+    else if(lines>=4) mult=25;
+    else mult=PAY[lines]||0;
+    const landedMult=mult;
+    const win=bet*mult;
+
+    playing=false; // ANTES de syncUI para reactivar el botón
+    syncUI();
+
+    if(win>0){
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      if(allMarked) setMsg('¡BINGO! +'+fmt(win)+' ('+mult+'x)');
+      else setMsg(lines+(lines===1?' línea':' líneas')+' · +'+fmt(win)+' ('+mult+'x)');
+      if(window.Juice){ Juice.win(win,{ mult:landedMult, el:$('winDisp') }); }
+    } else {
+      setMsg('Sin líneas · sin premio');
+    }
+    syncUI();
+  }
+
+  $('playBtn').addEventListener('click',()=>play());
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // estado inicial
+  newCard();
+  buildCard();
+  playing=false;
+  syncUI();
+
+  // CRÍTICO (TDZ): estas DEBEN ser las últimas sentencias del IIFE
+  NovaWallet.ready(b=>{ balance=b; playing=false; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

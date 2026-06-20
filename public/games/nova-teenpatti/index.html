@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Teen Patti — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:8px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; border:1px solid rgba(255,255,255,.08);
+    background:#0a1120; box-shadow:0 12px 34px rgba(0,0,0,.5); padding:10px 8px;
+    display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .seat{ display:flex; flex-direction:column; align-items:center; gap:4px; width:100%; }
+  .who{ font-size:11px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; }
+  .seat.dlr .who{ color:var(--gold); }
+  .seat.you .who{ color:var(--brand); }
+  .handname{ font-size:13px; font-weight:800; color:var(--gold); min-height:16px; letter-spacing:.3px; text-align:center; }
+  .hand{ display:flex; gap:6px; justify-content:center; min-height:90px; }
+  .card{ width:58px; height:82px; border-radius:9px; position:relative; }
+  .card.deal{ animation:deal .30s ease; }
+  @keyframes deal{ 0%{ transform:translateY(-16px) scale(.9); opacity:0; } 100%{ transform:none; opacity:1; } }
+  .cardface{ width:100%; height:100%; border-radius:9px; background:#f6f8ff;
+    box-shadow:0 5px 14px rgba(0,0,0,.4); position:relative; overflow:hidden; }
+  .cardface.back{ background:linear-gradient(135deg,#1a2238,#0e1424); border:1px solid rgba(255,255,255,.08); }
+  .cardface.back::after{ content:""; position:absolute; inset:6px; border-radius:6px;
+    border:2px solid rgba(25,229,127,.35); background:
+      repeating-linear-gradient(45deg, rgba(25,229,127,.10) 0 5px, transparent 5px 10px); }
+  .cardface .corner{ position:absolute; font-weight:800; line-height:1; }
+  .cardface .corner.tl{ top:5px; left:6px; }
+  .cardface .corner.br{ bottom:5px; right:6px; transform:rotate(180deg); }
+  .cardface .corner .r{ font-size:15px; }
+  .cardface .corner svg{ width:10px; height:10px; display:block; margin:1px auto 0; }
+  .cardface .center{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+  .cardface .center svg{ width:32px; height:32px; }
+  .vsline{ font-size:11px; font-weight:800; color:var(--red); letter-spacing:1px; }
+  .pay{ width:100%; display:grid; grid-template-columns:1fr auto; gap:0 8px; font-size:10px;
+    background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:9px; padding:6px 9px; }
+  .pay .row{ display:contents; }
+  .pay .row > div{ padding:1px 0; }
+  .pay .row .nm{ color:#cfd7ec; }
+  .pay .row .mx{ text-align:right; color:var(--gold); font-weight:800; }
+  .pay .row.hot .nm, .pay .row.hot .mx{ color:var(--brand); }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:8px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:9px; padding:7px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:8px; margin-top:8px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:11px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:7px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:12px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--gold),#e0a90c); box-shadow:0 0 18px rgba(255,200,61,.35); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:18px; margin-top:7px; font-weight:700; color:var(--gold); font-size:12px; }
+  .foot{ margin-top:6px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Teen Patti</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="seat dlr">
+        <div class="who">Crupier</div>
+        <div class="hand" id="dlrHand"></div>
+        <div class="handname" id="dlrName">&nbsp;</div>
+      </div>
+      <div class="vsline">VS</div>
+      <div class="seat you">
+        <div class="who">Tú</div>
+        <div class="hand" id="youHand"></div>
+        <div class="handname" id="youName">&nbsp;</div>
+      </div>
+      <div class="pay" id="paytable"></div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">REPARTIR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y pulsa REPARTIR</div>
+    <div class="foot">Nova Teen Patti · juego original de BetNova · 3 cartas, tu mano vs el crupier</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let playing=false;
+
+  let youCards=[];   // 3 card objects {r,s}
+  let dlrCards=[];
+  let deck=[];
+
+  // Ranks 2..14; A=14 K=13 Q=12 J=11. Suits S H D C as inline SVG.
+  const SUITS=['S','H','D','C'];
+  const rankLabel=(r)=> r<=10 ? String(r) : ({11:'J',12:'Q',13:'K',14:'A'})[r];
+
+  // Win multiplier by player's hand category (total multiplier on a win).
+  const PAYOUT = { highcard:1.95, pair:2, color:3, sequence:4, puresequence:6, trail:10 };
+  // category meta: display name (es) + paytable order high->low
+  const CAT = {
+    trail:        { nm:'Trío (Trail)' },
+    puresequence: { nm:'Escalera de Color' },
+    sequence:     { nm:'Escalera' },
+    color:        { nm:'Color' },
+    pair:         { nm:'Pareja' },
+    highcard:     { nm:'Carta Alta' }
+  };
+  const PAY_ORDER=['trail','puresequence','sequence','color','pair','highcard'];
+  // category rank values, higher = stronger
+  const CATVAL = { highcard:0, pair:1, color:2, sequence:3, puresequence:4, trail:5 };
+
+  // --- inline SVG suits (no emojis) ---
+  function suitSVG(s,size){
+    const red=(s==='H'||s==='D');
+    const col=red?'#e3304a':'#11151f';
+    const w=size||32;
+    let path='';
+    if(s==='S') path='<path d="M50 8 C30 30 12 42 12 60 a16 16 0 0 0 30 8 C40 78 34 86 28 92 l44 0 C66 86 60 78 58 76 a16 16 0 0 0 30 -8 C88 42 70 30 50 8 Z"/>';
+    else if(s==='H') path='<path d="M50 88 C18 64 10 48 10 34 A22 22 0 0 1 50 24 A22 22 0 0 1 90 34 C90 48 82 64 50 88 Z"/>';
+    else if(s==='D') path='<path d="M50 8 L86 50 L50 92 L14 50 Z"/>';
+    else path='<path d="M50 14 a15 15 0 1 1 -0.1 0 M30 44 a15 15 0 1 1 -0.1 0 M70 44 a15 15 0 1 1 -0.1 0 M44 60 l12 0 l4 28 l-20 0 Z"/>';
+    return `<svg viewBox="0 0 100 100" width="${w}" height="${w}" fill="${col}" xmlns="http://www.w3.org/2000/svg">${path}</svg>`;
+  }
+  function cardInner(rank,suit){
+    const red=(suit==='H'||suit==='D');
+    const col=red?'#e3304a':'#11151f';
+    const lbl=rankLabel(rank);
+    return `<div class="cardface">`+
+      `<div class="corner tl" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,10)}</div>`+
+      `<div class="center">${suitSVG(suit,32)}</div>`+
+      `<div class="corner br" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,10)}</div>`+
+      `</div>`;
+  }
+
+  // --- deck helpers ---
+  function freshDeck(){
+    const d=[];
+    for(let r=2;r<=14;r++) for(const s of SUITS) d.push({r,s});
+    for(let i=d.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=d[i]; d[i]=d[j]; d[j]=t; }
+    return d;
+  }
+  function drawCard(){ return deck.pop(); }
+
+  // --- 3-card evaluator ---
+  // Returns { cat, catVal, mult, tiebreak:[r,r,r] }. tiebreak is high->low for comparison.
+  function evaluate(cards){
+    const ranks=cards.map(c=>c.r).sort((a,b)=>b-a); // high->low
+    const suits=cards.map(c=>c.s);
+    const flush=suits[0]===suits[1] && suits[1]===suits[2];
+
+    // sequence detection (A may be high A-K-Q or low A-2-3)
+    let seq=false, seqTie=ranks.slice();
+    const a=ranks[0],b=ranks[1],c=ranks[2];
+    if(a-b===1 && b-c===1){ seq=true; seqTie=[a,b,c]; }
+    // wheel A-2-3 : sorted desc = [14,3,2] -> treat ace as low, high card = 3
+    else if(a===14 && b===3 && c===2){ seq=true; seqTie=[3,2,1]; }
+
+    // counts for trail / pair
+    const trip = (a===b && b===c);
+    let pairRank=0, kicker=0;
+    if(!trip){
+      if(a===b){ pairRank=a; kicker=c; }
+      else if(b===c){ pairRank=b; kicker=a; }
+      else if(a===c){ pairRank=a; kicker=b; } // not possible after sort but safe
+    }
+
+    if(trip) return mk('trail',[a,a,a]);
+    if(seq && flush) return mk('puresequence',seqTie);
+    if(seq) return mk('sequence',seqTie);
+    if(flush) return mk('color',ranks);
+    if(pairRank) return mk('pair',[pairRank,pairRank,kicker]);
+    return mk('highcard',ranks);
+
+    function mk(cat,tie){ return { cat, catVal:CATVAL[cat], mult:PAYOUT[cat], tiebreak:tie }; }
+  }
+
+  // compare two evaluated hands: >0 if A beats B, <0 if B beats A, 0 if exact tie
+  function compare(A,B){
+    if(A.catVal!==B.catVal) return A.catVal-B.catVal;
+    for(let i=0;i<3;i++){ if(A.tiebreak[i]!==B.tiebreak[i]) return A.tiebreak[i]-B.tiebreak[i]; }
+    return 0;
+  }
+
+  // Deal a dealer hand from the remaining deck that strictly BEATS the player's hand.
+  // Used when the house blocks the win. Returns {cards,ev} or null.
+  function dealerBeating(playerEv){
+    const usedKey=(c)=>c.r+c.s;
+    const used=new Set(youCards.map(usedKey));
+    for(let tries=0; tries<600; tries++){
+      const pool=[];
+      for(let r=2;r<=14;r++) for(const s of SUITS){ const c={r,s}; if(!used.has(usedKey(c))) pool.push(c); }
+      for(let i=pool.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+      const cards=[pool[0],pool[1],pool[2]];
+      const ev=evaluate(cards);
+      if(compare(ev,playerEv)>0) return { cards, ev };
+    }
+    return null;
+  }
+
+  // --- audio: subtle card-deal synth only (shared system handles win/bet) ---
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.07,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndDeal=()=>tone(520,0.06,'triangle',0.06,300);
+
+  // --- rendering ---
+  function renderPaytable(activeCat){
+    $('paytable').innerHTML = PAY_ORDER.map(k=>{
+      const hot = (k===activeCat) ? ' hot' : '';
+      return `<div class="row${hot}"><div class="nm">${CAT[k].nm}</div><div class="mx">${PAYOUT[k]}x</div></div>`;
+    }).join('');
+  }
+  function renderHand(elId, cards, faceUp){
+    const el=$(elId); el.innerHTML='';
+    for(let i=0;i<3;i++){
+      const card=document.createElement('div');
+      card.className='card deal';
+      if(faceUp && cards[i]){ card.innerHTML=cardInner(cards[i].r,cards[i].s); }
+      else { card.innerHTML='<div class="cardface back"></div>'; }
+      el.appendChild(card);
+    }
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    if(playing){
+      $('actBtn').textContent='REPARTIENDO…'; $('actBtn').disabled=true;
+      $('betUp').disabled=true; $('betDown').disabled=true;
+    } else {
+      $('actBtn').textContent='REPARTIR'; $('actBtn').disabled=false;
+      $('betUp').disabled=false; $('betDown').disabled=false;
+    }
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+
+  // --- DEAL (REPARTIR) ---
+  function deal(){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    playing=true;
+    $('winDisp').textContent=fmt(0);
+
+    // reset hands before new deal
+    youCards=[]; dlrCards=[];
+    $('youName').innerHTML='&nbsp;'; $('dlrName').innerHTML='&nbsp;';
+    renderPaytable(null);
+    syncUI();
+
+    deck=freshDeck();
+    youCards=[drawCard(),drawCard(),drawCard()];
+    dlrCards=[drawCard(),drawCard(),drawCard()];
+
+    const youEv=evaluate(youCards);
+    let dlrEv=evaluate(dlrCards);
+
+    // Decide outcome. Gate ONLY the player win.
+    const cmp=compare(youEv,dlrEv);
+    if(cmp>0){
+      // player would win -> roll house gate using player's hand multiplier
+      const thatMult=youEv.mult;
+      const canWin=(window.NovaHouse ? NovaHouse.allowWin(thatMult) : true);
+      if(!canWin){
+        // re-deal dealer to a hand that BEATS the player (player loses); keep player's cards
+        const beat=dealerBeating(youEv);
+        if(beat){ dlrCards=beat.cards; dlrEv=beat.ev; }
+      }
+    }
+
+    // render player face up immediately, dealer face down, then reveal
+    renderHand('youHand', youCards, true);
+    renderHand('dlrHand', dlrCards, false);
+    sndDeal(); setTimeout(sndDeal,90); setTimeout(sndDeal,180);
+
+    const youName=CAT[youEv.cat].nm;
+    $('youName').textContent=youName;
+    setMsg('Repartiendo…');
+
+    setTimeout(()=>{
+      renderHand('dlrHand', dlrCards, true);
+      sndDeal(); setTimeout(sndDeal,90);
+      resolve(youEv, dlrEv, bet);
+    }, 650);
+  }
+
+  function resolve(youEv, dlrEv, bet){
+    $('dlrName').textContent=CAT[dlrEv.cat].nm;
+    const cmp=compare(youEv,dlrEv);
+    if(cmp>0){
+      const winMult=youEv.mult;
+      const win=bet*winMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      renderPaytable(youEv.cat);
+      setMsg(`✅ ¡${CAT[youEv.cat].nm}! Ganaste +${fmt(win)} (${winMult}x)`);
+      if(window.Juice) Juice.win(win,{ mult:winMult, el:$('winDisp') });
+    } else if(cmp===0){
+      // exact tie = push
+      balance=NovaWallet.win(bet);
+      $('winDisp').textContent=fmt(0);
+      setMsg(`🤝 Empate (${CAT[youEv.cat].nm}) · se devuelve la apuesta`);
+    } else {
+      setMsg(`❌ El crupier gana con ${CAT[dlrEv.cat].nm}`);
+    }
+    playing=false;          // reset BEFORE syncUI
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(!playing) deal(); });
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render BEFORE wallet hooks
+  renderPaytable(null);
+  renderHand('dlrHand', [], false);
+  renderHand('youHand', [], false);
+  syncUI();
+
+  // wallet hooks at the VERY END (avoid TDZ on $/consts)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

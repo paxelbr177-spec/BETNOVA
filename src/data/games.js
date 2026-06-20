@@ -25,6 +25,8 @@ const names = [
   'Nova Scratch', 'Nova Cups', 'Nova SicBo', 'Nova Penalty', 'Nova Plinko',
   'Nova War', 'Nova RPS', 'Nova Baccarat', 'Nova Dragon Tiger',
   'Nova 777', 'Nova Andar Bahar', 'Nova Race', 'Nova Color', 'Nova Poker',
+  'Nova Chicken', 'Nova Sweet', 'Nova Treasure', 'Nova Craps', 'Nova Bingo',
+  'Nova Teen Patti',
 ]
 
 const catPool = ['slots', 'live', 'crash', 'table', 'jackpot', 'slots', 'slots', 'live']
@@ -65,6 +67,12 @@ const embeds = {
   'nova-race': '/games/nova-race/index.html',       // ★ carrera de corredores
   'nova-color': '/games/nova-color/index.html',     // ★ juego de colores (perya)
   'nova-poker': '/games/nova-poker/index.html',     // ★ video póker (jacks or better)
+  'nova-chicken': '/games/nova-chicken/index.html', // ★ cruce de camino tipo crash
+  'nova-sweet': '/games/nova-sweet/index.html',     // ★ slot de racimos (cluster pays)
+  'nova-treasure': '/games/nova-treasure/index.html', // ★ elige cofre del tesoro
+  'nova-craps': '/games/nova-craps/index.html',     // ★ craps línea de pase
+  'nova-bingo': '/games/nova-bingo/index.html',     // ★ bingo 5x5
+  'nova-teen-patti': '/games/nova-teenpatti/index.html', // ★ teen patti (3 cartas)
 }
 
 // Miniaturas (arte original 3:4) para las tarjetas de los juegos jugables.
@@ -98,6 +106,12 @@ const thumbs = {
   'nova-race': '/games/nova-race/thumb.svg',
   'nova-color': '/games/nova-color/thumb.svg',
   'nova-poker': '/games/nova-poker/thumb.svg',
+  'nova-chicken': '/games/nova-chicken/thumb.svg',
+  'nova-sweet': '/games/nova-sweet/thumb.svg',
+  'nova-treasure': '/games/nova-treasure/thumb.svg',
+  'nova-craps': '/games/nova-craps/thumb.svg',
+  'nova-bingo': '/games/nova-bingo/thumb.svg',
+  'nova-teen-patti': '/games/nova-teenpatti/thumb.svg',
 }
 
 // Categoría real de cada juego jugable (los tabs son: slots / crash / table).
@@ -131,6 +145,12 @@ const cats = {
   'nova-race': 'crash',
   'nova-color': 'crash',
   'nova-poker': 'table',
+  'nova-chicken': 'crash',
+  'nova-sweet': 'slots',
+  'nova-treasure': 'crash',
+  'nova-craps': 'table',
+  'nova-bingo': 'crash',
+  'nova-teen-patti': 'table',
 }
 
 // Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs

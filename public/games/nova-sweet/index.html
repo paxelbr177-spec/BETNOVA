@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Sweet — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e;
+    --candy1:#ff5ea0; --candy2:#9b5cff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #5a1f6b, var(--ink) 62%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--candy1); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(180deg,#2a103a,#0a1120 72%); box-shadow:0 14px 40px rgba(0,0,0,.5);
+    padding:14px 12px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .cabinet{ width:100%; border-radius:14px; padding:10px;
+    background:linear-gradient(180deg,#ff7ac0,#b14de0);
+    border:1px solid rgba(255,255,255,.35); box-shadow:inset 0 0 24px rgba(255,255,255,.18), 0 0 18px rgba(155,92,255,.35); }
+  .grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:4px; }
+  .cell{ position:relative; aspect-ratio:1/1; border-radius:10px;
+    background:linear-gradient(180deg,#fff,#e7ecfb);
+    box-shadow:inset 0 3px 7px rgba(0,0,0,.18); display:flex; align-items:center; justify-content:center;
+    transition:transform .12s, box-shadow .2s; }
+  .cell svg{ width:78%; height:78%; display:block; }
+  .cell.win{ box-shadow:inset 0 0 0 2px var(--gold), 0 0 14px rgba(255,200,61,.85); animation:pop .45s ease 2; }
+  @keyframes pop{ 50%{ transform:scale(1.12); box-shadow:inset 0 0 0 3px #fff, 0 0 20px rgba(255,200,61,1);} }
+  .cell.fade{ opacity:.28; }
+  .mult{ font-size:13px; font-weight:800; color:var(--gold); min-height:16px; letter-spacing:.2px; text-align:center; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:7px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:9px; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:46px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:#fff; background:linear-gradient(180deg,var(--candy1),#c0228a); box-shadow:0 0 20px rgba(255,94,160,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:18px; margin-top:8px; font-weight:700; color:var(--gold); font-size:12px; }
+  .foot{ margin-top:6px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Sweet</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="cabinet">
+        <div class="grid" id="grid"></div>
+      </div>
+      <div class="mult" id="mult">Junta 8+ caramelos iguales · 18+ paga 30x</div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">GIRAR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y pulsa GIRAR 🍬</div>
+    <div class="foot">Nova Sweet · slot de racimos original de BetNova · 6×5, junta 8+ iguales y gana</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let spinning=false;
+
+  const COLS=6, ROWS=5, TOTAL=COLS*ROWS; // 30 cells
+
+  // --- 6 candy/fruit symbols (inline SVG, no emojis). Bright candy-land colors. ---
+  const SYMBOLS=['berry','grape','lemon','orange','plum','mint'];
+  function symSVG(s){
+    if(s==='berry') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 14 q10 -8 18 -4" fill="none" stroke="#2f7d32" stroke-width="6" stroke-linecap="round"/><path d="M50 22 C30 22 18 40 24 62 C30 84 70 84 76 62 C82 40 70 22 50 22Z" fill="#ff3d6e"/><path d="M50 22 C36 22 28 32 30 44 C34 30 66 30 70 44 C72 32 64 22 50 22Z" fill="#ff7aa0" opacity=".8"/><circle cx="40" cy="50" r="4" fill="#fff" opacity=".75"/><path d="M50 12 q12 -4 20 2 q-10 6 -20 0Z" fill="#3fae46"/></svg>';
+    if(s==='grape') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="#9b5cff"><circle cx="50" cy="26" r="12"/><circle cx="36" cy="44" r="12"/><circle cx="64" cy="44" r="12"/><circle cx="50" cy="48" r="12"/><circle cx="42" cy="64" r="12"/><circle cx="58" cy="64" r="12"/><circle cx="50" cy="80" r="12"/></g><circle cx="46" cy="22" r="3.5" fill="#fff" opacity=".7"/><path d="M50 16 q8 -10 16 -8" fill="none" stroke="#2f7d32" stroke-width="5" stroke-linecap="round"/></svg>';
+    if(s==='lemon') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="52" rx="34" ry="26" fill="#ffd21f"/><ellipse cx="50" cy="52" rx="34" ry="26" fill="none" stroke="#d9a800" stroke-width="3"/><path d="M84 52 q8 0 10 -3 q-2 6 -10 6Z" fill="#caa000"/><path d="M16 52 q-8 0 -10 -3 q2 6 10 6Z" fill="#caa000"/><ellipse cx="42" cy="44" rx="12" ry="7" fill="#fff3a0" opacity=".7"/></svg>';
+    if(s==='orange') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="54" r="32" fill="#ff8c1a"/><circle cx="50" cy="54" r="32" fill="none" stroke="#d96e00" stroke-width="3"/><circle cx="40" cy="44" r="9" fill="#ffb866" opacity=".75"/><path d="M50 22 q6 -8 14 -8 q-4 8 -14 8Z" fill="#3fae46"/><circle cx="50" cy="24" r="4" fill="#caa000"/></svg>';
+    if(s==='plum') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="56" rx="30" ry="32" fill="#7a2bd6"/><path d="M50 24 C50 40 50 70 50 86" stroke="#5a1aa8" stroke-width="4" fill="none" opacity=".6"/><ellipse cx="40" cy="44" rx="9" ry="13" fill="#b277f0" opacity=".7"/><path d="M50 24 q4 -10 12 -10 q-2 9 -12 10Z" fill="#3fae46"/></svg>';
+    // mint candy (teal swirl)
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="34" fill="#1fd6b5"/><circle cx="50" cy="50" r="34" fill="none" stroke="#0fa389" stroke-width="3"/><path d="M50 22 a28 28 0 0 1 0 56 a14 14 0 0 1 0 -28 a14 14 0 0 0 0 -28Z" fill="#eafff9" opacity=".9"/><circle cx="50" cy="50" r="7" fill="#1fd6b5"/></svg>';
+  }
+  const NAMES={berry:'fresa',grape:'uva',lemon:'limón',orange:'naranja',plum:'ciruela',mint:'menta'};
+
+  // --- payout: per-symbol cluster (count of same symbol >= 8). multiplier x bet ---
+  const TOP_MULT = 30;
+  function clusterMult(count){
+    if(count>=18) return 30;
+    if(count>=15) return 12;
+    if(count>=12) return 5;
+    if(count>=10) return 2;
+    if(count>=8)  return 1.2;
+    return 0;
+  }
+  // sum the multiplier across every symbol that reaches a cluster on the board
+  function evalBoard(board){
+    const counts={};
+    for(const s of board) counts[s]=(counts[s]||0)+1;
+    let mult=0;
+    for(const s in counts) mult+=clusterMult(counts[s]);
+    return Math.round(mult*100)/100;
+  }
+  // which cells are part of a winning cluster (for highlight)
+  function winningIndices(board){
+    const counts={};
+    for(const s of board) counts[s]=(counts[s]||0)+1;
+    const winSyms=new Set();
+    for(const s in counts) if(counts[s]>=8) winSyms.add(s);
+    const idx=[];
+    board.forEach((s,i)=>{ if(winSyms.has(s)) idx.push(i); });
+    return idx;
+  }
+
+  // outcomes weighted heavily toward 0/small (used to pick target before filling grid)
+  const WIN_OUTCOMES=[
+    { mult:1.2, w:40 },
+    { mult:2,   w:28 },
+    { mult:5,   w:18 },
+    { mult:12,  w:10 },
+    { mult:30,  w:4  }
+  ];
+  function pickTarget(){
+    let tot=0; WIN_OUTCOMES.forEach(o=>tot+=o.w);
+    let r=Math.random()*tot;
+    for(const o of WIN_OUTCOMES){ if((r-=o.w)<0) return o.mult; }
+    return 1.2;
+  }
+  // count of a single cluster needed to reach a target tier
+  function countForMult(m){
+    if(m>=30) return 18+((Math.random()*6)|0); // 18..23
+    if(m>=12) return 15+((Math.random()*3)|0); // 15..17
+    if(m>=5)  return 12+((Math.random()*3)|0); // 12..14
+    if(m>=2)  return 10+((Math.random()*2)|0); // 10..11
+    return 8+((Math.random()*2)|0);            // 8..9
+  }
+  const rndSym=()=>SYMBOLS[(Math.random()*SYMBOLS.length)|0];
+
+  // build a board with exactly ONE symbol forming a cluster of `n`, rest scattered with NO other cluster
+  function buildWinBoard(n){
+    const hero=rndSym();
+    const others=SYMBOLS.filter(s=>s!==hero);
+    // start all-filler: round-robin the other 5 symbols so none reaches 8
+    const board=new Array(TOTAL);
+    for(let i=0;i<TOTAL;i++) board[i]=others[i%others.length];
+    // place hero in n random distinct positions
+    const pos=[]; for(let i=0;i<TOTAL;i++) pos.push(i);
+    for(let i=pos.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=pos[i]; pos[i]=pos[j]; pos[j]=t; }
+    for(let i=0;i<n;i++) board[pos[i]]=hero;
+    // safety: ensure no OTHER symbol accidentally hit 8 after hero overwrite
+    if(winningIndices(board).length!==n){ return buildLoseBoard(); /*fallback handled by recompute*/ }
+    return board;
+  }
+  // build a guaranteed no-pay board: every symbol appears < 8 times
+  function buildLoseBoard(){
+    while(true){
+      const board=new Array(TOTAL);
+      for(let i=0;i<TOTAL;i++) board[i]=rndSym();
+      const counts={};
+      for(const s of board) counts[s]=(counts[s]||0)+1;
+      let ok=true; for(const s in counts) if(counts[s]>=8){ ok=false; break; }
+      if(ok) return board;
+    }
+  }
+
+  // --- rendering ---
+  function renderBoard(board, fadeNonWin){
+    const g=$('grid');
+    const winIdx = fadeNonWin ? new Set(winningIndices(board)) : null;
+    let html='';
+    for(let i=0;i<TOTAL;i++){
+      const cls = winIdx ? (winIdx.has(i)?'cell win':'cell fade') : 'cell';
+      html+=`<div class="${cls}">${symSVG(board[i])}</div>`;
+    }
+    g.innerHTML=html;
+  }
+  function renderRandom(){
+    const g=$('grid');
+    let html='';
+    for(let i=0;i<TOTAL;i++) html+=`<div class="cell">${symSVG(rndSym())}</div>`;
+    g.innerHTML=html;
+  }
+
+  // --- audio: subtle tick only (win/bet handled by shared NovaSound) ---
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.1,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndTick=()=>tone(360,0.06,'triangle',0.05,260);
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    if(spinning){
+      $('actBtn').textContent='GIRANDO…';
+      $('actBtn').disabled=true;
+      $('betUp').disabled=true; $('betDown').disabled=true;
+    } else {
+      $('actBtn').textContent='GIRAR'; $('actBtn').disabled=false;
+      $('betUp').disabled=false; $('betDown').disabled=false;
+    }
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+
+  function spin(){
+    if(spinning) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    spinning=true;
+    $('winDisp').textContent=fmt(0);
+    syncUI();
+
+    // decide the win via the house BEFORE filling the grid
+    const target=pickTarget();
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(target) : true);
+    let board = canWin ? buildWinBoard(countForMult(target)) : buildLoseBoard();
+    // recompute the actual payout from the displayed grid (single source of truth)
+    let landedMult = evalBoard(board);
+
+    // brief shuffle animation, then settle on the real board
+    let frames=0;
+    const iv=setInterval(()=>{
+      renderRandom();
+      if((frames%3)===0) sndTick();
+      if(++frames>=10){
+        clearInterval(iv);
+        renderBoard(board,false);
+        setTimeout(()=>resolve(board, landedMult, bet), 220);
+      }
+    }, 70);
+  }
+
+  function resolve(board, landedMult, bet){
+    if(landedMult>0){
+      const win=Math.round(bet*landedMult*100)/100;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      // tumble highlight of winning symbols before paying
+      renderBoard(board,true);
+      // describe the winning cluster(s)
+      const counts={};
+      for(const s of board) counts[s]=(counts[s]||0)+1;
+      const hits=[];
+      for(const s in counts) if(counts[s]>=8) hits.push(`${counts[s]}× ${NAMES[s]}`);
+      let label = landedMult>=TOP_MULT ? '¡RACIMO ENORME!' : '¡Racimo ganador!';
+      setMsg(`✅ ${label} · ${hits.join(' + ')} · ${landedMult}x · +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult:landedMult, el:$('winDisp') });
+    } else {
+      setMsg('❌ Sin racimo · ningún caramelo llegó a 8');
+    }
+    spinning=false;          // reset BEFORE syncUI so GIRAR re-enables
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(!spinning) spin(); });
+  $('betUp').addEventListener('click',()=>{ if(!spinning&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!spinning&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial board (a no-pay scatter) so it never looks empty
+  renderBoard(buildLoseBoard(),false);
+
+  // initial render BEFORE wallet hooks
+  syncUI();
+
+  // wallet hooks at the VERY END (avoid TDZ on $/consts)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Craps — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,255,255,.08); background:#0a1120; box-shadow:0 14px 40px rgba(0,0,0,.5); padding:16px 10px; }
+  .dice{ display:flex; gap:12px; justify-content:center; align-items:center; }
+  .die{ width:64px; height:64px; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45)); transition:transform .08s; }
+  .die.spin{ animation:tumble .12s linear infinite; }
+  @keyframes tumble{ 0%{transform:rotate(-8deg) scale(.96);} 50%{transform:rotate(8deg) scale(1.04);} 100%{transform:rotate(-8deg) scale(.96);} }
+  .sum{ text-align:center; margin-top:10px; font-size:13px; color:var(--muted); min-height:18px; }
+  .sum b{ color:var(--gold); font-size:16px; }
+  .point{ text-align:center; margin-top:8px; min-height:30px; }
+  .point .chip{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:5px 12px; }
+  .point .chip b{ color:var(--gold); font-size:15px; }
+  .point .chip.on{ border-color:var(--gold); box-shadow:0 0 14px rgba(255,200,61,.25); }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .lbl{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin:12px 0 6px; }
+  .passline{ background:linear-gradient(180deg,rgba(25,229,127,.12),rgba(25,229,127,.04)); border:1px solid rgba(25,229,127,.3); border-radius:12px; padding:10px; text-align:center; }
+  .passline .t{ font-size:13px; font-weight:800; color:var(--brand); letter-spacing:.5px; }
+  .passline .d{ font-size:10px; color:var(--muted); margin-top:3px; }
+  .controls{ display:flex; gap:8px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 8px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet button:disabled{ opacity:.4; cursor:not-allowed; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:20px; margin-top:10px; font-weight:700; color:var(--gold); font-size:13px; }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Craps</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="dice" id="dice"></div>
+      <div class="sum" id="sum">Apuesta a la línea de pase y tira</div>
+      <div class="point" id="point"></div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+
+    <div class="lbl">Tu apuesta</div>
+    <div class="passline">
+      <div class="t">LÍNEA DE PASE · 2x</div>
+      <div class="d">Salida: 7 u 11 gana · 2, 3 o 12 pierde · otro = punto. Luego repite el punto para ganar; un 7 pierde.</div>
+    </div>
+
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">TIRAR</button>
+    </div>
+    <div class="msg" id="message">¡Suerte en la línea de pase! 🎲</div>
+    <div class="foot">Nova Craps · juego original de BetNova · línea de pase simplificada</div>
+  </div>
+
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT=2;
+  let balance=1000, rolling=false;
+  // phase: 'idle' (come-out, bet editable) | 'point' (point established, bet locked)
+  let phase='idle', point=0, bet=0;
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+  // ---- dice SVG (white rounded die with pips 1..6) ----
+  function diceSVG(n){
+    const P={1:[[50,50]],2:[[30,30],[70,70]],3:[[28,28],[50,50],[72,72]],
+      4:[[30,30],[70,30],[30,70],[70,70]],5:[[30,30],[70,30],[50,50],[30,70],[70,70]],
+      6:[[30,28],[70,28],[30,50],[70,50],[30,72],[70,72]]};
+    const pips=(P[n]||[]).map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="8" fill="#0a0e1a"/>`).join('');
+    return `<svg class="die" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="6" width="88" height="88" rx="18" fill="#f4f8ff"/>
+      <rect x="6" y="6" width="88" height="88" rx="18" fill="none" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
+      ${pips}</svg>`;
+  }
+
+  function renderDice(d, spin){
+    $('dice').innerHTML = d.map(n=>diceSVG(n)).join('');
+    if(spin){ Array.from($('dice').children).forEach(e=>e.classList.add('spin')); }
+  }
+
+  // ---- audio: subtle dice-roll synth (no win/bet sounds; shared handles those) ----
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function clack(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(120+Math.random()*180,c.currentTime);
+    g.gain.setValueAtTime(0.08,c.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.07);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.08); }
+
+  // ---- two-dice helpers ----
+  function randDice(){ return [ri(1,6),ri(1,6)]; }
+  // pick 2 dice whose sum is in the given set
+  function diceForSum(set){
+    for(let i=0;i<400;i++){ const d=randDice(); if(set.indexOf(d[0]+d[1])>=0) return d; }
+    // fallback: build directly from first valid sum
+    const s=set[0]; const a=Math.max(1,Math.min(6,s-1)); return [a, s-a];
+  }
+
+  function updatePoint(){
+    if(phase==='point'){
+      $('point').innerHTML = `<span class="chip on">PUNTO <b>${point}</b> · repítelo para ganar</span>`;
+    } else {
+      $('point').innerHTML = `<span class="chip">Tirada de salida</span>`;
+    }
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const locked = rolling || phase==='point';
+    $('betUp').disabled = locked;
+    $('betDown').disabled = locked;
+    $('actBtn').disabled = rolling;
+    $('actBtn').textContent = (phase==='point') ? 'TIRAR (PUNTO)' : 'TIRAR';
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  // Resolve a finished roll. result: 'win' | 'lose' | 'point' | 'continue'
+  function resolve(d, result){
+    const sum=d[0]+d[1];
+    $('sum').innerHTML = `Suma: <b>${sum}</b>`;
+    if(result==='win'){
+      const w=bet*PAYOUT;
+      balance=NovaWallet.win(w);
+      $('winDisp').textContent=fmt(w);
+      setMsg(`✅ ¡Ganaste! ${PAYOUT}x · +${fmt(w)}`);
+      if(window.Juice) Juice.win(w,{ mult:PAYOUT, el:$('winDisp') });
+      phase='idle'; point=0;
+    } else if(result==='lose'){
+      $('winDisp').textContent=fmt(0);
+      setMsg(phase==='point' ? `❌ Salió 7 · pierdes. ¡Otra vez!` : `❌ Craps (${sum}) · pierdes. ¡Otra vez!`);
+      phase='idle'; point=0;
+    } else if(result==='point'){
+      point=sum; phase='point';
+      $('winDisp').textContent=fmt(0);
+      setMsg(`🎯 Punto establecido: ${sum}. Repítelo para ganar.`);
+    } else { // continue (point phase, neither point nor 7)
+      $('winDisp').textContent=fmt(0);
+      setMsg(`Punto ${point} · sigue tirando.`);
+    }
+    rolling=false;        // reset BEFORE syncUI
+    updatePoint();
+    syncUI();
+  }
+
+  function roll(){
+    if(rolling) return;
+    const comeOut = (phase==='idle');
+    if(comeOut){
+      const stake=BETS[betIdx];
+      if(balance<stake){ setMsg('Saldo insuficiente.'); return; }
+      bet=stake;
+      balance=NovaWallet.bet(bet);  // deduct once at come-out
+    }
+    rolling=true;
+    $('winDisp').textContent=fmt(0);
+    setMsg('Rodando los dados…');
+    syncUI();
+
+    // ---- decide the resolving dice (house-gated on WIN) ----
+    let finalDice, result;
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(PAYOUT) : true);
+
+    if(comeOut){
+      if(canWin){
+        // allow an immediate win (7 or 11)
+        finalDice = diceForSum([7,11]);
+        result='win';
+      } else {
+        // not allowed to win now: either lose (2/3/12) or establish a point (4,5,6,8,9,10)
+        // bias toward establishing a point so the game keeps going, sometimes a craps loss
+        if(Math.random()<0.5){ finalDice=diceForSum([2,3,12]); result='lose'; }
+        else { finalDice=diceForSum([4,5,6,8,9,10]); result='point'; }
+      }
+    } else {
+      // point phase
+      if(canWin){
+        // hit the point = win
+        finalDice = diceForSum([point]);
+        result='win';
+      } else {
+        // force a 7-out (lose); avoid accidentally hitting the point
+        if(point===7){ finalDice=diceForSum([2,3,4,5,6,8,9,10,11,12]); result='continue'; }
+        else { finalDice=diceForSum([7]); result='lose'; }
+      }
+    }
+
+    // quick tumble animation, then resolve
+    let ticks=0;
+    renderDice(randDice(), true);
+    clack();
+    const iv=setInterval(()=>{
+      ticks++;
+      renderDice(randDice(), true);
+      if(ticks%2===0) clack();
+      if(ticks>=8){
+        clearInterval(iv);
+        renderDice(finalDice, false);
+        resolve(finalDice, result);
+      }
+    },90);
+  }
+
+  // ---- wiring ----
+  $('actBtn').addEventListener('click',()=>{ ac(); roll(); });
+  $('betUp').addEventListener('click',()=>{ if(!rolling&&phase==='idle'&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!rolling&&phase==='idle'&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render
+  renderDice([1,1], false);
+  updatePoint();
+  syncUI();
+
+  // NovaWallet hooks at the VERY END (after $ and all funcs are defined → no TDZ)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>
