@@ -19,6 +19,67 @@
   const Juice = {};
   let cvs, ctx, parts = [], raf = 0;
 
+  // ===== NovaSound: motor de sonido "casino elegante" (campanas + reverb) =====
+  // window.NovaSound.play('win'|'bigwin'|'jackpot'|'coin'|'lose') · .chip() (apuesta)
+  // Soporta archivos reales: NovaSound.useFiles({ win:'../_shared/sounds/win.mp3', ... })
+  const NovaSound = (function(){
+    let actx, master, conv, convWet; const FILES = {};
+    function ac(){
+      if(!actx){ try{
+        actx = new (window.AudioContext||window.webkitAudioContext)();
+        master = actx.createGain(); master.gain.value = 0.42;
+        const comp = actx.createDynamicsCompressor(); master.connect(comp); comp.connect(actx.destination);
+        const len = Math.floor(actx.sampleRate*1.4), buf = actx.createBuffer(2, len, actx.sampleRate);
+        for(let ch=0; ch<2; ch++){ const d=buf.getChannelData(ch); for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len, 3.2); }
+        conv = actx.createConvolver(); conv.buffer = buf;
+        convWet = actx.createGain(); convWet.gain.value = 0.22; conv.connect(convWet); convWet.connect(master);
+      }catch(e){} }
+      if(actx && actx.state==='suspended') actx.resume();
+      return actx;
+    }
+    function bell(freq, when, dur, vel){
+      const c = ac(); if(!c) return; const t = c.currentTime + when;
+      const out = c.createGain(); out.gain.value = vel; out.connect(master); if(conv) out.connect(conv);
+      [[1,1],[2,0.5],[3,0.25],[4.2,0.12]].forEach(([mul,amp])=>{
+        const o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.value=freq*mul;
+        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(amp,t+0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+        o.connect(g); g.connect(out); o.start(t); o.stop(t+dur+0.05);
+      });
+    }
+    function noise(when, dur, vel, hp){
+      const c = ac(); if(!c) return; const t=c.currentTime+when;
+      const n=Math.floor(c.sampleRate*dur), buf=c.createBuffer(1,n,c.sampleRate), d=buf.getChannelData(0);
+      for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+      const src=c.createBufferSource(); src.buffer=buf;
+      const f=c.createBiquadFilter(); f.type='highpass'; f.frequency.value=hp||4500;
+      const g=c.createGain(); g.gain.value=vel; src.connect(f); f.connect(g); g.connect(master); if(conv) g.connect(conv);
+      src.start(t);
+    }
+    const C5=523.25,E5=659.25,G5=783.99,A4=440,E4=329.63,C6=1046.5,E6=1318.5,G6=1568;
+    const SEQ = {
+      win:    [[E5,0,.9,.5],[G5,.08,.9,.5],[C6,.16,1.1,.55]],
+      bigwin: [[C5,0,.8,.5],[E5,.07,.8,.5],[G5,.14,.9,.5],[C6,.21,1.1,.6],[E6,.30,1.2,.5]],
+      jackpot:[[C5,0,.7,.5],[E5,.08,.7,.5],[G5,.16,.7,.5],[C6,.24,.8,.55],[E6,.32,.9,.55],[G6,.40,1.4,.6]],
+      coin:   [[G5,0,.4,.4],[C6,.05,.5,.38]],
+      lose:   [[A4,0,.5,.32],[E4,.12,.7,.28]],
+    };
+    function play(name){
+      const f = FILES[name];
+      if(f){ try{ const a=f.cloneNode(); a.volume=0.6; a.play().catch(()=>{}); return; }catch(e){} }
+      (SEQ[name]||SEQ.win).forEach(([fr,w,d,v])=> bell(fr,w,d,v));
+      if(name==='jackpot'){ noise(.42,.5,.06,5000); noise(0,.25,.04,7000); }
+      else if(name==='bigwin'){ noise(0,.2,.035,7000); }
+      else if(name==='coin'){ noise(0,.05,.05,6000); }
+    }
+    return {
+      play, resume: ac,
+      chip(){ const c=ac(); if(!c) return; bell(1200,0,.12,.28); noise(0,.03,.05,5000); },
+      useFiles(map){ Object.keys(map||{}).forEach(k=>{ try{ const a=new Audio(map[k]); a.preload='auto'; FILES[k]=a; }catch(e){} }); },
+    };
+  })();
+  window.NovaSound = NovaSound;
+
   const PALETTE = ['#19e57f','#3fe0ff','#ffc83d','#ff5b8c','#a45bff','#ffffff','#ff8c3d','#5bffb0'];
   const GOLD = ['#ffc83d','#ffe89a','#e0a90c','#fff7dd','#ffb43d'];
 
@@ -186,6 +247,9 @@
     // nivel por multiplicador si está, si no por monto
     const m = (opts.mult != null) ? opts.mult : (amt >= 8000 ? 12 : amt >= 2500 ? 5 : amt >= 800 ? 2.5 : amt >= 200 ? 1.5 : 1.05);
     const fmt = amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+    // Sonido elegante de premio, escalado por nivel.
+    try { NovaSound.play(m >= 10 ? 'jackpot' : m >= 3 ? 'bigwin' : 'win'); } catch (e) {}
 
     // SIEMPRE (hasta el premio más chico): texto flotante + anillo + chispas + countUp
     Juice.float('+'+fmt, x, y, '#19e57f');

@@ -53,7 +53,7 @@
     connected: () => inIframe,
     ready(cb) { if (initialized) cb(balance); else readyCbs.push(cb) },
     onBalance(cb) { balanceCbs.push(cb) },
-    bet(amount) { balance -= amount; send({ type: 'BETNOVA_BET', amount }); return balance },
+    bet(amount) { try { window.NovaSound && NovaSound.chip() } catch (e) {} balance -= amount; send({ type: 'BETNOVA_BET', amount }); return balance },
     win(amount) { balance += amount; send({ type: 'BETNOVA_WIN', amount }); return balance },
   }
 })()
