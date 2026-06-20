@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Pirata — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#05101f; --panel:#0e1726; --panel2:#16223a; --gold:#ffc83d; --sea:#1f8fbf; --muted:#8a9bb5; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #0a3a52, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--gold); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,200,61,.18);
+    background:linear-gradient(180deg,#06283a,#05101f 70%); box-shadow:0 14px 40px rgba(0,0,0,.5);
+    padding:12px 10px; display:flex; flex-direction:column; align-items:center; gap:9px; }
+  .cabinet{ width:100%; border-radius:14px; padding:9px;
+    background:linear-gradient(180deg,#0c4a63,#072636);
+    border:1px solid rgba(255,200,61,.3); box-shadow:inset 0 0 24px rgba(0,0,0,.55), 0 0 18px rgba(255,200,61,.18); }
+  .grid{ position:relative; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+  .reel{ border-radius:9px; overflow:hidden; position:relative; height:144px;
+    background:linear-gradient(180deg,#eaf5fb,#cfe4ef);
+    border:1.5px solid var(--gold); box-shadow:inset 0 5px 12px rgba(0,0,0,.25), inset 0 -5px 12px rgba(0,0,0,.25); }
+  .reel::before,.reel::after{ content:""; position:absolute; left:0; right:0; height:16px; z-index:3; pointer-events:none; }
+  .reel::before{ top:0; background:linear-gradient(180deg,rgba(5,16,31,.4),transparent); }
+  .reel::after{ bottom:0; background:linear-gradient(0deg,rgba(5,16,31,.4),transparent); }
+  .strip{ position:absolute; left:0; top:0; width:100%; display:flex; flex-direction:column; }
+  .cell{ width:100%; height:48px; display:flex; align-items:center; justify-content:center; position:relative; }
+  .cell svg{ width:34px; height:34px; display:block; }
+  .cell.hot::after{ content:""; position:absolute; inset:2px; border-radius:6px;
+    box-shadow:inset 0 0 0 2px var(--gold), 0 0 10px rgba(255,200,61,.7); background:rgba(255,200,61,.12); }
+  .grid.win .reel{ border-color:#fff; }
+  .mult{ font-size:12px; font-weight:800; color:var(--gold); min-height:16px; letter-spacing:.2px; text-align:center; line-height:1.3; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:7px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:9px; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:46px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--gold),#e0a90c); box-shadow:0 0 20px rgba(255,200,61,.35); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:18px; margin-top:8px; font-weight:700; color:var(--gold); font-size:12px; }
+  .foot{ margin-top:6px; text-align:center; font-size:9px; color:#4a7a8e; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Pirata</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="cabinet">
+        <div class="grid" id="grid">
+          <div class="reel"><div class="strip" id="strip0"></div></div>
+          <div class="reel"><div class="strip" id="strip1"></div></div>
+          <div class="reel"><div class="strip" id="strip2"></div></div>
+          <div class="reel"><div class="strip" id="strip3"></div></div>
+          <div class="reel"><div class="strip" id="strip4"></div></div>
+        </div>
+      </div>
+      <div class="mult" id="mult">Calavera 4x/12x/30x · Loro 2x/6x/15x · Cofre 5x/20x/45x · 5 líneas · cofre = WILD</div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">GIRAR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y pulsa GIRAR</div>
+    <div class="foot">Nova Pirata · tragaperras original de BetNova · 5 rodillos, 3 filas, 5 líneas de pago</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let spinning=false;
+
+  const COLS=5, ROWS=3, CELL_H=48;
+
+  // --- symbols (inline SVG, pirate theme, no emojis). 'wild' = cofre del tesoro (treasure chest). ---
+  const SYMBOLS=['coin','compass','anchor','parrot','skull','wild'];
+  // reels-fill symbols (wild appears but is rarer when filling random cells)
+  const REEL_POOL=['coin','compass','anchor','parrot','skull','coin','compass','anchor','wild'];
+
+  function symSVG(s){
+    if(s==='coin') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="34" fill="#f0c54a" stroke="#b8780a" stroke-width="3"/><circle cx="50" cy="50" r="26" fill="none" stroke="#d99a08" stroke-width="2"/><path d="M50 32 a10 10 0 0 0 0 20 a10 10 0 0 1 0 16" fill="none" stroke="#8a5a04" stroke-width="5" stroke-linecap="round"/><path d="M50 28 l0 6 M50 66 l0 6" stroke="#8a5a04" stroke-width="5" stroke-linecap="round"/><ellipse cx="40" cy="40" rx="7" ry="4" fill="#fff6d0" opacity=".6"/></svg>';
+    if(s==='compass') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="34" fill="#c9a227" stroke="#8a6a20" stroke-width="3"/><circle cx="50" cy="50" r="26" fill="#0e2a3a"/><path d="M50 28 L57 50 L50 72 L43 50 Z" fill="#e8eefc"/><path d="M50 28 L57 50 L50 50 Z" fill="#ff4d5e"/><path d="M50 72 L43 50 L50 50 Z" fill="#1f8fbf"/><circle cx="50" cy="50" r="4" fill="#f0c54a"/></svg>';
+    if(s==='anchor') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="24" r="8" fill="none" stroke="#cfe0ee" stroke-width="6"/><path d="M50 30 L50 80" stroke="#cfe0ee" stroke-width="7" stroke-linecap="round"/><path d="M34 44 L66 44" stroke="#cfe0ee" stroke-width="7" stroke-linecap="round"/><path d="M24 60 q0 24 26 24 q26 0 26 -24" fill="none" stroke="#cfe0ee" stroke-width="7" stroke-linecap="round"/><path d="M18 56 l8 6 l6 -8 M82 56 l-8 6 l-6 -8" fill="none" stroke="#9fb6c8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    if(s==='parrot') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M58 22 q22 6 18 34 q-4 26 -26 30 q-20 4 -26 -14 q-6 -20 8 -38 q12 -16 26 -12Z" fill="#2bb673"/><path d="M40 40 q-14 8 -18 28 q-2 14 10 18 q-12 -16 -2 -34 q6 -10 10 -12Z" fill="#1f9e60"/><path d="M62 26 q14 8 12 26 q-2 16 -10 22 q6 -18 0 -32 q-3 -10 -2 -16Z" fill="#ffb020"/><circle cx="62" cy="34" r="5" fill="#fff"/><circle cx="63" cy="34" r="2.5" fill="#1a1a2a"/><path d="M70 36 q12 0 12 8 q-10 2 -14 -3Z" fill="#ff8a2a"/><path d="M68 40 q8 2 10 6" stroke="#d96a0a" stroke-width="2" fill="none"/></svg>';
+    if(s==='skull') return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 18 q26 0 26 28 q0 14 -8 20 l0 8 q-18 8 -36 0 l0 -8 q-8 -6 -8 -20 q0 -28 26 -28Z" fill="#f0f2f7"/><circle cx="40" cy="44" r="8" fill="#1a2030"/><circle cx="60" cy="44" r="8" fill="#1a2030"/><path d="M50 54 l-5 10 l10 0 Z" fill="#1a2030"/><path d="M40 74 l4 8 M50 74 l0 9 M60 74 l-4 8" stroke="#9aa6bc" stroke-width="3" stroke-linecap="round"/><path d="M22 82 L42 70 M78 82 L58 70" stroke="#cfd6e4" stroke-width="6" stroke-linecap="round"/><path d="M20 70 L40 82 M80 70 L60 82" stroke="#cfd6e4" stroke-width="6" stroke-linecap="round"/></svg>';
+    // wild — cofre del tesoro (treasure chest)
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9743a"/><stop offset="1" stop-color="#5e3a16"/></linearGradient></defs><path d="M22 44 q28 -16 56 0 l0 4 q-28 -14 -56 0Z" fill="#7a4e22"/><rect x="22" y="48" width="56" height="32" rx="4" fill="url(#wg)" stroke="#3a2410" stroke-width="2"/><path d="M22 60 L78 60" stroke="#f0c54a" stroke-width="4"/><rect x="44" y="56" width="12" height="14" rx="2" fill="#f0c54a" stroke="#8a5a04" stroke-width="1.5"/><circle cx="50" cy="63" r="2" fill="#5e3a16"/><circle cx="34" cy="42" r="4" fill="#ffd84d"/><circle cx="46" cy="38" r="4" fill="#ffd84d"/><circle cx="58" cy="40" r="4" fill="#ffd84d"/><circle cx="68" cy="43" r="4" fill="#ffd84d"/></svg>';
+  }
+
+  // --- paytable: multiplier per symbol for [3,4,5] of a kind on a line ---
+  const TOP_MULT = 45;
+  const PAY = {
+    coin:    [1,3,8],
+    compass: [1,3,8],
+    anchor:  [1,3,8],
+    parrot:  [2,6,15],
+    skull:   [4,12,30],
+    wild:    [5,20,45]   // pure-chest line (only when the whole run is wild)
+  };
+
+  // 5 fixed paylines, each is [row per column] (row 0=top,1=mid,2=bottom)
+  const LINES=[
+    [0,0,0,0,0],   // top row
+    [1,1,1,1,1],   // middle row
+    [2,2,2,2,2],   // bottom row
+    [0,1,2,1,0],   // V (down then up)
+    [2,1,0,1,2]    // ^ (up then down)
+  ];
+
+  // Evaluate the full 5x3 grid -> { total (multiplier), wins:[{line,sym,count,mult,cells:[[col,row]...]}] }
+  // grid is grid[col][row] = symbol. Left-to-right adjacency from leftmost reel. WILD substitutes.
+  function evalGrid(grid){
+    let total=0; const wins=[];
+    for(let li=0; li<LINES.length; li++){
+      const line=LINES[li];
+      const first=grid[0][line[0]];
+      // base symbol = first non-wild on the line. If the whole run is wild it pays the chest table.
+      let base=first;
+      if(base==='wild'){
+        for(let c=1;c<COLS;c++){ if(grid[c][line[c]]!=='wild'){ base=grid[c][line[c]]; break; } }
+        // if base is still 'wild', the run is all-chest -> use the wild (chest) paytable
+      }
+      // count adjacency from left
+      let count=0;
+      for(let c=0;c<COLS;c++){
+        const s=grid[c][line[c]];
+        if(s===base||s==='wild') count++; else break;
+      }
+      if(count>=3 && PAY[base]){
+        const mult=PAY[base][count-3];
+        const cells=[]; for(let c=0;c<count;c++) cells.push([c,line[c]]);
+        wins.push({ line:li, sym:base, count, mult, cells });
+        total+=mult;
+      }
+    }
+    return { total, wins };
+  }
+
+  // --- house gate target picking: weighted heavily toward 0/small ---
+  // Targets expressed as single-line multipliers we try to build.
+  const WIN_OUTCOMES=[
+    { mult:1,  build:()=>buildLine(['coin','compass','anchor'][(Math.random()*3)|0],3) }, // low 3
+    { mult:2,  build:()=>buildLine('parrot',3) },
+    { mult:3,  build:()=>buildLine(['coin','compass','anchor'][(Math.random()*3)|0],4) }, // low 4
+    { mult:4,  build:()=>buildLine('skull',3) },
+    { mult:6,  build:()=>buildLine('parrot',4) },
+    { mult:8,  build:()=>buildLine(['coin','compass','anchor'][(Math.random()*3)|0],5) }, // low 5
+    { mult:12, build:()=>buildLine('skull',4) },
+    { mult:15, build:()=>buildLine('parrot',5) },
+    { mult:30, build:()=>buildLine('skull',5) },
+    { mult:45, build:()=>buildLine('wild',5) }   // pure-chest line jackpot
+  ];
+  const WEIGHTS=[30,22,16,12,8,6,3,2,1,1]; // heavily toward small
+  function pickOutcome(){
+    let tot=0; WEIGHTS.forEach(w=>tot+=w);
+    let r=Math.random()*tot;
+    for(let i=0;i<WIN_OUTCOMES.length;i++){ if((r-=WEIGHTS[i])<0) return WIN_OUTCOMES[i]; }
+    return WIN_OUTCOMES[0];
+  }
+
+  // empty 5x3 grid filled with random symbols (used as base)
+  function randSym(){ return REEL_POOL[(Math.random()*REEL_POOL.length)|0]; }
+  function blankGrid(){
+    const g=[]; for(let c=0;c<COLS;c++){ g[c]=[]; for(let r=0;r<ROWS;r++) g[c][r]=randSym(); }
+    return g;
+  }
+
+  // Build a grid with a winning line: pick a random line, set `count` matching cells from the
+  // left, then break the (count+1)th so it can't over-extend. Returns the grid.
+  function buildLine(sym, count){
+    const g=blankGrid();
+    const li=(Math.random()*LINES.length)|0; const line=LINES[li];
+    for(let c=0;c<count;c++) g[c][line[c]]=sym;
+    // break adjacency right after, so the line is exactly `count` (avoids accidental 5)
+    if(count<COLS){
+      const bc=count, br=line[bc];
+      let alt; do{ alt=['coin','compass','anchor','parrot','skull'][(Math.random()*5)|0]; }while(alt===sym);
+      g[bc][br]=alt; // never wild, so it truly breaks
+    }
+    return g;
+  }
+
+  // Build a grid guaranteed to have NO winning line (no-pay).
+  function buildLose(){
+    for(let tries=0;tries<200;tries++){
+      const g=blankGrid();
+      if(evalGrid(g).total===0) return g;
+    }
+    // fallback: deterministic no-win pattern (alternate across every line start)
+    const g=blankGrid();
+    // force each line's first two cells different & non-wild to kill 3+ runs
+    for(const line of LINES){
+      g[0][line[0]]='skull'; g[1][line[1]]='coin'; // any line: 1st!=2nd, neither wild
+    }
+    return g;
+  }
+
+  // --- reel rendering: strip = random spin cells then the 3 final rows at the bottom ---
+  const SPIN_CELLS=18;
+  function buildStrip(col, finalCol){
+    const strip=$('strip'+col);
+    let html='';
+    for(let i=0;i<SPIN_CELLS;i++) html+=`<div class="cell">${symSVG(randSym())}</div>`;
+    for(let r=0;r<ROWS;r++) html+=`<div class="cell" data-r="${r}">${symSVG(finalCol[r])}</div>`;
+    strip.innerHTML=html;
+    strip.style.transition='none';
+    strip.style.transform='translateY(0px)';
+  }
+  function setStatic(col, finalCol){
+    const strip=$('strip'+col);
+    strip.style.transition='none';
+    let html='';
+    for(let r=0;r<ROWS;r++) html+=`<div class="cell" data-r="${r}">${symSVG(finalCol[r])}</div>`;
+    strip.innerHTML=html;
+    strip.style.transform='translateY(0px)';
+  }
+  function spinReel(col, finalCol, dur, cb){
+    buildStrip(col, finalCol);
+    const strip=$('strip'+col);
+    const dist=SPIN_CELLS*CELL_H; // travel up so the 3 final rows land in view
+    void strip.offsetHeight;
+    strip.style.transition=`transform ${dur}ms cubic-bezier(.18,.7,.16,1)`;
+    strip.style.transform=`translateY(-${dist}px)`;
+    setTimeout(()=>{ if(cb) cb(); }, dur+20);
+  }
+
+  // --- audio: subtle reel-stop tick only (win/bet handled by shared NovaSound) ---
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.1,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndTick=()=>tone(280,0.07,'square',0.06,170);
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    if(spinning){
+      $('actBtn').textContent='GIRANDO…';
+      $('actBtn').disabled=true;
+      $('betUp').disabled=true; $('betDown').disabled=true;
+    } else {
+      $('actBtn').textContent='GIRAR'; $('actBtn').disabled=false;
+      $('betUp').disabled=false; $('betDown').disabled=false;
+    }
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+
+  const SYM_ES={coin:'moneda',compass:'brújula',anchor:'ancla',parrot:'loro',skull:'calavera',wild:'cofre'};
+
+  function clearHot(){ document.querySelectorAll('.cell.hot').forEach(c=>c.classList.remove('hot')); }
+  function markHot(wins){
+    for(const w of wins){
+      for(const [col,row] of w.cells){
+        const strip=$('strip'+col);
+        const cell=strip.querySelector(`.cell[data-r="${row}"]`);
+        if(cell) cell.classList.add('hot');
+      }
+    }
+  }
+
+  function spin(){
+    if(spinning) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    spinning=true;
+    $('winDisp').textContent=fmt(0);
+    $('grid').classList.remove('win');
+    clearHot();
+    syncUI();
+
+    // decide the win via the house BEFORE filling the grid
+    const outcome=pickOutcome();
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(outcome.mult) : true);
+    const grid = canWin ? outcome.build() : buildLose();
+    // recompute actual payout from the displayed grid (single source of truth)
+    const res = evalGrid(grid);
+    const landedMult = res.total;
+
+    const durs=[800,980,1160,1340,1520];
+    for(let c=0;c<COLS;c++){
+      const col=[grid[c][0],grid[c][1],grid[c][2]];
+      const isLast=(c===COLS-1);
+      spinReel(c, col, durs[c], ()=>{ sndTick(); if(isLast) resolve(grid, res, landedMult, bet); });
+    }
+  }
+
+  function resolve(grid, res, landedMult, bet){
+    if(landedMult>0){
+      const win=bet*landedMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      $('grid').classList.add('win');
+      markHot(res.wins);
+      // describe the biggest line
+      let best=res.wins[0];
+      for(const w of res.wins) if(w.mult>best.mult) best=w;
+      const label=`${best.count} ${SYM_ES[best.sym]}${res.wins.length>1?' +'+(res.wins.length-1)+' línea(s)':''}`;
+      setMsg(`✅ ${label} · ${landedMult}x · +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult:landedMult, el:$('winDisp') });
+    } else {
+      setMsg('❌ Sin línea ganadora · prueba de nuevo');
+    }
+    spinning=false;          // reset BEFORE syncUI so GIRAR re-enables
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(!spinning) spin(); });
+  $('betUp').addEventListener('click',()=>{ if(!spinning&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!spinning&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial static grid so it never looks empty (no winning line)
+  const initCols=[['skull','coin','compass'],['compass','parrot','anchor'],['anchor','compass','coin'],['parrot','coin','skull'],['coin','anchor','parrot']];
+  for(let c=0;c<COLS;c++) setStatic(c, initCols[c]);
+
+  // initial render BEFORE wallet hooks
+  syncUI();
+
+  // wallet hooks at the VERY END (avoid TDZ on $/consts)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

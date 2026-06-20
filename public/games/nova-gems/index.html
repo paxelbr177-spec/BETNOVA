@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Gems — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e;
+    --ruby:#ff3b6b; --sapphire:#3b8bff; --emerald:#19e57f; --topaz:#ffd43b; --amethyst:#b558ff; --diamond:#bff3ff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #2a1148, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--amethyst); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(181,88,255,.22);
+    background:linear-gradient(180deg,#1a0a33,#0a1120 70%); box-shadow:0 14px 40px rgba(0,0,0,.5);
+    padding:12px 10px; display:flex; flex-direction:column; align-items:center; gap:9px; }
+  .cabinet{ width:100%; border-radius:14px; padding:9px;
+    background:linear-gradient(180deg,#241046,#150a28);
+    border:1px solid rgba(181,88,255,.32); box-shadow:inset 0 0 24px rgba(0,0,0,.55), 0 0 18px rgba(181,88,255,.2); }
+  .grid{ position:relative; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+  .reel{ border-radius:9px; overflow:hidden; position:relative; height:144px;
+    background:linear-gradient(180deg,#10162a,#070b16);
+    border:1.5px solid rgba(181,88,255,.45); box-shadow:inset 0 5px 12px rgba(0,0,0,.4), inset 0 -5px 12px rgba(0,0,0,.4); }
+  .reel::before,.reel::after{ content:""; position:absolute; left:0; right:0; height:16px; z-index:3; pointer-events:none; }
+  .reel::before{ top:0; background:linear-gradient(180deg,rgba(5,8,18,.6),transparent); }
+  .reel::after{ bottom:0; background:linear-gradient(0deg,rgba(5,8,18,.6),transparent); }
+  .strip{ position:absolute; left:0; top:0; width:100%; display:flex; flex-direction:column; }
+  .cell{ width:100%; height:48px; display:flex; align-items:center; justify-content:center; position:relative; }
+  .cell svg{ width:34px; height:34px; display:block; }
+  .cell.hot::after{ content:""; position:absolute; inset:2px; border-radius:6px;
+    box-shadow:inset 0 0 0 2px var(--amethyst), 0 0 12px rgba(181,88,255,.8); background:rgba(181,88,255,.14); }
+  .grid.win .reel{ border-color:#fff; }
+  .mult{ font-size:12px; font-weight:800; color:var(--amethyst); min-height:16px; letter-spacing:.2px; text-align:center; line-height:1.3; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:7px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:9px; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:46px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--amethyst),#7d1fd0); box-shadow:0 0 20px rgba(181,88,255,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:18px; margin-top:8px; font-weight:700; color:var(--amethyst); font-size:12px; }
+  .foot{ margin-top:6px; text-align:center; font-size:9px; color:#6a5a8a; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Gems</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="cabinet">
+        <div class="grid" id="grid">
+          <div class="reel"><div class="strip" id="strip0"></div></div>
+          <div class="reel"><div class="strip" id="strip1"></div></div>
+          <div class="reel"><div class="strip" id="strip2"></div></div>
+          <div class="reel"><div class="strip" id="strip3"></div></div>
+          <div class="reel"><div class="strip" id="strip4"></div></div>
+        </div>
+      </div>
+      <div class="mult" id="mult">Amatista 3x/9x/20x · Topacio 2x/6x/15x · Diamante = WILD · 5 líneas de pago</div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">GIRAR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y pulsa GIRAR</div>
+    <div class="foot">Nova Gems · tragaperras original de BetNova · 5 rodillos, 3 filas, 5 líneas de pago</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let spinning=false;
+
+  const COLS=5, ROWS=3, CELL_H=48;
+
+  // --- symbols (inline SVG faceted gems, no emojis). 'diamond' = WILD. ---
+  const SYMBOLS=['ruby','sapphire','emerald','topaz','amethyst','diamond'];
+  // reels-fill symbols (diamond/wild appears but is rarer when filling random cells)
+  const REEL_POOL=['ruby','sapphire','emerald','topaz','amethyst','ruby','sapphire','emerald','diamond'];
+
+  // faceted gem SVG: brilliant-cut shape with table, crown facets and a bright highlight.
+  function gemSVG(top,mid,dark,light){
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">'+
+      '<path d="M30 22 L70 22 L88 42 L50 90 L12 42 Z" fill="'+mid+'" stroke="'+dark+'" stroke-width="2"/>'+
+      '<path d="M30 22 L70 22 L78 42 L22 42 Z" fill="'+top+'"/>'+
+      '<path d="M22 42 L50 90 L12 42 Z" fill="'+dark+'"/>'+
+      '<path d="M78 42 L50 90 L88 42 Z" fill="'+dark+'" opacity=".8"/>'+
+      '<path d="M22 42 L78 42 L50 90 Z" fill="'+mid+'"/>'+
+      '<path d="M30 22 L50 42 L22 42 Z" fill="'+light+'" opacity=".7"/>'+
+      '<path d="M70 22 L50 42 L78 42 Z" fill="'+mid+'"/>'+
+      '<path d="M38 26 L48 26 L44 38 Z" fill="#ffffff" opacity=".55"/>'+
+      '</svg>';
+  }
+  function symSVG(s){
+    if(s==='ruby')     return gemSVG('#ff7aa0','#ff3b6b','#a01030','#ffc2d4');
+    if(s==='sapphire') return gemSVG('#8fc0ff','#3b8bff','#1040a0','#cfe4ff');
+    if(s==='emerald')  return gemSVG('#7af0b8','#19e57f','#0a8048','#c4f8de');
+    if(s==='topaz')    return gemSVG('#ffe98f','#ffd43b','#b88a00','#fff4c4');
+    if(s==='amethyst') return gemSVG('#d49aff','#b558ff','#6a1fb0','#ecd4ff');
+    // diamond — WILD, bright white/cyan brilliant
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="dg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#7fdcff"/></linearGradient></defs>'+
+      '<path d="M30 22 L70 22 L88 42 L50 90 L12 42 Z" fill="url(#dg)" stroke="#3aa0c8" stroke-width="2"/>'+
+      '<path d="M30 22 L70 22 L78 42 L22 42 Z" fill="#ffffff"/>'+
+      '<path d="M22 42 L50 90 L12 42 Z" fill="#9fe4ff"/>'+
+      '<path d="M78 42 L50 90 L88 42 Z" fill="#bff3ff"/>'+
+      '<path d="M22 42 L78 42 L50 90 Z" fill="#e6fbff"/>'+
+      '<path d="M38 26 L48 26 L44 38 Z" fill="#ffffff" opacity=".85"/>'+
+      '<path d="M55 26 L64 30 L58 40 Z" fill="#ffffff" opacity=".5"/></svg>';
+  }
+
+  // --- paytable: multiplier per symbol for [3,4,5] of a kind on a line ---
+  const TOP_MULT = 50;
+  const PAY = {
+    ruby:     [1,3,8],     // low
+    sapphire: [1,3,8],     // low
+    emerald:  [1,3,8],     // low
+    topaz:    [2,6,15],    // mid
+    amethyst: [3,9,20],    // high
+    diamond:  [5,20,50]    // pure-diamond line (also WILD, substitutes for any gem)
+  };
+
+  // 5 fixed paylines, each is [row per column] (row 0=top,1=mid,2=bottom)
+  const LINES=[
+    [0,0,0,0,0],   // top row
+    [1,1,1,1,1],   // middle row
+    [2,2,2,2,2],   // bottom row
+    [0,1,2,1,0],   // V (down then up)
+    [2,1,0,1,2]    // ^ (up then down)
+  ];
+
+  // Evaluate the full 5x3 grid -> { total (multiplier), wins:[{line,sym,count,mult,cells:[[col,row]...]}] }
+  // grid is grid[col][row] = symbol. Left-to-right adjacency from leftmost reel. WILD (diamond) substitutes.
+  function evalGrid(grid){
+    let total=0; const wins=[];
+    for(let li=0; li<LINES.length; li++){
+      const line=LINES[li];
+      const first=grid[0][line[0]];
+      // base symbol = first non-wild on the line (if line starts with diamonds, use first concrete gem)
+      let base=first;
+      if(base==='diamond'){
+        for(let c=1;c<COLS;c++){ if(grid[c][line[c]]!=='diamond'){ base=grid[c][line[c]]; break; } }
+        if(base==='diamond') base='diamond'; // all diamonds -> pure diamond line pays as diamond
+      }
+      // count adjacency from left (diamond substitutes for the base gem; for a diamond base, only diamonds count)
+      let count=0;
+      for(let c=0;c<COLS;c++){
+        const s=grid[c][line[c]];
+        if(s===base || (base!=='diamond' && s==='diamond')) count++; else break;
+      }
+      if(count>=3 && PAY[base]){
+        const mult=PAY[base][count-3];
+        const cells=[]; for(let c=0;c<count;c++) cells.push([c,line[c]]);
+        wins.push({ line:li, sym:base, count, mult, cells });
+        total+=mult;
+      }
+    }
+    return { total, wins };
+  }
+
+  // --- house gate target picking: weighted heavily toward 0/small ---
+  // Targets expressed as single-line multipliers we try to build.
+  const LOWS=['ruby','sapphire','emerald'];
+  const WIN_OUTCOMES=[
+    { mult:1,  build:()=>buildLine(LOWS[(Math.random()*3)|0],3) },  // low 3
+    { mult:2,  build:()=>buildLine('topaz',3) },
+    { mult:3,  build:()=>buildLine('amethyst',3) },                 // high 3 / low 4 tier
+    { mult:6,  build:()=>buildLine('topaz',4) },
+    { mult:8,  build:()=>buildLine(LOWS[(Math.random()*3)|0],5) },  // low 5
+    { mult:9,  build:()=>buildLine('amethyst',4) },
+    { mult:15, build:()=>buildLine('topaz',5) },
+    { mult:20, build:()=>buildLine('amethyst',5) },                 // high 5
+    { mult:50, build:()=>buildLine('diamond',5) }                   // pure diamond top
+  ];
+  const WEIGHTS=[30,22,16,11,8,6,4,2,1]; // heavily toward small
+  function pickOutcome(){
+    let tot=0; WEIGHTS.forEach(w=>tot+=w);
+    let r=Math.random()*tot;
+    for(let i=0;i<WIN_OUTCOMES.length;i++){ if((r-=WEIGHTS[i])<0) return WIN_OUTCOMES[i]; }
+    return WIN_OUTCOMES[0];
+  }
+
+  // empty 5x3 grid filled with random symbols (used as base)
+  function randSym(){ return REEL_POOL[(Math.random()*REEL_POOL.length)|0]; }
+  function blankGrid(){
+    const g=[]; for(let c=0;c<COLS;c++){ g[c]=[]; for(let r=0;r<ROWS;r++) g[c][r]=randSym(); }
+    return g;
+  }
+
+  // Build a grid with a winning line: pick a random line, set `count` matching cells from the
+  // left, then break the (count+1)th so it can't over-extend. Returns the grid.
+  function buildLine(sym, count){
+    const g=blankGrid();
+    const li=(Math.random()*LINES.length)|0; const line=LINES[li];
+    for(let c=0;c<count;c++) g[c][line[c]]=sym;
+    // break adjacency right after, so the line is exactly `count` (avoids accidental 5)
+    if(count<COLS){
+      const bc=count, br=line[bc];
+      let alt; do{ alt=['ruby','sapphire','emerald','topaz','amethyst'][(Math.random()*5)|0]; }while(alt===sym);
+      g[bc][br]=alt; // never diamond, so it truly breaks
+    }
+    return g;
+  }
+
+  // Build a grid guaranteed to have NO winning line (no-pay).
+  function buildLose(){
+    for(let tries=0;tries<200;tries++){
+      const g=blankGrid();
+      if(evalGrid(g).total===0) return g;
+    }
+    // fallback: deterministic no-win pattern (alternate across every line start)
+    const g=blankGrid();
+    // force each line's first two cells different & non-wild to kill 3+ runs
+    for(const line of LINES){
+      g[0][line[0]]='amethyst'; g[1][line[1]]='ruby'; // any line: 1st!=2nd, neither diamond
+    }
+    return g;
+  }
+
+  // --- reel rendering: strip = random spin cells then the 3 final rows at the bottom ---
+  const SPIN_CELLS=18;
+  function buildStrip(col, finalCol){
+    const strip=$('strip'+col);
+    let html='';
+    for(let i=0;i<SPIN_CELLS;i++) html+=`<div class="cell">${symSVG(randSym())}</div>`;
+    for(let r=0;r<ROWS;r++) html+=`<div class="cell" data-r="${r}">${symSVG(finalCol[r])}</div>`;
+    strip.innerHTML=html;
+    strip.style.transition='none';
+    strip.style.transform='translateY(0px)';
+  }
+  function setStatic(col, finalCol){
+    const strip=$('strip'+col);
+    strip.style.transition='none';
+    let html='';
+    for(let r=0;r<ROWS;r++) html+=`<div class="cell" data-r="${r}">${symSVG(finalCol[r])}</div>`;
+    strip.innerHTML=html;
+    strip.style.transform='translateY(0px)';
+  }
+  function spinReel(col, finalCol, dur, cb){
+    buildStrip(col, finalCol);
+    const strip=$('strip'+col);
+    const dist=SPIN_CELLS*CELL_H; // travel up so the 3 final rows land in view
+    void strip.offsetHeight;
+    strip.style.transition=`transform ${dur}ms cubic-bezier(.18,.7,.16,1)`;
+    strip.style.transform=`translateY(-${dist}px)`;
+    setTimeout(()=>{ if(cb) cb(); }, dur+20);
+  }
+
+  // --- audio: subtle reel-stop tick only (win/bet handled by shared NovaSound) ---
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.1,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndTick=()=>tone(420,0.07,'triangle',0.05,260);
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    if(spinning){
+      $('actBtn').textContent='GIRANDO…';
+      $('actBtn').disabled=true;
+      $('betUp').disabled=true; $('betDown').disabled=true;
+    } else {
+      $('actBtn').textContent='GIRAR'; $('actBtn').disabled=false;
+      $('betUp').disabled=false; $('betDown').disabled=false;
+    }
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+
+  const SYM_ES={ruby:'rubí',sapphire:'zafiro',emerald:'esmeralda',topaz:'topacio',amethyst:'amatista',diamond:'diamante'};
+
+  function clearHot(){ document.querySelectorAll('.cell.hot').forEach(c=>c.classList.remove('hot')); }
+  function markHot(wins){
+    for(const w of wins){
+      for(const [col,row] of w.cells){
+        const strip=$('strip'+col);
+        const cell=strip.querySelector(`.cell[data-r="${row}"]`);
+        if(cell) cell.classList.add('hot');
+      }
+    }
+  }
+
+  function spin(){
+    if(spinning) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    spinning=true;
+    $('winDisp').textContent=fmt(0);
+    $('grid').classList.remove('win');
+    clearHot();
+    syncUI();
+
+    // decide the win via the house BEFORE filling the grid
+    const outcome=pickOutcome();
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(outcome.mult) : true);
+    const grid = canWin ? outcome.build() : buildLose();
+    // recompute actual payout from the displayed grid (single source of truth)
+    const res = evalGrid(grid);
+    const landedMult = res.total;
+
+    const durs=[800,980,1160,1340,1520];
+    for(let c=0;c<COLS;c++){
+      const col=[grid[c][0],grid[c][1],grid[c][2]];
+      const isLast=(c===COLS-1);
+      spinReel(c, col, durs[c], ()=>{ sndTick(); if(isLast) resolve(grid, res, landedMult, bet); });
+    }
+  }
+
+  function resolve(grid, res, landedMult, bet){
+    if(landedMult>0){
+      const win=bet*landedMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      $('grid').classList.add('win');
+      markHot(res.wins);
+      // describe the biggest line
+      let best=res.wins[0];
+      for(const w of res.wins) if(w.mult>best.mult) best=w;
+      const label=`${best.count} ${SYM_ES[best.sym]}${res.wins.length>1?' +'+(res.wins.length-1)+' línea(s)':''}`;
+      setMsg(`✅ ${label} · ${landedMult}x · +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult:landedMult, el:$('winDisp') });
+    } else {
+      setMsg('❌ Sin línea ganadora · prueba de nuevo');
+    }
+    spinning=false;          // reset BEFORE syncUI so GIRAR re-enables
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(!spinning) spin(); });
+  $('betUp').addEventListener('click',()=>{ if(!spinning&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!spinning&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial static grid so it never looks empty (no winning line)
+  const initCols=[['amethyst','ruby','sapphire'],['sapphire','topaz','emerald'],['emerald','ruby','topaz'],['topaz','sapphire','amethyst'],['ruby','emerald','sapphire']];
+  for(let c=0;c<COLS;c++) setStatic(c, initCols[c]);
+
+  // initial render BEFORE wallet hooks
+  syncUI();
+
+  // wallet hooks at the VERY END (avoid TDZ on $/consts)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Aro — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,#1a1330,#0a1120); box-shadow:0 12px 34px rgba(0,0,0,.5); }
+  .scene{ display:block; width:100%; height:auto; }
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; color:var(--gold); font-size:13px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .betrow{ display:flex; justify-content:center; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:52px; text-align:center; font-weight:700; }
+  .pegs{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .peg{ height:44px; border:2px solid transparent; border-radius:12px; cursor:pointer; font-size:13px; font-weight:800; color:#e8eefc; background:var(--panel2); transition:border-color .15s, transform .1s, box-shadow .15s; }
+  .peg:active{ transform:translateY(2px); }
+  .peg.sel{ border-color:var(--gold); color:var(--gold); box-shadow:0 0 16px rgba(255,200,61,.32); }
+  .peg:disabled{ opacity:.45; cursor:not-allowed; }
+  .throw{ width:100%; height:48px; margin-top:10px; border:0; border-radius:12px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 18px rgba(25,229,127,.32); transition:filter .15s, transform .1s; }
+  .throw:active{ transform:translateY(2px); }
+  .throw:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+  .foot{ margin-top:7px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Aro</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <svg class="scene" id="scene" viewBox="0 0 360 230" xmlns="http://www.w3.org/2000/svg">
+        <!-- fondo de feria -->
+        <rect x="0" y="0" width="360" height="230" fill="#1a1330"/>
+        <rect x="0" y="0" width="360" height="160" fill="url(#tent)"/>
+        <defs>
+          <pattern id="tent" width="48" height="160" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="24" height="160" fill="rgba(255,77,94,.10)"/>
+            <rect x="24" y="0" width="24" height="160" fill="rgba(255,200,61,.06)"/>
+          </pattern>
+        </defs>
+        <!-- guirnalda de luces -->
+        <g>
+          <path d="M0,18 Q90,40 180,18 T360,18" stroke="rgba(255,255,255,.18)" stroke-width="1.5" fill="none"/>
+          <circle cx="40" cy="26" r="3" fill="#ffc83d"/><circle cx="100" cy="30" r="3" fill="#19e57f"/>
+          <circle cx="160" cy="25" r="3" fill="#ff4d5e"/><circle cx="220" cy="25" r="3" fill="#ffc83d"/>
+          <circle cx="280" cy="30" r="3" fill="#19e57f"/><circle cx="330" cy="26" r="3" fill="#ff4d5e"/>
+        </g>
+        <!-- mostrador -->
+        <rect x="0" y="170" width="360" height="60" fill="#241a3d"/>
+        <rect x="0" y="170" width="360" height="6" fill="#ffc83d"/>
+
+        <!-- pegs/botellas: 0=izq 1=centro 2=der, base x = 80/180/280 -->
+        <g id="pegGroup">
+          <!-- peg 0 -->
+          <g transform="translate(80,0)">
+            <rect x="-14" y="168" width="28" height="6" rx="2" fill="#3a2c5e"/>
+            <g>
+              <rect x="-7" y="120" width="14" height="50" rx="6" fill="#19e57f"/>
+              <rect x="-4" y="104" width="8" height="20" rx="3" fill="#13b866"/>
+              <rect x="-5" y="100" width="10" height="6" rx="2" fill="#ffc83d"/>
+            </g>
+          </g>
+          <!-- peg 1 -->
+          <g transform="translate(180,0)">
+            <rect x="-14" y="168" width="28" height="6" rx="2" fill="#3a2c5e"/>
+            <g>
+              <rect x="-7" y="120" width="14" height="50" rx="6" fill="#ff4d5e"/>
+              <rect x="-4" y="104" width="8" height="20" rx="3" fill="#d23645"/>
+              <rect x="-5" y="100" width="10" height="6" rx="2" fill="#ffc83d"/>
+            </g>
+          </g>
+          <!-- peg 2 -->
+          <g transform="translate(280,0)">
+            <rect x="-14" y="168" width="28" height="6" rx="2" fill="#3a2c5e"/>
+            <g>
+              <rect x="-7" y="120" width="14" height="50" rx="6" fill="#3d8bff"/>
+              <rect x="-4" y="104" width="8" height="20" rx="3" fill="#2f6dd0"/>
+              <rect x="-5" y="100" width="10" height="6" rx="2" fill="#ffc83d"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- aro -->
+        <g id="ring" style="transform:translate(0px,0px) scale(1) rotate(0deg);transform-origin:180px 205px;transition:transform .5s cubic-bezier(.4,.6,.5,1);">
+          <ellipse cx="180" cy="205" rx="16" ry="7" fill="none" stroke="#ffc83d" stroke-width="4"/>
+          <ellipse cx="180" cy="205" rx="16" ry="7" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.2"/>
+        </g>
+      </svg>
+    </div>
+    <div class="msg" id="message">Elige un poste y lanza el aro</div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="betrow">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+    </div>
+    <div class="pegs">
+      <button class="peg" id="peg0" data-peg="0">VERDE</button>
+      <button class="peg" id="peg1" data-peg="1">ROJO</button>
+      <button class="peg" id="peg2" data-peg="2">AZUL</button>
+    </div>
+    <button class="throw" id="throwBtn">LANZAR</button>
+    <div class="foot">Nova Aro · juego original de BetNova · enaro paga 2.91x</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT=2.91;
+  // posiciones x (px del viewBox) por poste: 0=izq 1=centro 2=der
+  const PEG_X=[80,180,280];
+  const RING_HOME_X=180; // x base del aro en reposo
+
+  let balance=1000, tossing=false, selPeg=0;
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio: solo un "toss" sutil; los sonidos de win/bet los pone el sistema compartido.
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function whoosh(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type='triangle'; o.frequency.setValueAtTime(420,c.currentTime); o.frequency.exponentialRampToValueAtTime(720,c.currentTime+0.18); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.14,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.22); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.24); }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const dis=tossing;
+    $('peg0').disabled=dis; $('peg1').disabled=dis; $('peg2').disabled=dis;
+    $('betUp').disabled=dis; $('betDown').disabled=dis;
+    $('throwBtn').disabled=dis;
+    $('peg0').classList.toggle('sel',selPeg===0);
+    $('peg1').classList.toggle('sel',selPeg===1);
+    $('peg2').classList.toggle('sel',selPeg===2);
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function resetRing(){
+    const r=$('ring');
+    r.style.transition='none';
+    r.style.transform='translate(0px,0px) scale(1) rotate(0deg)';
+    void r.offsetWidth;
+    r.style.transition='transform .5s cubic-bezier(.4,.6,.5,1)';
+  }
+
+  function toss(){
+    if(tossing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    ac();
+    resetRing();
+    tossing=true;
+    syncUI();
+    balance=NovaWallet.bet(bet);
+    $('winDisp').textContent=fmt(0);
+    setMsg('¡Lanzando el aro!');
+    whoosh();
+
+    // ¿Permite la casa esta victoria? Se decide ANTES de animar.
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(PAYOUT) : true);
+    const targetX = PEG_X[selPeg];
+    const dx = targetX - RING_HOME_X;
+
+    const r=$('ring');
+    if(canWin){
+      // el aro vuela y aterriza limpio alrededor del poste
+      r.style.transform='translate('+dx+'px,-78px) scale(.7) rotate(0deg)';
+    } else {
+      // el aro rebota: se desvía y cae fuera del poste
+      const off = dx + (selPeg<2 ? 34 : -34);
+      r.style.transform='translate('+off+'px,-40px) scale(.78) rotate(38deg)';
+    }
+
+    setTimeout(()=>{
+      const landed = canWin;
+      // reset estado ANTES de syncUI
+      tossing=false;
+      if(landed){
+        const win=bet*PAYOUT;
+        balance=NovaWallet.win(win);
+        $('winDisp').textContent=fmt(win);
+        setMsg('¡ENARO! +'+fmt(win));
+        if(window.Juice) Juice.win(win,{ mult:PAYOUT, el:$('winDisp') });
+      } else {
+        setMsg('¡Rebotó! El aro no entró.');
+      }
+      syncUI();
+      // devolver el aro a su sitio tras un momento
+      setTimeout(()=>{ resetRing(); }, 1100);
+    }, 560);
+  }
+
+  function pick(p){ if(tossing) return; selPeg=p; syncUI(); }
+
+  $('peg0').addEventListener('click',()=>pick(0));
+  $('peg1').addEventListener('click',()=>pick(1));
+  $('peg2').addEventListener('click',()=>pick(2));
+  $('throwBtn').addEventListener('click',toss);
+  $('betUp').addEventListener('click',()=>{ if(!tossing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!tossing&&betIdx>0){betIdx--;syncUI();} });
+
+  // render inicial
+  syncUI();
+
+  // ¡SIEMPRE AL FINAL! evitar TDZ con const $ definido arriba
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Pesca — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; --aqua:#37c8ff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #0e3a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--aqua); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,#0b3450,#071426); box-shadow:0 12px 34px rgba(0,0,0,.5); }
+  .scene{ display:block; width:100%; height:auto; }
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; color:var(--gold); font-size:13px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .betrow{ display:flex; justify-content:center; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:52px; text-align:center; font-weight:700; }
+  .picks{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .pick{ height:66px; border:2px solid rgba(255,255,255,.10); border-radius:12px; cursor:pointer; background:var(--panel); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:11px; font-weight:800; color:#e8eefc; transition:filter .15s, transform .1s, border-color .15s, box-shadow .15s; }
+  .pick svg{ width:46px; height:26px; display:block; }
+  .pick .mult{ font-size:12px; color:var(--gold); }
+  .pick.sel{ border-color:var(--aqua); box-shadow:0 0 16px rgba(55,200,255,.45); background:var(--panel2); }
+  .pick:active{ transform:translateY(2px); }
+  .pick:disabled{ opacity:.5; cursor:not-allowed; }
+  .fire{ width:100%; margin-top:9px; height:50px; border:0; border-radius:14px; cursor:pointer; font-size:16px; font-weight:800; letter-spacing:.5px; color:var(--ink); background:linear-gradient(180deg,var(--aqua),#1898d8); box-shadow:0 0 20px rgba(55,200,255,.34); transition:filter .15s, transform .1s; }
+  .fire:active{ transform:translateY(2px); }
+  .fire:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+  .foot{ margin-top:7px; text-align:center; font-size:9px; color:#5e6781; }
+
+  /* peces nadan de un lado a otro en su carril */
+  @keyframes swim0{ 0%{ transform:translateX(0); } 50%{ transform:translateX(64px); } 100%{ transform:translateX(0); } }
+  @keyframes swim1{ 0%{ transform:translateX(56px); } 50%{ transform:translateX(-12px); } 100%{ transform:translateX(56px); } }
+  @keyframes swim2{ 0%{ transform:translateX(16px); } 50%{ transform:translateX(84px); } 100%{ transform:translateX(16px); } }
+  .fish{ transform-box:fill-box; transform-origin:center; }
+  .lane0 .fish{ animation:swim0 3.3s ease-in-out infinite; }
+  .lane1 .fish{ animation:swim1 2.6s ease-in-out infinite; }
+  .lane2 .fish{ animation:swim2 3.8s ease-in-out infinite; }
+  .lane.hit .fish{ animation:none; }
+  /* captura: el pez es izado hacia arriba */
+  @keyframes reel{ 0%{ transform:translateY(0); opacity:1; } 100%{ transform:translateY(-130px); opacity:0; } }
+  .lane.hit.go .fish{ animation:reel .8s ease-in forwards; }
+  /* escape: el pez huye nadando rápido fuera de pantalla */
+  @keyframes flee{ 0%{ transform:translateX(0); opacity:1; } 100%{ transform:translateX(220px); opacity:0; } }
+  .lane.miss .fish{ animation:flee .8s ease-in forwards; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Pesca</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <svg class="scene" id="scene" viewBox="0 0 360 230" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1b5e86"/><stop offset="1" stop-color="#08233a"/>
+          </linearGradient>
+          <linearGradient id="boat" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#a85a2a"/><stop offset="1" stop-color="#7a3d18"/>
+          </linearGradient>
+        </defs>
+
+        <!-- fondo submarino -->
+        <rect x="0" y="0" width="360" height="230" fill="url(#water)"/>
+        <!-- superficie del agua -->
+        <rect x="0" y="0" width="360" height="20" fill="#2a7aa8"/>
+        <rect x="0" y="18" width="360" height="4" fill="rgba(255,255,255,.12)"/>
+
+        <!-- rayos de luz -->
+        <g opacity="0.10" fill="#bfe9ff">
+          <path d="M70,20 L40,230 L80,230 L100,20 Z"/>
+          <path d="M210,20 L190,230 L230,230 L240,20 Z"/>
+        </g>
+
+        <!-- burbujas -->
+        <g fill="rgba(255,255,255,.14)">
+          <circle cx="300" cy="60" r="3"/><circle cx="312" cy="90" r="2"/><circle cx="296" cy="120" r="2.4"/>
+          <circle cx="40" cy="70" r="2.4"/><circle cx="52" cy="110" r="1.8"/>
+        </g>
+
+        <!-- barca en la superficie -->
+        <path d="M150,2 L210,2 L202,16 L158,16 Z" fill="url(#boat)"/>
+        <rect x="178" y="-2" width="3" height="4" fill="#5b2f12"/>
+
+        <!-- algas en el fondo -->
+        <g fill="#0f7a4d" opacity="0.7">
+          <path d="M16,230 q6,-30 -2,-50 q12,18 8,50 Z"/>
+          <path d="M30,230 q-4,-24 4,-44 q-10,18 -2,44 Z"/>
+          <path d="M338,230 q6,-28 -2,-48 q12,18 8,48 Z"/>
+        </g>
+
+        <!-- LANE 0 : PEZ CHICO -->
+        <g class="lane lane0" id="lane0">
+          <g class="fish">
+            <ellipse cx="46" cy="78" rx="14" ry="8" fill="#ffd24d"/>
+            <path d="M32,78 l-11,-7 l0,14 Z" fill="#f2b21a"/>
+            <circle cx="54" cy="75" r="1.6" fill="#0a0e1a"/>
+            <path d="M40,78 q6,3 12,0" stroke="#e89a12" stroke-width="1.4" fill="none"/>
+          </g>
+        </g>
+        <!-- LANE 1 : PEZ MEDIANO -->
+        <g class="lane lane1" id="lane1">
+          <g class="fish">
+            <ellipse cx="50" cy="138" rx="22" ry="13" fill="#37c8ff"/>
+            <path d="M28,138 l-16,-11 l0,22 Z" fill="#1f9fd1"/>
+            <circle cx="62" cy="133" r="2.2" fill="#0a0e1a"/>
+            <path d="M44,138 q9,5 18,0" stroke="#1c8bb8" stroke-width="1.8" fill="none"/>
+            <path d="M50,125 q6,-6 14,-3 q-4,5 -10,7 Z" fill="#1f9fd1"/>
+          </g>
+        </g>
+        <!-- LANE 2 : PEZ GRANDE -->
+        <g class="lane lane2" id="lane2">
+          <g class="fish">
+            <ellipse cx="58" cy="196" rx="31" ry="18" fill="#19e57f"/>
+            <path d="M27,196 l-22,-15 l0,30 Z" fill="#0fb863"/>
+            <circle cx="74" cy="189" r="3" fill="#0a0e1a"/>
+            <circle cx="75" cy="188" r="1" fill="#fff"/>
+            <path d="M48,196 q14,7 26,0" stroke="#0c9e54" stroke-width="2.2" fill="none"/>
+            <path d="M58,178 q9,-8 20,-4 q-6,7 -14,9 Z" fill="#0fb863"/>
+            <path d="M58,214 q9,8 20,4 q-6,-7 -14,-9 Z" fill="#0fb863"/>
+          </g>
+        </g>
+
+        <!-- sedal + anzuelo -->
+        <g id="rig" style="opacity:0; transform:translateY(-130px); transition:transform .5s cubic-bezier(.4,.6,.5,1), opacity .15s;">
+          <line id="rigLine" x1="180" y1="-140" x2="180" y2="0" stroke="rgba(255,255,255,.55)" stroke-width="1.4"/>
+          <path d="M180,0 q0,8 -6,8 q-6,0 -6,-6" stroke="#d8dee8" stroke-width="2" fill="none"/>
+          <circle cx="180" cy="-2" r="2.4" fill="#d8dee8"/>
+        </g>
+      </svg>
+    </div>
+    <div class="msg" id="message">Elige un pez y pesca</div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="betrow">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+    </div>
+    <div class="picks">
+      <button class="pick" id="pick0" data-fish="chico">
+        <svg viewBox="0 0 70 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="22" rx="13" ry="8" fill="#ffd24d"/><path d="M27,22 l-11,-7 l0,14 Z" fill="#f2b21a"/><circle cx="48" cy="19" r="1.6" fill="#0a0e1a"/></svg>
+        <span>Chico</span><span class="mult">2x</span>
+      </button>
+      <button class="pick" id="pick1" data-fish="mediano">
+        <svg viewBox="0 0 70 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="38" cy="22" rx="18" ry="11" fill="#37c8ff"/><path d="M20,22 l-13,-9 l0,18 Z" fill="#1f9fd1"/><circle cx="48" cy="18" r="2" fill="#0a0e1a"/><path d="M38,11 q5,-5 12,-2 q-3,4 -9,6 Z" fill="#1f9fd1"/></svg>
+        <span>Mediano</span><span class="mult">4x</span>
+      </button>
+      <button class="pick" id="pick2" data-fish="grande">
+        <svg viewBox="0 0 70 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="36" cy="22" rx="24" ry="14" fill="#19e57f"/><path d="M12,22 l-10,-8 l0,16 Z" fill="#0fb863"/><circle cx="50" cy="17" r="2.4" fill="#0a0e1a"/><path d="M36,8 q7,-6 16,-3 q-5,6 -11,7 Z" fill="#0fb863"/></svg>
+        <span>Grande</span><span class="mult">10x</span>
+      </button>
+    </div>
+    <button class="fire" id="fire">PESCAR</button>
+    <div class="foot">Nova Pesca · juego original de BetNova · pez grande paga 10x</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT={ chico:2, mediano:4, grande:10 };
+  const TOP_MULT=10;
+  const FISH=['chico','mediano','grande'];
+  const NAME={ chico:'Pez chico', mediano:'Pez mediano', grande:'Pez grande' };
+  // X del centro de cada pez en el viewBox — el anzuelo baja hasta aquí
+  const FISH_X=[46, 50, 58];
+  // Y del centro de cada pez — destino del anzuelo
+  const FISH_Y=[78, 138, 196];
+
+  let balance=1000, casting=false, selected=0;
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio: solo un "splash" sutil; win/bet los pone el sistema compartido.
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function splashSfx(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type='sine'; o.frequency.setValueAtTime(280,c.currentTime); o.frequency.exponentialRampToValueAtTime(120,c.currentTime+0.12); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.16,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.16); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.18); }
+
+  function selectFish(i){ if(casting) return; selected=i; for(let k=0;k<3;k++){ $('pick'+k).classList.toggle('sel', k===selected); } }
+
+  function resetRig(){
+    for(let k=0;k<3;k++){ const L=$('lane'+k); L.classList.remove('hit','go','miss'); }
+    const r=$('rig'); r.style.transition='none'; r.style.opacity='0'; r.style.transform='translateY(-130px)'; void r.getBoundingClientRect(); r.style.transition='transform .5s cubic-bezier(.4,.6,.5,1), opacity .15s';
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const dis=casting;
+    $('fire').disabled=dis;
+    for(let k=0;k<3;k++){ $('pick'+k).disabled=dis; $('pick'+k).classList.toggle('sel', k===selected); }
+    $('betUp').disabled=dis; $('betDown').disabled=dis;
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function cast(){
+    if(casting) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    ac();
+    resetRig();
+    const zone=selected;
+    const pick=FISH[zone];
+    const payoutMult=PAYOUT[pick];
+    casting=true;
+    syncUI();
+    balance=NovaWallet.bet(bet);
+    $('winDisp').textContent=fmt(0);
+    setMsg('¡Lanzando el anzuelo!');
+
+    // ¿Permite la casa esta victoria? Se decide ANTES de la animación.
+    // Pez más grande = mayor multiplicador = se captura menos seguido (lo maneja allowWin).
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(payoutMult) : true);
+
+    // bajar el sedal hacia el pez elegido
+    const r=$('rig');
+    $('rigLine').setAttribute('x1', FISH_X[zone]);
+    $('rigLine').setAttribute('x2', FISH_X[zone]);
+    r.style.opacity='1';
+    r.style.transform='translateY('+(FISH_Y[zone]+130)+'px)';
+
+    setTimeout(()=>{
+      splashSfx();
+      const L=$('lane'+zone);
+      if(canWin){
+        L.classList.add('hit');
+        void L.getBoundingClientRect();
+        L.classList.add('go'); // izar el pez (captura)
+        r.style.transform='translateY(0px)'; // recoger el sedal
+      } else {
+        L.classList.add('miss'); // el pez escapa nadando
+      }
+    }, 520);
+
+    setTimeout(()=>{
+      // reset estado ANTES de syncUI
+      casting=false;
+      if(canWin){
+        const win=bet*payoutMult;
+        balance=NovaWallet.win(win);
+        $('winDisp').textContent=fmt(win);
+        setMsg('¡'+NAME[pick]+' capturado! +'+fmt(win));
+        if(window.Juice) Juice.win(win,{ mult:payoutMult, el:$('winDisp') });
+      } else {
+        setMsg('¡Se escapó el '+NAME[pick].toLowerCase()+'!');
+      }
+      $('rig').style.opacity='0';
+      syncUI();
+      // recolocar todo tras un momento
+      setTimeout(()=>{ resetRig(); }, 1100);
+    }, 1280);
+  }
+
+  $('pick0').addEventListener('click',()=>selectFish(0));
+  $('pick1').addEventListener('click',()=>selectFish(1));
+  $('pick2').addEventListener('click',()=>selectFish(2));
+  $('fire').addEventListener('click',cast);
+  $('betUp').addEventListener('click',()=>{ if(!casting&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!casting&&betIdx>0){betIdx--;syncUI();} });
+
+  // render inicial
+  selected=0;
+  resetRig();
+  syncUI();
+
+  // ¡SIEMPRE AL FINAL! evitar TDZ con const $ definido arriba
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

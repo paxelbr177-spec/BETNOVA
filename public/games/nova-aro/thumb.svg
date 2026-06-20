@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5e2a13"/><stop offset="0.5" stop-color="#a35e00"/><stop offset="1" stop-color="#1a0d04"/></linearGradient>
+    <radialGradient id="s" cx="0.5" cy="0.28" r="0.6"><stop offset="0" stop-color="#ffd23d" stop-opacity="0.4"/><stop offset="1" stop-color="#ffd23d" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#g)"/><rect width="300" height="400" fill="url(#s)"/>
+  <g>
+    <rect x="30" y="208" width="240" height="14" rx="7" fill="#5e3a16"/>
+    <g stroke="#3d7a14" stroke-width="2">
+      <path d="M75 208 q-8 -50 8 -64 q16 14 8 64 z" fill="#19e57f"/>
+      <path d="M142 208 q-8 -54 8 -70 q16 16 8 70 z" fill="#e3143c"/>
+      <path d="M209 208 q-8 -50 8 -64 q16 14 8 64 z" fill="#2a6bd6"/>
+    </g>
+    <ellipse cx="150" cy="120" rx="40" ry="14" fill="none" stroke="#ffd23d" stroke-width="9"/>
+    <ellipse cx="150" cy="120" rx="40" ry="14" fill="none" stroke="#fff" stroke-width="2" opacity="0.4"/>
+  </g>
+  <g font-family="system-ui,Segoe UI,sans-serif" text-anchor="middle">
+    <text x="150" y="332" font-size="30" font-weight="900" fill="#fff">Nova Aro</text>
+    <text x="150" y="360" font-size="14" fill="#ffe0a6">Embocá y ganá</text>
+  </g>
+</svg>

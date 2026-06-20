@@ -27,7 +27,8 @@ const names = [
   'Nova 777', 'Nova Andar Bahar', 'Nova Race', 'Nova Color', 'Nova Poker',
   'Nova Chicken', 'Nova Sweet', 'Nova Treasure', 'Nova Craps', 'Nova Bingo',
   'Nova Teen Patti', 'Nova Basket', 'Nova Pharaoh', 'Nova Memory', 'Nova Lucky',
-  'Nova Dado', 'Nova Duck',
+  'Nova Dado', 'Nova Duck', 'Nova Quiniela', 'Nova Generala', 'Nova Caribbean',
+  'Nova Fruits', 'Nova Gems', 'Nova Pirata', 'Nova Boxeo', 'Nova Aro', 'Nova Pesca',
 ]
 
 const catPool = ['slots', 'live', 'crash', 'table', 'jackpot', 'slots', 'slots', 'live']
@@ -80,6 +81,15 @@ const embeds = {
   'nova-lucky': '/games/nova-lucky/index.html',     // ★ número de la suerte 1-10
   'nova-dado': '/games/nova-dado/index.html',       // ★ un dado: alto/bajo/exacto
   'nova-duck': '/games/nova-duck/index.html',       // ★ tiro al pato (feria)
+  'nova-quiniela': '/games/nova-quiniela/index.html', // ★ quiniela argentina 00-99
+  'nova-generala': '/games/nova-generala/index.html', // ★ generala (5 dados)
+  'nova-caribbean': '/games/nova-caribbean/index.html', // ★ caribbean stud vs crupier
+  'nova-fruits': '/games/nova-fruits/index.html',   // ★ slot frutal clásico 3 rodillos
+  'nova-gems': '/games/nova-gems/index.html',       // ★ slot de gemas 5x3 con líneas
+  'nova-pirata': '/games/nova-pirata/index.html',   // ★ slot pirata 5x3 con líneas
+  'nova-boxeo': '/games/nova-boxeo/index.html',     // ★ boxeo (elige tu boxeador)
+  'nova-aro': '/games/nova-aro/index.html',         // ★ tiro al aro de feria
+  'nova-pesca': '/games/nova-pesca/index.html',     // ★ pesca (pez chico/mediano/grande)
 }
 
 // Miniaturas (arte original 3:4) para las tarjetas de los juegos jugables.
@@ -125,6 +135,15 @@ const thumbs = {
   'nova-lucky': '/games/nova-lucky/thumb.svg',
   'nova-dado': '/games/nova-dado/thumb.svg',
   'nova-duck': '/games/nova-duck/thumb.svg',
+  'nova-quiniela': '/games/nova-quiniela/thumb.svg',
+  'nova-generala': '/games/nova-generala/thumb.svg',
+  'nova-caribbean': '/games/nova-caribbean/thumb.svg',
+  'nova-fruits': '/games/nova-fruits/thumb.svg',
+  'nova-gems': '/games/nova-gems/thumb.svg',
+  'nova-pirata': '/games/nova-pirata/thumb.svg',
+  'nova-boxeo': '/games/nova-boxeo/thumb.svg',
+  'nova-aro': '/games/nova-aro/thumb.svg',
+  'nova-pesca': '/games/nova-pesca/thumb.svg',
 }
 
 // Categoría real de cada juego jugable (los tabs son: slots / crash / table).
@@ -170,6 +189,15 @@ const cats = {
   'nova-lucky': 'crash',
   'nova-dado': 'crash',
   'nova-duck': 'crash',
+  'nova-quiniela': 'crash',
+  'nova-generala': 'table',
+  'nova-caribbean': 'table',
+  'nova-fruits': 'slots',
+  'nova-gems': 'slots',
+  'nova-pirata': 'slots',
+  'nova-boxeo': 'crash',
+  'nova-aro': 'crash',
+  'nova-pesca': 'crash',
 }
 
 // Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs

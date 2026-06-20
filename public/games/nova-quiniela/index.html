@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Quiniela — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,255,255,.08); background:#0a1120; box-shadow:0 14px 40px rgba(0,0,0,.5); padding:18px 10px; }
+  .drawn{ display:flex; gap:8px; justify-content:center; align-items:center; }
+  .ball{ width:62px; height:78px; border-radius:12px; background:linear-gradient(180deg,#1a2238,#0d1322);
+    border:1px solid rgba(255,255,255,.1); box-shadow:inset 0 2px 6px rgba(255,255,255,.06), 0 6px 14px rgba(0,0,0,.5);
+    display:flex; align-items:center; justify-content:center; font-size:44px; font-weight:800; color:var(--gold);
+    font-variant-numeric:tabular-nums; transition:transform .08s; }
+  .ball.spin{ animation:flip .12s linear infinite; color:#e8eefc; }
+  @keyframes flip{ 0%{transform:translateY(-3px) scale(.97);} 50%{transform:translateY(3px) scale(1.03);} 100%{transform:translateY(-3px) scale(.97);} }
+  .sum{ text-align:center; margin-top:12px; font-size:13px; color:var(--muted); min-height:18px; }
+  .sum b{ color:var(--gold); font-size:16px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .lbl{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin:12px 0 6px; text-align:center; }
+  .picker{ display:flex; align-items:center; justify-content:center; gap:10px; }
+  .picker .num{ font-size:50px; font-weight:800; color:var(--brand); font-variant-numeric:tabular-nums; min-width:96px; text-align:center;
+    background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:4px 8px; }
+  .picker .stp{ width:46px; height:46px; border-radius:12px; border:0; background:var(--panel2); color:#fff; font-size:26px; cursor:pointer; line-height:1; }
+  .picker .stp:active{ background:#243056; }
+  .digits{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .digitcol{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:6px; }
+  .digitcol .dl{ font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; text-align:center; margin-bottom:5px; }
+  .dgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+  .dgrid button{ border:1px solid rgba(255,255,255,.08); background:var(--panel2); color:#e8eefc; border-radius:8px; padding:7px 0; font-size:13px; font-weight:700; cursor:pointer; transition:all .12s; }
+  .dgrid button.sel{ border-color:var(--brand); background:linear-gradient(180deg,rgba(25,229,127,.22),rgba(25,229,127,.08)); color:var(--brand); box-shadow:0 0 10px rgba(25,229,127,.25); }
+  .controls{ display:flex; gap:8px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 8px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:20px; margin-top:10px; font-weight:700; color:var(--gold); font-size:13px; }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Quiniela</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="drawn" id="drawn"><div class="ball" id="ball0">0</div><div class="ball" id="ball1">0</div></div>
+      <div class="sum" id="sum">Elegí tu número del 00 al 99 y jugá</div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+
+    <div class="lbl">Tu número (acierto exacto 70x · terminación 7x)</div>
+    <div class="picker">
+      <button class="stp" id="numDown">−</button>
+      <div class="num" id="numDisp">00</div>
+      <button class="stp" id="numUp">+</button>
+    </div>
+
+    <div class="digits">
+      <div class="digitcol">
+        <div class="dl">Decena</div>
+        <div class="dgrid" id="tens"></div>
+      </div>
+      <div class="digitcol">
+        <div class="dl">Unidad</div>
+        <div class="dgrid" id="ones"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">JUGAR</button>
+    </div>
+    <div class="msg" id="message">¡Mucha suerte! 🎰</div>
+    <div class="foot">Nova Quiniela · juego original de BetNova · acierto exacto 70x · terminación 7x</div>
+  </div>
+
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT={ exact:70, term:7 };
+  const TOP_MULT=70;
+  let balance=1000, playing=false, pick=0; // pick is 0..99
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  const pad=(n)=>String(n).padStart(2,'0');
+
+  // ---- build digit selectors 0..9 ----
+  function buildDigits(){
+    let th='', oh='';
+    for(let i=0;i<10;i++){
+      th+=`<button data-tens="${i}">${i}</button>`;
+      oh+=`<button data-ones="${i}">${i}</button>`;
+    }
+    $('tens').innerHTML=th; $('ones').innerHTML=oh;
+  }
+
+  function tensOf(n){ return Math.floor(n/10); }
+  function onesOf(n){ return n%10; }
+
+  function renderPick(){
+    $('numDisp').textContent=pad(pick);
+    if(!playing){
+      $('ball0').textContent=tensOf(pick);
+      $('ball1').textContent=onesOf(pick);
+    }
+    Array.from($('tens').children).forEach(b=>b.classList.toggle('sel', +b.dataset.tens===tensOf(pick)));
+    Array.from($('ones').children).forEach(b=>b.classList.toggle('sel', +b.dataset.ones===onesOf(pick)));
+  }
+
+  function setPick(n){
+    if(playing) return;
+    pick=((n%100)+100)%100;
+    renderPick();
+  }
+
+  function renderDrawn(n, spin){
+    $('ball0').textContent=tensOf(n);
+    $('ball1').textContent=onesOf(n);
+    if(spin){ $('ball0').classList.add('spin'); $('ball1').classList.add('spin'); }
+    else { $('ball0').classList.remove('spin'); $('ball1').classList.remove('spin'); }
+  }
+
+  // ---- audio: subtle ball-roll synth (no win/bet sounds; shared handles those) ----
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function clack(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(160+Math.random()*220,c.currentTime);
+    g.gain.setValueAtTime(0.07,c.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.06);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.07); }
+
+  // ---- draw a number in a guaranteed tier ----
+  // 'exact' => equals pick; 'term' => same last digit, different tens; 'lose' => different last digit
+  function drawForTier(tier){
+    const u=onesOf(pick);
+    if(tier==='exact') return pick;
+    if(tier==='term'){
+      const t0=tensOf(pick);
+      let t; do{ t=ri(0,9); }while(t===t0);
+      return t*10+u; // same units, different tens => terminación, not exact
+    }
+    // lose: different last digit
+    let u2; do{ u2=ri(0,9); }while(u2===u);
+    return ri(0,9)*10+u2;
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('actBtn').disabled=playing;
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function resolve(drawn, tier){
+    const bet=BETS[betIdx];
+    const exact = drawn===pick;
+    const term = !exact && onesOf(drawn)===onesOf(pick);
+    let landedMult=0;
+    if(exact) landedMult=PAYOUT.exact;
+    else if(term) landedMult=PAYOUT.term;
+
+    $('sum').innerHTML = `Salió: <b>${pad(drawn)}</b> · tu número <b>${pad(pick)}</b>`;
+    if(landedMult>0){
+      const win=bet*landedMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      setMsg(exact ? `🎉 ¡ACIERTO EXACTO! ${landedMult}x · +${fmt(win)}` : `✅ ¡Terminación! ${landedMult}x · +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult:landedMult, el:$('winDisp') });
+    }else{
+      $('winDisp').textContent=fmt(0);
+      setMsg('❌ No fue esta vez. ¡Probá de nuevo!');
+    }
+    playing=false;          // reset BEFORE syncUI
+    renderPick();           // restore selectors highlight
+    syncUI();
+  }
+
+  function play(){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    playing=true;
+    $('winDisp').textContent=fmt(0);
+    setMsg('Girando el bolillero…');
+    syncUI();
+
+    // house gate: weight heavily toward lose, sometimes terminación, rarely exact
+    const r=Math.random();
+    let tier;
+    if(r<0.78) tier='lose';
+    else if(r<0.97) tier='term';
+    else tier='exact';
+    const targetMult = tier==='exact' ? PAYOUT.exact : (tier==='term' ? PAYOUT.term : TOP_MULT);
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(targetMult) : true);
+    if(!canWin) tier='lose';
+    const finalNum = drawForTier(tier);
+
+    // rolling animation
+    let ticks=0;
+    renderDrawn(ri(0,99), true);
+    clack();
+    const iv=setInterval(()=>{
+      ticks++;
+      renderDrawn(ri(0,99), true);
+      if(ticks%2===0) clack();
+      if(ticks>=9){
+        clearInterval(iv);
+        renderDrawn(finalNum, false);
+        resolve(finalNum, tier);
+      }
+    },90);
+  }
+
+  // ---- wiring ----
+  $('tens').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ ac(); setPick((+b.dataset.tens)*10 + onesOf(pick)); } });
+  $('ones').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ ac(); setPick(tensOf(pick)*10 + (+b.dataset.ones)); } });
+  $('numUp').addEventListener('click',()=>{ ac(); setPick(pick+1); });
+  $('numDown').addEventListener('click',()=>{ ac(); setPick(pick-1); });
+  $('actBtn').addEventListener('click',()=>{ ac(); play(); });
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render
+  buildDigits();
+  renderPick();
+  renderDrawn(pick, false);
+  syncUI();
+
+  // NovaWallet hooks at the VERY END (after $ and all funcs are defined → no TDZ)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

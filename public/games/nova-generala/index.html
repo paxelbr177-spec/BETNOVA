@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Generala — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,255,255,.08); background:#0a1120; box-shadow:0 14px 40px rgba(0,0,0,.5); padding:14px 8px; }
+  .dice{ display:flex; gap:6px; justify-content:center; align-items:center; }
+  .die{ width:48px; height:48px; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45)); transition:transform .08s; }
+  .die.spin{ animation:tumble .12s linear infinite; }
+  @keyframes tumble{ 0%{transform:rotate(-8deg) scale(.96);} 50%{transform:rotate(8deg) scale(1.04);} 100%{transform:rotate(-8deg) scale(.96);} }
+  .sum{ text-align:center; margin-top:10px; font-size:13px; color:var(--muted); min-height:18px; }
+  .sum b{ color:var(--gold); font-size:16px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .lbl{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin:12px 0 6px; }
+  .seg{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+  .seg button{ border:1px solid rgba(255,255,255,.08); background:var(--panel); color:#e8eefc; border-radius:10px; padding:9px 6px; font-size:13px; font-weight:700; cursor:pointer; transition:all .12s; line-height:1.2; }
+  .seg button small{ display:block; font-size:9px; color:var(--muted); font-weight:600; }
+  .seg button.sel{ border-color:var(--brand); background:linear-gradient(180deg,rgba(25,229,127,.22),rgba(25,229,127,.08)); box-shadow:0 0 14px rgba(25,229,127,.25); }
+  .seg button.sel small{ color:var(--brand); }
+  .controls{ display:flex; gap:8px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 8px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:20px; margin-top:10px; font-weight:700; color:var(--gold); font-size:13px; }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Generala</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="dice" id="dice"></div>
+      <div class="sum" id="sum">Elegí tu jugada y tirá los 5 dados</div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+
+    <div class="lbl">Apostá a la jugada (al menos)</div>
+    <div class="seg" id="segMain">
+      <button data-bet="escalera" class="sel">ESCALERA<small>1-2-3-4-5 ó 2-3-4-5-6 · 4x</small></button>
+      <button data-bet="full">FULL<small>tres + dos · 6x</small></button>
+      <button data-bet="poker">PÓKER<small>cuatro iguales · 12x</small></button>
+      <button data-bet="generala">GENERALA<small>cinco iguales · 40x</small></button>
+    </div>
+
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">TIRAR</button>
+    </div>
+    <div class="msg" id="message">¡Suerte con los dados! 🎲</div>
+    <div class="foot">Nova Generala · juego original de BetNova · un solo tiro de 5 dados</div>
+  </div>
+
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT = { escalera: 4, full: 6, poker: 12, generala: 40 };
+  const TOP_MULT = 40;
+  let balance=1000, rolling=false, pick='escalera';
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  const shuffle=(a)=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+  // ---- dice SVG (white rounded die with pips 1..6) ----
+  function diceSVG(n){
+    const P={1:[[50,50]],2:[[30,30],[70,70]],3:[[28,28],[50,50],[72,72]],
+      4:[[30,30],[70,30],[30,70],[70,70]],5:[[30,30],[70,30],[50,50],[30,70],[70,70]],
+      6:[[30,28],[70,28],[30,50],[70,50],[30,72],[70,72]]};
+    const pips=(P[n]||[]).map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="8" fill="#0a0e1a"/>`).join('');
+    return `<svg class="die" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="6" width="88" height="88" rx="18" fill="#f4f8ff"/>
+      <rect x="6" y="6" width="88" height="88" rx="18" fill="none" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
+      ${pips}</svg>`;
+  }
+
+  function renderDice(d, spin){
+    $('dice').innerHTML = d.map(n=>diceSVG(n)).join('');
+    if(spin){ Array.from($('dice').children).forEach(e=>e.classList.add('spin')); }
+  }
+
+  // ---- audio: subtle dice-roll synth (no win/bet sounds; shared handles those) ----
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function clack(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(120+Math.random()*180,c.currentTime);
+    g.gain.setValueAtTime(0.08,c.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.07);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.08); }
+
+  // ---- evaluate 5 dice against a combo ----
+  function counts(d){ const c={}; d.forEach(x=>c[x]=(c[x]||0)+1); return Object.values(c).sort((a,b)=>b-a); }
+  function isEscalera(d){
+    const s=[...new Set(d)].sort((a,b)=>a-b).join('');
+    return s==='12345' || s==='23456';
+  }
+  function isFull(d){ const c=counts(d); return c[0]===3 && c[1]===2; }
+  function isPoker(d){ const c=counts(d); return c[0]>=4; } // 4 or 5 of a kind satisfies póker
+  function isGenerala(d){ return counts(d)[0]===5; }
+  function satisfies(combo, d){
+    if(combo==='escalera') return isEscalera(d);
+    if(combo==='full')     return isFull(d);
+    if(combo==='poker')    return isPoker(d);
+    if(combo==='generala') return isGenerala(d);
+    return false;
+  }
+
+  // ---- generate 5 dice that DO satisfy the chosen combo ----
+  function genWin(combo){
+    if(combo==='escalera'){
+      const base = Math.random()<0.5 ? [1,2,3,4,5] : [2,3,4,5,6];
+      return shuffle(base.slice());
+    }
+    if(combo==='generala'){ const v=ri(1,6); return [v,v,v,v,v]; }
+    if(combo==='poker'){
+      let a=ri(1,6), b; do{ b=ri(1,6); }while(b===a);
+      return shuffle([a,a,a,a,b]);
+    }
+    if(combo==='full'){
+      let a=ri(1,6), b; do{ b=ri(1,6); }while(b===a);
+      return shuffle([a,a,a,b,b]);
+    }
+    return [ri(1,6),ri(1,6),ri(1,6),ri(1,6),ri(1,6)];
+  }
+  // ---- generate 5 dice that do NOT satisfy the chosen combo ----
+  function genLose(combo){
+    for(let i=0;i<400;i++){
+      const d=[ri(1,6),ri(1,6),ri(1,6),ri(1,6),ri(1,6)];
+      if(!satisfies(combo,d)) return d;
+    }
+    return [1,1,2,3,4]; // fallback (satisfies nothing of the four)
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('actBtn').disabled=rolling;
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  const NAME={ escalera:'Escalera', full:'Full', poker:'Póker', generala:'Generala' };
+  function selectBet(combo){
+    if(rolling) return;
+    pick=combo;
+    Array.from(document.querySelectorAll('.seg button')).forEach(b=>{
+      b.classList.toggle('sel', b.getAttribute('data-bet')===combo);
+    });
+  }
+
+  function resolve(d){
+    const ok=satisfies(pick,d);
+    const bet=BETS[betIdx];
+    const payoutMult=PAYOUT[pick];
+    $('sum').innerHTML = `Tiro: <b>${[...d].sort((a,b)=>a-b).join(' · ')}</b>`;
+    if(ok){
+      const win=bet*payoutMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      setMsg(`✅ ¡${NAME[pick]}! ${payoutMult}x · +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult:payoutMult, el:$('winDisp') });
+    }else{
+      $('winDisp').textContent=fmt(0);
+      setMsg('❌ No salió la jugada. ¡Probá de nuevo!');
+    }
+    rolling=false;          // reset BEFORE syncUI
+    syncUI();
+  }
+
+  function roll(){
+    if(rolling) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    rolling=true;
+    $('winDisp').textContent=fmt(0);
+    setMsg('Rodando los dados…');
+    syncUI();
+
+    // house gate: decide if the chosen combo should land this round
+    const payoutMult = PAYOUT[pick];
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(payoutMult) : true);
+    const finalDice = canWin ? genWin(pick) : genLose(pick);
+
+    // quick tumble animation
+    let ticks=0;
+    const rnd5=()=>[ri(1,6),ri(1,6),ri(1,6),ri(1,6),ri(1,6)];
+    renderDice(rnd5(), true);
+    clack();
+    const iv=setInterval(()=>{
+      ticks++;
+      renderDice(rnd5(), true);
+      if(ticks%2===0) clack();
+      if(ticks>=8){
+        clearInterval(iv);
+        renderDice(finalDice, false);
+        resolve(finalDice);
+      }
+    },90);
+  }
+
+  // ---- wiring ----
+  $('segMain').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ ac(); selectBet(b.getAttribute('data-bet')); } });
+  $('actBtn').addEventListener('click',()=>{ ac(); roll(); });
+  $('betUp').addEventListener('click',()=>{ if(!rolling&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!rolling&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render
+  renderDice([1,2,3,4,5], false);
+  syncUI();
+
+  // NovaWallet hooks at the VERY END (after $ and all funcs are defined → no TDZ)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

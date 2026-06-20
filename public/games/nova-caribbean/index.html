@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Caribbean — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:8px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; border:1px solid rgba(255,255,255,.08);
+    background:#0a1120; box-shadow:0 12px 34px rgba(0,0,0,.5); padding:10px 8px;
+    display:flex; flex-direction:column; gap:6px; }
+  .side{ display:flex; flex-direction:column; gap:4px; }
+  .side .lbl{ display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .side .lbl b{ font-size:13px; color:var(--gold); font-weight:800; }
+  .side.win .lbl b{ color:var(--brand); }
+  .hand{ display:flex; gap:4px; justify-content:center; min-height:70px; flex-wrap:nowrap; }
+  .card{ width:52px; height:72px; border-radius:8px; position:relative; }
+  .card.deal{ animation:deal .30s ease; }
+  @keyframes deal{ 0%{ transform:translateY(-16px) scale(.9); opacity:0; } 100%{ transform:none; opacity:1; } }
+  .cardface{ width:100%; height:100%; border-radius:8px; background:#f6f8ff;
+    box-shadow:0 5px 14px rgba(0,0,0,.4); position:relative; overflow:hidden; }
+  .cardface.back{ background:linear-gradient(135deg,#1a2238,#0e1424); border:1px solid rgba(255,255,255,.08); }
+  .cardface.back::after{ content:""; position:absolute; inset:5px; border-radius:5px;
+    border:2px solid rgba(25,229,127,.35); background:
+      repeating-linear-gradient(45deg, rgba(25,229,127,.10) 0 5px, transparent 5px 10px); }
+  .cardface .corner{ position:absolute; font-weight:800; line-height:1; }
+  .cardface .corner.tl{ top:4px; left:5px; }
+  .cardface .corner.br{ bottom:4px; right:5px; transform:rotate(180deg); }
+  .cardface .corner .r{ font-size:13px; }
+  .cardface .corner svg{ width:9px; height:9px; display:block; margin:1px auto 0; }
+  .cardface .center{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+  .cardface .center svg{ width:28px; height:28px; }
+  .pay{ width:100%; display:grid; grid-template-columns:1fr auto 1fr auto; gap:0 7px; font-size:9.5px;
+    background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:9px; padding:6px 8px; }
+  .pay .row{ display:contents; }
+  .pay .row > div{ padding:1px 0; }
+  .pay .row .nm{ color:#cfd7ec; }
+  .pay .row .mx{ text-align:right; color:var(--gold); font-weight:800; }
+  .pay .row.hot .nm, .pay .row.hot .mx{ color:var(--brand); }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:8px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:9px; padding:7px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:8px; margin-top:8px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:11px; padding:7px 9px; }
+  .bet button{ width:30px; height:30px; border-radius:7px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:12px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--gold),#e0a90c); box-shadow:0 0 18px rgba(255,200,61,.35); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:18px; margin-top:7px; font-weight:700; color:var(--gold); font-size:12px; }
+  .foot{ margin-top:6px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Caribbean</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="side" id="dealerSide">
+        <div class="lbl"><span>Crupier</span><b id="dealerName">—</b></div>
+        <div class="hand" id="dealerHand"></div>
+      </div>
+      <div class="side win" id="playerSide">
+        <div class="lbl"><span>Tu mano</span><b id="playerName">—</b></div>
+        <div class="hand" id="playerHand"></div>
+      </div>
+      <div class="pay" id="paytable"></div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">REPARTIR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y pulsa REPARTIR 🃏</div>
+    <div class="foot">Nova Caribbean · juego original de BetNova · póker de 5 cartas contra el crupier</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000;
+  let playing=false;
+
+  let playerHand=[];   // 5 card objects {r,s}
+  let dealerHand=[];
+  let deck=[];
+
+  // Ranks 2..14; A=14 K=13 Q=12 J=11. Suits S H D C as inline SVG.
+  const SUITS=['S','H','D','C'];
+  const rankLabel=(r)=> r<=10 ? String(r) : ({11:'J',12:'Q',13:'K',14:'A'})[r];
+
+  // total multiplier paid on a player win, keyed by player's hand category
+  const PAYOUT={ highcard:1.9, pair:2, twopair:3, trips:4, straight:6, flush:8, fullhouse:12, quads:25, straightflush:50, royal:100 };
+  // display names (Spanish) per category
+  const NAMES={ highcard:'Carta alta', pair:'Pareja', twopair:'Doble pareja', trips:'Trío', straight:'Escalera', flush:'Color', fullhouse:'Full', quads:'Póker', straightflush:'Escalera de color', royal:'Escalera Real' };
+  const PAY_ORDER=['royal','straightflush','quads','fullhouse','flush','straight','trips','twopair','pair','highcard'];
+
+  // --- inline SVG suits (no emojis) ---
+  function suitSVG(s,size){
+    const red=(s==='H'||s==='D');
+    const col=red?'#e3304a':'#11151f';
+    const w=size||28;
+    let path='';
+    if(s==='S') path='<path d="M50 8 C30 30 12 42 12 60 a16 16 0 0 0 30 8 C40 78 34 86 28 92 l44 0 C66 86 60 78 58 76 a16 16 0 0 0 30 -8 C88 42 70 30 50 8 Z"/>';
+    else if(s==='H') path='<path d="M50 88 C18 64 10 48 10 34 A22 22 0 0 1 50 24 A22 22 0 0 1 90 34 C90 48 82 64 50 88 Z"/>';
+    else if(s==='D') path='<path d="M50 8 L86 50 L50 92 L14 50 Z"/>';
+    else path='<path d="M50 14 a15 15 0 1 1 -0.1 0 M30 44 a15 15 0 1 1 -0.1 0 M70 44 a15 15 0 1 1 -0.1 0 M44 60 l12 0 l4 28 l-20 0 Z"/>';
+    return `<svg viewBox="0 0 100 100" width="${w}" height="${w}" fill="${col}" xmlns="http://www.w3.org/2000/svg">${path}</svg>`;
+  }
+  function cardHTML(rank,suit){
+    const red=(suit==='H'||suit==='D');
+    const col=red?'#e3304a':'#11151f';
+    const lbl=rankLabel(rank);
+    return `<div class="card deal"><div class="cardface">`+
+      `<div class="corner tl" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,9)}</div>`+
+      `<div class="center">${suitSVG(suit,28)}</div>`+
+      `<div class="corner br" style="color:${col}"><div class="r">${lbl}</div>${suitSVG(suit,9)}</div>`+
+      `</div></div>`;
+  }
+  const cardBackHTML=()=>`<div class="card deal"><div class="cardface back"></div></div>`;
+
+  // --- deck helpers ---
+  function freshDeck(){
+    const d=[];
+    for(let r=2;r<=14;r++) for(const s of SUITS) d.push({r,s});
+    for(let i=d.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=d[i]; d[i]=d[j]; d[j]=t; }
+    return d;
+  }
+  function drawCard(){ return deck.pop(); }
+
+  // --- hand evaluator: returns { key, rankVec } for any 5 cards ---
+  // rankVec is a comparable array: [categoryRank, ...kickers high->low]
+  // categoryRank ordering (high better): royal=9 straightflush=8 quads=7 fullhouse=6
+  //   flush=5 straight=4 trips=3 twopair=2 pair=1 highcard=0
+  function evaluate(cards){
+    const ranks=cards.map(c=>c.r).sort((a,b)=>b-a); // high->low
+    const suits=cards.map(c=>c.s);
+    const flush=suits.every(s=>s===suits[0]);
+    const asc=[...ranks].sort((a,b)=>a-b);
+    const uniq=[...new Set(asc)];
+    let straight=false, straightHigh=0;
+    if(uniq.length===5){
+      if(asc[4]-asc[0]===4){ straight=true; straightHigh=asc[4]; }
+      else if(asc[0]===2 && asc[1]===3 && asc[2]===4 && asc[3]===5 && asc[4]===14){ straight=true; straightHigh=5; }
+    }
+    const counts={};
+    for(const r of ranks) counts[r]=(counts[r]||0)+1;
+    // groups sorted by count desc, then rank desc -> tiebreak vector source
+    const groups=Object.entries(counts).map(([r,c])=>({r:+r,c})).sort((a,b)=> b.c-a.c || b.r-a.r);
+    const groupRanks=groups.map(g=>g.r); // ordered by importance for kickers
+
+    if(straight && flush){
+      if(straightHigh===14) return { key:'royal', rankVec:[9,14] };
+      return { key:'straightflush', rankVec:[8, straightHigh] };
+    }
+    if(groups[0].c===4) return { key:'quads', rankVec:[7, ...groupRanks] };
+    if(groups[0].c===3 && groups[1].c===2) return { key:'fullhouse', rankVec:[6, ...groupRanks] };
+    if(flush) return { key:'flush', rankVec:[5, ...ranks] };
+    if(straight) return { key:'straight', rankVec:[4, straightHigh] };
+    if(groups[0].c===3) return { key:'trips', rankVec:[3, ...groupRanks] };
+    if(groups[0].c===2 && groups[1].c===2) return { key:'twopair', rankVec:[2, ...groupRanks] };
+    if(groups[0].c===2) return { key:'pair', rankVec:[1, ...groupRanks] };
+    return { key:'highcard', rankVec:[0, ...ranks] };
+  }
+  // compare two rankVecs: >0 if a beats b, <0 if b beats a, 0 if exact tie
+  function cmpHands(a,b){
+    const va=a.rankVec, vb=b.rankVec;
+    const n=Math.max(va.length,vb.length);
+    for(let i=0;i<n;i++){
+      const x=va[i]||0, y=vb[i]||0;
+      if(x!==y) return x-y;
+    }
+    return 0;
+  }
+
+  // --- audio: subtle card-deal synth only (shared system handles win/bet) ---
+  let actx=null;
+  const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.06,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndDeal=()=>tone(520,0.06,'triangle',0.06,300);
+
+  // --- rendering ---
+  function renderPaytable(activeKey){
+    // two columns of 5 rows
+    const left=PAY_ORDER.slice(0,5), right=PAY_ORDER.slice(5);
+    let html='';
+    for(let i=0;i<5;i++){
+      const lk=left[i], rk=right[i];
+      const lhot=(lk===activeKey)?' hot':'';
+      const rhot=(rk===activeKey)?' hot':'';
+      html+=`<div class="row"><div class="nm${lhot}">${NAMES[lk]}</div><div class="mx${lhot}">${PAYOUT[lk]}x</div>`+
+            `<div class="nm${rhot}">${NAMES[rk]}</div><div class="mx${rhot}">${PAYOUT[rk]}x</div></div>`;
+    }
+    $('paytable').innerHTML=html;
+  }
+  function renderHand(elId, cards, faceUp){
+    $(elId).innerHTML = cards.map(c=> faceUp ? cardHTML(c.r,c.s) : cardBackHTML()).join('');
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const lock=playing;
+    $('betUp').disabled=lock; $('betDown').disabled=lock;
+    $('actBtn').disabled=false;
+    $('actBtn').textContent='REPARTIR';
+  }
+  const setMsg=(t)=>{ $('message').textContent=t; };
+
+  // build a dealer hand from a pool that strictly beats the player's hand.
+  // pool excludes the player's 5 cards. used when the house blocks a win.
+  function beatingDealerHand(used){
+    for(let tries=0; tries<600; tries++){
+      const pool=[];
+      for(let r=2;r<=14;r++) for(const s of SUITS){ const k=r+s; if(!used.has(k)) pool.push({r,s}); }
+      for(let i=pool.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+      const cand=pool.slice(0,5);
+      const ev=evaluate(cand);
+      if(cmpHands(ev, playerEval) > 0) return { cards:cand, ev };
+    }
+    return null;
+  }
+  let playerEval=null;
+
+  function deal(){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    playing=true;
+
+    // reset hands & UI BEFORE syncUI
+    playerHand=[]; dealerHand=[];
+    $('winDisp').textContent=fmt(0);
+    $('playerName').textContent='—'; $('dealerName').textContent='—';
+    $('dealerSide').classList.remove('win'); $('playerSide').classList.remove('win');
+    renderPaytable(null);
+    syncUI();
+
+    // deal candidate hands
+    deck=freshDeck();
+    playerHand=[drawCard(),drawCard(),drawCard(),drawCard(),drawCard()];
+    dealerHand=[drawCard(),drawCard(),drawCard(),drawCard(),drawCard()];
+    playerEval=evaluate(playerHand);
+
+    // determine natural result, then apply the house gate to the WIN
+    let dealerEval=evaluate(dealerHand);
+    let cmp=cmpHands(playerEval, dealerEval); // >0 player wins
+
+    if(cmp>0){
+      // player would win -> gate it with the player's payout multiplier
+      const thatMult=PAYOUT[playerEval.key];
+      const canWin=(window.NovaHouse ? NovaHouse.allowWin(thatMult) : true);
+      if(!canWin){
+        // re-deal ONLY the dealer's 5 cards to a hand that strictly beats the player
+        const used=new Set(playerHand.map(c=>c.r+c.s));
+        const beat=beatingDealerHand(used);
+        if(beat){ dealerHand=beat.cards; dealerEval=beat.ev; cmp=cmpHands(playerEval, dealerEval); }
+      }
+    }
+
+    // show player's cards face up; dealer face down until resolve
+    renderHand('playerHand', playerHand, true);
+    renderHand('dealerHand', dealerHand, false);
+    $('playerName').textContent=NAMES[playerEval.key];
+    sndDeal(); setTimeout(sndDeal,90); setTimeout(sndDeal,180);
+
+    setMsg('El crupier revela su mano…');
+    setTimeout(()=>resolve(dealerEval, cmp), 620);
+  }
+
+  function resolve(dealerEval, cmp){
+    const bet=BETS[betIdx];
+    // reveal dealer
+    renderHand('dealerHand', dealerHand, true);
+    $('dealerName').textContent=NAMES[dealerEval.key];
+    sndDeal(); setTimeout(sndDeal,90);
+
+    if(cmp>0){
+      // player wins -> pay total multiplier based on player's hand
+      const winMult=PAYOUT[playerEval.key];
+      const win=bet*winMult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      $('playerSide').classList.add('win'); $('dealerSide').classList.remove('win');
+      renderPaytable(playerEval.key);
+      setMsg(`✅ ¡Ganaste con ${NAMES[playerEval.key]}! +${fmt(win)} (${winMult}x)`);
+      if(window.Juice) Juice.win(win,{ mult:winMult, el:$('winDisp') });
+    } else if(cmp<0){
+      // dealer wins
+      $('dealerSide').classList.add('win'); $('playerSide').classList.remove('win');
+      setMsg(`❌ El crupier gana con ${NAMES[dealerEval.key]}. Perdiste.`);
+    } else {
+      // exact tie -> push, return stake
+      const win=bet;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      setMsg(`Empate (${NAMES[playerEval.key]}) — apuesta devuelta`);
+    }
+
+    playing=false;   // reset BEFORE syncUI
+    syncUI();
+  }
+
+  $('actBtn').addEventListener('click',()=>{ ac(); if(!playing) deal(); });
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render BEFORE wallet hooks
+  renderPaytable(null);
+  renderHand('playerHand', [{},{},{},{},{}], false);
+  renderHand('dealerHand', [{},{},{},{},{}], false);
+  syncUI();
+
+  // wallet hooks at the VERY END (avoid TDZ on $/consts)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

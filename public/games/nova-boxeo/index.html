@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Boxeo — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; --blue:#4d8bff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,#0d2438,#0a1120); box-shadow:0 12px 34px rgba(0,0,0,.5); }
+  .ring{ display:block; width:100%; height:auto; }
+  /* barras de vida */
+  .bars{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:9px; }
+  .bar{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:6px 8px; }
+  .bar .lbl{ display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:4px; }
+  .bar .lbl .r{ color:var(--red); } .bar .lbl .b{ color:var(--blue); }
+  .bar .track{ height:9px; border-radius:6px; background:#0c1426; overflow:hidden; }
+  .bar .fill{ height:100%; width:100%; border-radius:6px; transition:width .25s linear; }
+  .bar .fill.red{ background:linear-gradient(90deg,#ff7a86,var(--red)); }
+  .bar .fill.blue{ background:linear-gradient(90deg,#86b3ff,var(--blue)); }
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; color:var(--gold); font-size:13px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .betrow{ display:flex; justify-content:center; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:52px; text-align:center; font-weight:700; }
+  .picks{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .pick{ height:44px; border:2px solid transparent; border-radius:12px; cursor:pointer; font-size:14px; font-weight:800; color:#fff; transition:filter .15s, transform .1s, border-color .15s; }
+  .pick:active{ transform:translateY(2px); }
+  .pick.red{ background:linear-gradient(180deg,#ff6470,#d33444); }
+  .pick.blue{ background:linear-gradient(180deg,#6ba1ff,#2f5fd6); }
+  .pick.sel{ border-color:var(--gold); box-shadow:0 0 16px rgba(255,200,61,.4); }
+  .pick:disabled{ opacity:.5; cursor:not-allowed; }
+  .fight{ width:100%; height:48px; margin-top:8px; border:0; border-radius:12px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 18px rgba(25,229,127,.32); transition:filter .15s, transform .1s; }
+  .fight:active{ transform:translateY(2px); }
+  .fight:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+  .foot{ margin-top:7px; text-align:center; font-size:9px; color:#5e6781; }
+  /* animaciones de golpe */
+  @keyframes jabR{ 0%,100%{transform:translateX(0)} 40%{transform:translateX(26px)} 60%{transform:translateX(26px)} }
+  @keyframes jabB{ 0%,100%{transform:translateX(0)} 40%{transform:translateX(-26px)} 60%{transform:translateX(-26px)} }
+  @keyframes hurt{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(7px)} 75%{transform:translateX(-7px)} }
+  @keyframes ko{ 0%{transform:rotate(0) translateY(0)} 100%{transform:rotate(78deg) translateY(34px)} }
+  .jabR{ animation:jabR .34s ease-in-out; }
+  .jabB{ animation:jabB .34s ease-in-out; }
+  .hurt{ animation:hurt .3s ease-in-out; }
+  .ko{ animation:ko .6s ease-in forwards; transform-origin:50% 100%; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Boxeo</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <svg class="ring" id="ring" viewBox="0 0 360 210" xmlns="http://www.w3.org/2000/svg">
+        <!-- fondo arena -->
+        <rect x="0" y="0" width="360" height="210" fill="#0c1a2a"/>
+        <!-- lona del ring -->
+        <polygon points="20,200 340,200 300,108 60,108" fill="#13314a"/>
+        <polygon points="20,200 340,200 300,108 60,108" fill="url(#canvasLines)"/>
+        <defs>
+          <pattern id="canvasLines" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="skewX(-12)">
+            <rect width="30" height="30" fill="none"/>
+            <line x1="0" y1="0" x2="0" y2="30" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <!-- postes y cuerdas -->
+        <g stroke="#e9eef8" stroke-width="3">
+          <line x1="60" y1="108" x2="48" y2="40"/>
+          <line x1="300" y1="108" x2="312" y2="40"/>
+        </g>
+        <g stroke="rgba(231,238,248,.55)" stroke-width="2">
+          <line x1="48" y1="52" x2="312" y2="52"/>
+          <line x1="50" y1="66" x2="310" y2="66"/>
+          <line x1="52" y1="80" x2="308" y2="80"/>
+        </g>
+        <rect x="42" y="34" width="14" height="14" rx="3" fill="#ffc83d"/>
+        <rect x="304" y="34" width="14" height="14" rx="3" fill="#ffc83d"/>
+
+        <!-- BOXEADOR ROJO (izquierda, mira a la derecha) -->
+        <g id="boxRedWrap">
+          <g id="boxRed" transform="translate(118,150)">
+            <!-- piernas -->
+            <rect x="-12" y="20" width="8" height="22" rx="3" fill="#0c1426"/>
+            <rect x="4" y="20" width="8" height="22" rx="3" fill="#0c1426"/>
+            <!-- shorts -->
+            <rect x="-13" y="6" width="26" height="18" rx="4" fill="#d33444"/>
+            <!-- torso -->
+            <rect x="-12" y="-18" width="24" height="28" rx="8" fill="#ff6470"/>
+            <!-- cabeza -->
+            <circle cx="0" cy="-30" r="10" fill="#e8b48a"/>
+            <!-- brazo/guante delantero (que golpea) -->
+            <g id="redArm">
+              <rect x="8" y="-14" width="16" height="7" rx="3" fill="#b02633"/>
+              <circle cx="28" cy="-11" r="7" fill="#ff4d5e" stroke="#7d1822" stroke-width="1"/>
+            </g>
+            <!-- guante trasero (guardia) -->
+            <circle cx="-6" cy="-22" r="6" fill="#ff4d5e" stroke="#7d1822" stroke-width="1"/>
+          </g>
+        </g>
+
+        <!-- BOXEADOR AZUL (derecha, mira a la izquierda) -->
+        <g id="boxBlueWrap">
+          <g id="boxBlue" transform="translate(242,150)">
+            <!-- piernas -->
+            <rect x="-12" y="20" width="8" height="22" rx="3" fill="#0c1426"/>
+            <rect x="4" y="20" width="8" height="22" rx="3" fill="#0c1426"/>
+            <!-- shorts -->
+            <rect x="-13" y="6" width="26" height="18" rx="4" fill="#2f5fd6"/>
+            <!-- torso -->
+            <rect x="-12" y="-18" width="24" height="28" rx="8" fill="#6ba1ff"/>
+            <!-- cabeza -->
+            <circle cx="0" cy="-30" r="10" fill="#e8b48a"/>
+            <!-- brazo/guante delantero (que golpea, hacia la izquierda) -->
+            <g id="blueArm">
+              <rect x="-24" y="-14" width="16" height="7" rx="3" fill="#23449e"/>
+              <circle cx="-28" cy="-11" r="7" fill="#4d8bff" stroke="#1b3270" stroke-width="1"/>
+            </g>
+            <!-- guante trasero (guardia) -->
+            <circle cx="6" cy="-22" r="6" fill="#4d8bff" stroke="#1b3270" stroke-width="1"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="bars">
+      <div class="bar">
+        <div class="lbl"><span class="r">ROJO</span><span id="hpRedTxt">100</span></div>
+        <div class="track"><div class="fill red" id="hpRed"></div></div>
+      </div>
+      <div class="bar">
+        <div class="lbl"><span class="b">AZUL</span><span id="hpBlueTxt">100</span></div>
+        <div class="track"><div class="fill blue" id="hpBlue"></div></div>
+      </div>
+    </div>
+
+    <div class="msg" id="message">Elige tu boxeador y pulsa PELEAR 🥊</div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="betrow">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+    </div>
+    <div class="picks">
+      <button class="pick red" id="pickRed">ROJO</button>
+      <button class="pick blue" id="pickBlue">AZUL</button>
+    </div>
+    <button class="fight" id="fightBtn">PELEAR</button>
+    <div class="foot">Nova Boxeo · juego original de BetNova · KO paga 1.95x</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT=1.95;
+
+  let balance=1000, fighting=false, pick='red'; // 'red' | 'blue'
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio: solo un "thud" sutil al golpear; win/bet los pone el sistema compartido.
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function thud(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type='triangle'; o.frequency.setValueAtTime(150,c.currentTime); o.frequency.exponentialRampToValueAtTime(50,c.currentTime+0.1); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.22,c.currentTime+0.008); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.14); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.16); }
+
+  function setHP(red, blue){
+    red=Math.max(0,red); blue=Math.max(0,blue);
+    $('hpRed').style.width=red+'%'; $('hpBlue').style.width=blue+'%';
+    $('hpRedTxt').textContent=Math.round(red); $('hpBlueTxt').textContent=Math.round(blue);
+  }
+
+  function resetRing(){
+    // reset salud y posiciones de los boxeadores antes de cada pelea
+    setHP(100,100);
+    $('boxRed').classList.remove('ko');
+    $('boxBlue').classList.remove('ko');
+    $('boxRedWrap').classList.remove('jabR','hurt');
+    $('boxBlueWrap').classList.remove('jabB','hurt');
+  }
+
+  function pulse(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const dis=fighting;
+    $('pickRed').disabled=dis; $('pickBlue').disabled=dis;
+    $('betUp').disabled=dis; $('betDown').disabled=dis;
+    $('fightBtn').disabled=dis;
+    $('pickRed').classList.toggle('sel', pick==='red');
+    $('pickBlue').classList.toggle('sel', pick==='blue');
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function fight(){
+    if(fighting) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    ac();
+    fighting=true;
+    resetRing();          // reset salud/posiciones antes de syncUI
+    syncUI();
+    balance=NovaWallet.bet(bet);
+    $('winDisp').textContent=fmt(0);
+    setMsg('¡Suena la campana!');
+
+    // ¿Permite la casa esta victoria? Decidir ganador ANTES de animar.
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(PAYOUT) : true);
+    // El boxeador del jugador gana si y solo si canWin.
+    const playerWins = canWin;
+    const winnerIsRed = (pick==='red') ? playerWins : !playerWins;
+
+    // Salud que va perdiendo el perdedor durante los intercambios.
+    let hpRed=100, hpBlue=100;
+    // 4 intercambios; el ganador conecta más golpes hasta el KO final.
+    const exchanges=[1,2,3,4];
+    let i=0;
+
+    function exchange(){
+      if(i>=exchanges.length){ finish(); return; }
+      i++;
+      thud();
+      if(winnerIsRed){
+        // rojo golpea, azul recibe
+        pulse($('boxRedWrap'),'jabR');
+        pulse($('boxBlueWrap'),'hurt');
+        hpBlue = (i<exchanges.length) ? Math.max(18, 100 - i*22) : 0;
+      } else {
+        // azul golpea, rojo recibe
+        pulse($('boxBlueWrap'),'jabB');
+        pulse($('boxRedWrap'),'hurt');
+        hpRed = (i<exchanges.length) ? Math.max(18, 100 - i*22) : 0;
+      }
+      setHP(hpRed,hpBlue);
+      setTimeout(exchange, 480);
+    }
+
+    function finish(){
+      // KO del perdedor
+      if(winnerIsRed){ $('boxBlue').classList.add('ko'); }
+      else { $('boxRed').classList.add('ko'); }
+
+      // reset estado ANTES de syncUI
+      fighting=false;
+      if(playerWins){
+        const win=bet*PAYOUT;
+        balance=NovaWallet.win(win);
+        $('winDisp').textContent=fmt(win);
+        setMsg('¡KO! Tu boxeador gana +'+fmt(win));
+        if(window.Juice) Juice.win(win,{ mult:PAYOUT, el:$('winDisp') });
+      } else {
+        const w=(pick==='red')?'AZUL':'ROJO';
+        setMsg('¡KO! Ganó '+w+'. Perdiste.');
+      }
+      syncUI();
+    }
+
+    setTimeout(exchange, 360);
+  }
+
+  $('pickRed').addEventListener('click',()=>{ if(!fighting){ pick='red'; syncUI(); } });
+  $('pickBlue').addEventListener('click',()=>{ if(!fighting){ pick='blue'; syncUI(); } });
+  $('fightBtn').addEventListener('click',()=>fight());
+  $('betUp').addEventListener('click',()=>{ if(!fighting&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!fighting&&betIdx>0){betIdx--;syncUI();} });
+
+  // render inicial
+  setHP(100,100);
+  syncUI();
+
+  // ¡SIEMPRE AL FINAL! evitar TDZ con const $ definido arriba
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>
