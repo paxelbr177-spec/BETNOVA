@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Lucky Number — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; border:1px solid rgba(255,255,255,.08); background:#0a1120; box-shadow:0 14px 40px rgba(0,0,0,.5); padding:18px 10px; }
+  .reel{ display:flex; justify-content:center; align-items:center; }
+  .ball{ width:96px; height:96px; filter:drop-shadow(0 6px 12px rgba(0,0,0,.5)); transition:transform .08s; }
+  .ball.spin{ animation:bob .12s linear infinite; }
+  @keyframes bob{ 0%{transform:rotate(-6deg) scale(.97);} 50%{transform:rotate(6deg) scale(1.05);} 100%{transform:rotate(-6deg) scale(.97);} }
+  .sum{ text-align:center; margin-top:10px; font-size:13px; color:var(--muted); min-height:18px; }
+  .sum b{ color:var(--gold); font-size:16px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .lbl{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin:12px 0 6px; }
+  .nums{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  .nums button{ position:relative; border:1px solid rgba(255,255,255,.08); background:var(--panel); color:#e8eefc; border-radius:10px; padding:10px 0; font-size:17px; font-weight:800; cursor:pointer; transition:all .12s; line-height:1; }
+  .nums button .star{ position:absolute; top:3px; right:4px; width:9px; height:9px; opacity:.35; }
+  .nums button.sel{ border-color:var(--brand); background:linear-gradient(180deg,rgba(25,229,127,.22),rgba(25,229,127,.08)); box-shadow:0 0 14px rgba(25,229,127,.25); }
+  .nums button.sel .star{ opacity:1; }
+  .nums button.hit{ border-color:var(--gold); background:linear-gradient(180deg,rgba(255,200,61,.28),rgba(255,200,61,.08)); }
+  .controls{ display:flex; gap:8px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:5px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 8px; }
+  .bet button{ width:30px; height:30px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:46px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:48px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:20px; margin-top:10px; font-weight:700; color:var(--gold); font-size:13px; }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Lucky</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="reel" id="reel"></div>
+      <div class="sum" id="sum">Elige tu número de la suerte y gira</div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+
+    <div class="lbl">Tu número (exacto 9x · vecino 2x)</div>
+    <div class="nums" id="nums"></div>
+
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">GIRAR</button>
+    </div>
+    <div class="msg" id="message">¡Mucha suerte!</div>
+    <div class="foot">Nova Lucky Number · juego original de BetNova · acierta el número para ganar 9x</div>
+  </div>
+
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT = { exact: 9, neighbor: 2 };
+  const TOP_MULT = 9;
+  let balance=1000, spinning=false, pick=7;
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+  // ---- number ball SVG (golden coin showing a number; small star flourish) ----
+  function ballSVG(n){
+    return `<svg class="ball" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="g" cx="40%" cy="35%" r="75%">
+        <stop offset="0%" stop-color="#ffe79a"/><stop offset="55%" stop-color="#ffc83d"/><stop offset="100%" stop-color="#d98b14"/>
+      </radialGradient></defs>
+      <circle cx="50" cy="50" r="42" fill="url(#g)" stroke="rgba(0,0,0,.18)" stroke-width="3"/>
+      <circle cx="50" cy="50" r="34" fill="none" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/>
+      <text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI,system-ui,sans-serif" font-size="40" font-weight="800" fill="#0a0e1a">${n}</text>
+    </svg>`;
+  }
+  function starSVG(){
+    return `<svg class="star" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z" fill="#ffc83d"/></svg>`;
+  }
+
+  function renderBall(n, spin){
+    $('reel').innerHTML = ballSVG(n);
+    if(spin){ const el=$('reel').firstElementChild; if(el) el.classList.add('spin'); }
+  }
+
+  function buildNums(){
+    let html='';
+    for(let i=1;i<=10;i++){ html += `<button data-n="${i}">${i}${starSVG()}</button>`; }
+    $('nums').innerHTML = html;
+    markPick();
+  }
+  function markPick(){
+    Array.from($('nums').querySelectorAll('button')).forEach(b=>{
+      b.classList.remove('hit');
+      b.classList.toggle('sel', +b.getAttribute('data-n')===pick);
+    });
+  }
+
+  // ---- audio: subtle tick synth (no win/bet sounds; shared handles those) ----
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tick(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(220+Math.random()*260,c.currentTime);
+    g.gain.setValueAtTime(0.06,c.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.06);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.07); }
+
+  // ---- evaluate a result number against the pick (no wrap) ----
+  function evalResult(result){
+    if(result===pick) return PAYOUT.exact;
+    if(result===pick-1 || result===pick+1) return PAYOUT.neighbor;
+    return 0;
+  }
+  // pick a losing number: neither pick nor adjacent, within 1..10
+  function loseNumber(){
+    const bad=new Set([pick, pick-1, pick+1]);
+    let n; let guard=0;
+    do{ n=ri(1,10); guard++; }while(bad.has(n) && guard<200);
+    return n;
+  }
+  function neighborNumber(){
+    const opts=[pick-1,pick+1].filter(x=>x>=1&&x<=10);
+    return opts[ri(0,opts.length-1)];
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('actBtn').disabled=spinning;
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function selectNum(n){
+    if(spinning) return;
+    pick=n;
+    markPick();
+  }
+
+  function resolve(result){
+    const mult=evalResult(result);
+    const bet=BETS[betIdx];
+    $('sum').innerHTML = `Salió el <b>${result}</b> · tu número: ${pick}`;
+    // highlight the drawn number
+    const drawnBtn = $('nums').querySelector(`button[data-n="${result}"]`);
+    if(drawnBtn) drawnBtn.classList.add('hit');
+    if(mult>0){
+      const win=bet*mult;
+      balance=NovaWallet.win(win);
+      $('winDisp').textContent=fmt(win);
+      setMsg(mult===PAYOUT.exact ? `¡EXACTO! ${mult}x · +${fmt(win)}` : `¡Vecino! ${mult}x · +${fmt(win)}`);
+      if(window.Juice) Juice.win(win,{ mult, el:$('winDisp') });
+    }else{
+      $('winDisp').textContent=fmt(0);
+      setMsg('No esta vez. ¡Gira otra vez!');
+    }
+    spinning=false;          // reset BEFORE syncUI
+    syncUI();
+  }
+
+  function spin(){
+    if(spinning) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet);
+    spinning=true;
+    $('winDisp').textContent=fmt(0);
+    setMsg('Girando…');
+    syncUI();
+
+    // ---- house gate: pick a target tier (weight toward lose) ----
+    const r=Math.random();
+    let targetTier; // 'exact' | 'neighbor' | 'lose'
+    if(r<0.05) targetTier='exact';
+    else if(r<0.22) targetTier='neighbor';
+    else targetTier='lose';
+
+    const targetMult = targetTier==='exact' ? PAYOUT.exact : targetTier==='neighbor' ? PAYOUT.neighbor : 0;
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(targetMult) : true);
+
+    let result;
+    if(!canWin || targetTier==='lose'){
+      result = loseNumber();                 // forced loss
+    }else if(targetTier==='exact'){
+      result = pick;                         // exact match → 9x
+    }else{
+      result = neighborNumber();             // adjacent → 2x
+    }
+
+    // spinner animation, then land on the decided result
+    let ticks=0;
+    renderBall(ri(1,10), true);
+    tick();
+    const iv=setInterval(()=>{
+      ticks++;
+      renderBall(ri(1,10), true);
+      if(ticks%2===0) tick();
+      if(ticks>=9){
+        clearInterval(iv);
+        renderBall(result, false);
+        resolve(result);
+      }
+    },90);
+  }
+
+  // ---- wiring ----
+  $('nums').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ ac(); selectNum(+b.getAttribute('data-n')); } });
+  $('actBtn').addEventListener('click',()=>{ ac(); spin(); });
+  $('betUp').addEventListener('click',()=>{ if(!spinning&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!spinning&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render
+  buildNums();
+  renderBall(7, false);
+  syncUI();
+
+  // NovaWallet hooks at the VERY END (after $ and all funcs are defined → no TDZ)
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

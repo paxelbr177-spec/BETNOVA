@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Basket — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,#0d2438,#0a1120); box-shadow:0 12px 34px rgba(0,0,0,.5); }
+  .court{ display:block; width:100%; height:auto; }
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; color:var(--gold); font-size:13px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .betrow{ display:flex; justify-content:center; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:52px; text-align:center; font-weight:700; }
+  .spots{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .spot{ height:44px; border:1px solid rgba(255,255,255,.08); border-radius:12px; cursor:pointer; font-size:12px; font-weight:800; color:#e8eefc; background:var(--panel); transition:filter .15s, transform .1s, border-color .15s, box-shadow .15s; }
+  .spot:active{ transform:translateY(2px); }
+  .spot.sel{ color:var(--ink); background:linear-gradient(180deg,var(--gold),#e0a728); border-color:transparent; box-shadow:0 0 16px rgba(255,200,61,.35); }
+  .spot:disabled{ opacity:.45; cursor:not-allowed; }
+  .shoot{ width:100%; height:50px; margin-top:10px; border:0; border-radius:13px; cursor:pointer; font-size:16px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 18px rgba(25,229,127,.32); transition:filter .15s, transform .1s; }
+  .shoot:active{ transform:translateY(2px); }
+  .shoot:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+  .foot{ margin-top:7px; text-align:center; font-size:9px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Basket</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <svg class="court" id="court" viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg">
+        <!-- fondo cancha -->
+        <rect x="0" y="0" width="360" height="260" fill="#0a1120"/>
+        <rect x="0" y="160" width="360" height="100" fill="#7a3b1f"/>
+        <rect x="0" y="160" width="360" height="100" fill="url(#wood)"/>
+        <defs>
+          <pattern id="wood" width="360" height="20" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="360" height="10" fill="rgba(255,255,255,.025)"/>
+          </pattern>
+        </defs>
+        <!-- líneas de cancha -->
+        <g stroke="rgba(255,255,255,.25)" stroke-width="2" fill="none">
+          <line x1="0" y1="160" x2="360" y2="160"/>
+          <path d="M30,260 A150,90 0 0 1 330,260" />
+        </g>
+
+        <!-- poste -->
+        <rect x="244" y="30" width="8" height="80" fill="#222a3d"/>
+        <!-- tablero -->
+        <g>
+          <rect x="184" y="22" width="62" height="46" rx="3" fill="#11203a" stroke="#eef3fb" stroke-width="3"/>
+          <rect x="200" y="40" width="30" height="22" rx="2" fill="none" stroke="#ff4d5e" stroke-width="3"/>
+        </g>
+        <!-- aro -->
+        <g id="rim">
+          <ellipse cx="200" cy="74" rx="22" ry="6" fill="none" stroke="#ff8a3d" stroke-width="4"/>
+          <line x1="200" y1="68" x2="200" y2="74" stroke="#ff8a3d" stroke-width="3"/>
+        </g>
+        <!-- red -->
+        <g id="net" stroke="rgba(255,255,255,.45)" stroke-width="1" fill="none">
+          <line x1="180" y1="74" x2="186" y2="98"/>
+          <line x1="188" y1="74" x2="192" y2="100"/>
+          <line x1="196" y1="76" x2="197" y2="101"/>
+          <line x1="204" y1="76" x2="203" y2="101"/>
+          <line x1="212" y1="74" x2="208" y2="100"/>
+          <line x1="220" y1="74" x2="214" y2="98"/>
+          <line x1="182" y1="84" x2="218" y2="84"/>
+          <line x1="185" y1="92" x2="215" y2="92"/>
+          <line x1="188" y1="99" x2="212" y2="99"/>
+        </g>
+
+        <!-- balón -->
+        <g id="ball" style="transform:translate(0px,0px) scale(1);transition:transform .55s cubic-bezier(.3,.7,.5,1);">
+          <g transform="translate(90,212)">
+            <circle r="13" fill="#e8772e" stroke="#a8531a" stroke-width="1.5"/>
+            <path d="M-13,0 H13 M0,-13 V13 M-11,-7 Q0,0 11,-7 M-11,7 Q0,0 11,7" stroke="#5c2c0d" stroke-width="1.4" fill="none"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="msg" id="message">Elige un punto y lanza el balón</div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="betrow">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+    </div>
+    <div class="spots">
+      <button class="spot" id="spotL" data-spot="0">IZQUIERDA</button>
+      <button class="spot" id="spotC" data-spot="1">TIRO LIBRE</button>
+      <button class="spot" id="spotR" data-spot="2">TRIPLE</button>
+    </div>
+    <button class="shoot" id="launch">LANZAR</button>
+    <div class="foot">Nova Basket · juego original de BetNova · canasta paga 2.91x</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT=2.91;
+  // posición x de salida del balón por punto: 0=izq 1=libre 2=triple
+  const START_X=[-50, 0, 70];
+
+  let balance=1000, shooting=false, spot=1;
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio: solo un "bote" sutil; los sonidos de win/bet los pone el sistema compartido.
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function bounce(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type='triangle'; o.frequency.setValueAtTime(260,c.currentTime); o.frequency.exponentialRampToValueAtTime(120,c.currentTime+0.1); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.18,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.14); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.16); }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const dis=shooting;
+    $('spotL').disabled=dis; $('spotC').disabled=dis; $('spotR').disabled=dis;
+    $('launch').disabled=dis; $('betUp').disabled=dis; $('betDown').disabled=dis;
+    $('spotL').classList.toggle('sel',spot===0);
+    $('spotC').classList.toggle('sel',spot===1);
+    $('spotR').classList.toggle('sel',spot===2);
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function resetBall(){
+    $('ball').style.transition='none';
+    $('ball').style.transform='translate('+START_X[spot]+'px,0px) scale(1)';
+    void $('ball').offsetWidth;
+    $('ball').style.transition='transform .55s cubic-bezier(.3,.7,.5,1)';
+  }
+  // canasta limpia: el balón sube al aro y cae por la red
+  function shotIn(){ $('ball').style.transform='translate(110px,-138px) scale(.62)'; }
+  // fallo: rebota en el aro hacia un lado
+  function shotMiss(){ $('ball').style.transform='translate(160px,-120px) scale(.66)'; }
+
+  function pickSpot(s){ if(shooting) return; spot=s; resetBall(); syncUI(); }
+
+  function shoot(){
+    if(shooting) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    ac();
+    shooting=true;
+    resetBall();
+    syncUI();
+    balance=NovaWallet.bet(bet);
+    $('winDisp').textContent=fmt(0);
+    setMsg('¡Lanzamiento!');
+    bounce();
+
+    // ¿Permite la casa esta victoria? Se decide ANTES de la animación.
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(PAYOUT) : true);
+
+    // un instante para fijar la posición de salida, luego lanzar
+    setTimeout(()=>{ if(canWin){ shotIn(); } else { shotMiss(); } }, 30);
+
+    setTimeout(()=>{
+      // reset estado ANTES de syncUI
+      shooting=false;
+      if(canWin){
+        const win=bet*PAYOUT;
+        balance=NovaWallet.win(win);
+        $('winDisp').textContent=fmt(win);
+        setMsg('¡CANASTA! +'+fmt(win));
+        if(window.Juice) Juice.win(win,{ mult:PAYOUT, el:$('winDisp') });
+      } else {
+        setMsg('¡Rebote en el aro! Fallaste.');
+        bounce();
+      }
+      syncUI();
+      // recolocar el balón en el punto seleccionado tras un momento
+      setTimeout(()=>{ resetBall(); }, 1100);
+    }, 640);
+  }
+
+  $('spotL').addEventListener('click',()=>pickSpot(0));
+  $('spotC').addEventListener('click',()=>pickSpot(1));
+  $('spotR').addEventListener('click',()=>pickSpot(2));
+  $('launch').addEventListener('click',shoot);
+  $('betUp').addEventListener('click',()=>{ if(!shooting&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!shooting&&betIdx>0){betIdx--;syncUI();} });
+
+  // render inicial
+  resetBall();
+  syncUI();
+
+  // ¡SIEMPRE AL FINAL! evitar TDZ con const $ definido arriba
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

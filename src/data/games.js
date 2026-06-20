@@ -26,7 +26,8 @@ const names = [
   'Nova War', 'Nova RPS', 'Nova Baccarat', 'Nova Dragon Tiger',
   'Nova 777', 'Nova Andar Bahar', 'Nova Race', 'Nova Color', 'Nova Poker',
   'Nova Chicken', 'Nova Sweet', 'Nova Treasure', 'Nova Craps', 'Nova Bingo',
-  'Nova Teen Patti',
+  'Nova Teen Patti', 'Nova Basket', 'Nova Pharaoh', 'Nova Memory', 'Nova Lucky',
+  'Nova Dado', 'Nova Duck',
 ]
 
 const catPool = ['slots', 'live', 'crash', 'table', 'jackpot', 'slots', 'slots', 'live']
@@ -73,6 +74,12 @@ const embeds = {
   'nova-craps': '/games/nova-craps/index.html',     // ★ craps línea de pase
   'nova-bingo': '/games/nova-bingo/index.html',     // ★ bingo 5x5
   'nova-teen-patti': '/games/nova-teenpatti/index.html', // ★ teen patti (3 cartas)
+  'nova-basket': '/games/nova-basket/index.html',   // ★ tiro al aro (deporte)
+  'nova-pharaoh': '/games/nova-pharaoh/index.html', // ★ slot egipcio 5x3 con líneas
+  'nova-memory': '/games/nova-memory/index.html',   // ★ memoria (encuentra el par)
+  'nova-lucky': '/games/nova-lucky/index.html',     // ★ número de la suerte 1-10
+  'nova-dado': '/games/nova-dado/index.html',       // ★ un dado: alto/bajo/exacto
+  'nova-duck': '/games/nova-duck/index.html',       // ★ tiro al pato (feria)
 }
 
 // Miniaturas (arte original 3:4) para las tarjetas de los juegos jugables.
@@ -112,6 +119,12 @@ const thumbs = {
   'nova-craps': '/games/nova-craps/thumb.svg',
   'nova-bingo': '/games/nova-bingo/thumb.svg',
   'nova-teen-patti': '/games/nova-teenpatti/thumb.svg',
+  'nova-basket': '/games/nova-basket/thumb.svg',
+  'nova-pharaoh': '/games/nova-pharaoh/thumb.svg',
+  'nova-memory': '/games/nova-memory/thumb.svg',
+  'nova-lucky': '/games/nova-lucky/thumb.svg',
+  'nova-dado': '/games/nova-dado/thumb.svg',
+  'nova-duck': '/games/nova-duck/thumb.svg',
 }
 
 // Categoría real de cada juego jugable (los tabs son: slots / crash / table).
@@ -151,6 +164,12 @@ const cats = {
   'nova-craps': 'table',
   'nova-bingo': 'crash',
   'nova-teen-patti': 'table',
+  'nova-basket': 'crash',
+  'nova-pharaoh': 'slots',
+  'nova-memory': 'crash',
+  'nova-lucky': 'crash',
+  'nova-dado': 'crash',
+  'nova-duck': 'crash',
 }
 
 // Prefijo de la app (ej. "/BETNOVA" en GitHub Pages, "" en dev). Los embeds/thumbs

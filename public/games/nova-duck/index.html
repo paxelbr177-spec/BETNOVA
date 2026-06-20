@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Duck — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:10px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .head h1{ font-size:19px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:10px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 9px; border-radius:999px; }
+  .stage{ position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,#0d2438,#0a1120); box-shadow:0 12px 34px rgba(0,0,0,.5); }
+  .scene{ display:block; width:100%; height:auto; }
+  .msg{ text-align:center; min-height:20px; margin-top:9px; font-weight:700; color:var(--gold); font-size:13px; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:8px; text-align:center; }
+  .stat span{ display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:16px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .betrow{ display:flex; justify-content:center; margin-top:10px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:7px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:52px; text-align:center; font-weight:700; }
+  .picks{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .pick{ height:54px; border:2px solid rgba(255,255,255,.10); border-radius:12px; cursor:pointer; background:var(--panel); display:flex; align-items:center; justify-content:center; gap:6px; font-size:13px; font-weight:800; color:#e8eefc; transition:filter .15s, transform .1s, border-color .15s, box-shadow .15s; }
+  .pick svg{ width:30px; height:24px; display:block; }
+  .pick.sel{ border-color:var(--brand); box-shadow:0 0 16px rgba(25,229,127,.4); background:var(--panel2); }
+  .pick:active{ transform:translateY(2px); }
+  .pick:disabled{ opacity:.5; cursor:not-allowed; }
+  .fire{ width:100%; margin-top:9px; height:50px; border:0; border-radius:14px; cursor:pointer; font-size:16px; font-weight:800; letter-spacing:.5px; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 20px rgba(25,229,127,.34); transition:filter .15s, transform .1s; }
+  .fire:active{ transform:translateY(2px); }
+  .fire:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+  .foot{ margin-top:7px; text-align:center; font-size:9px; color:#5e6781; }
+
+  /* ducks slide back and forth on their lanes */
+  @keyframes glide0{ 0%{ transform:translateX(0); } 50%{ transform:translateX(74px); } 100%{ transform:translateX(0); } }
+  @keyframes glide1{ 0%{ transform:translateX(60px); } 50%{ transform:translateX(-14px); } 100%{ transform:translateX(60px); } }
+  @keyframes glide2{ 0%{ transform:translateX(20px); } 50%{ transform:translateX(94px); } 100%{ transform:translateX(20px); } }
+  .duck{ transform-box:fill-box; transform-origin:center; }
+  .lane0 .duck{ animation:glide0 3.1s ease-in-out infinite; }
+  .lane1 .duck{ animation:glide1 2.4s ease-in-out infinite; }
+  .lane2 .duck{ animation:glide2 3.6s ease-in-out infinite; }
+  .lane.hit .duck{ animation:none; }
+  @keyframes drop{ 0%{ transform:translateY(0) rotate(0); opacity:1; } 100%{ transform:translateY(60px) rotate(360deg); opacity:0; } }
+  .lane.hit.go .duck{ animation:drop .7s ease-in forwards; }
+  .lane.miss .duck{ animation:none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Duck</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <svg class="scene" id="scene" viewBox="0 0 360 230" xmlns="http://www.w3.org/2000/svg">
+        <!-- cielo de feria -->
+        <rect x="0" y="0" width="360" height="230" fill="#10243a"/>
+        <rect x="0" y="0" width="360" height="150" fill="url(#sky)"/>
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1b3a5c"/><stop offset="1" stop-color="#13283f"/>
+          </linearGradient>
+          <linearGradient id="tent" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ff4d5e"/><stop offset="1" stop-color="#c8303f"/>
+          </linearGradient>
+        </defs>
+
+        <!-- toldo de carpa -->
+        <rect x="0" y="0" width="360" height="22" fill="#0c1a2b"/>
+        <g>
+          <path d="M0,22 L30,22 L15,40 Z" fill="url(#tent)"/>
+          <path d="M30,22 L60,22 L45,40 Z" fill="#f4f7fb"/>
+          <path d="M60,22 L90,22 L75,40 Z" fill="url(#tent)"/>
+          <path d="M90,22 L120,22 L105,40 Z" fill="#f4f7fb"/>
+          <path d="M120,22 L150,22 L135,40 Z" fill="url(#tent)"/>
+          <path d="M150,22 L180,22 L165,40 Z" fill="#f4f7fb"/>
+          <path d="M180,22 L210,22 L195,40 Z" fill="url(#tent)"/>
+          <path d="M210,22 L240,22 L225,40 Z" fill="#f4f7fb"/>
+          <path d="M240,22 L270,22 L255,40 Z" fill="url(#tent)"/>
+          <path d="M270,22 L300,22 L285,40 Z" fill="#f4f7fb"/>
+          <path d="M300,22 L330,22 L315,40 Z" fill="url(#tent)"/>
+          <path d="M330,22 L360,22 L345,40 Z" fill="#f4f7fb"/>
+        </g>
+
+        <!-- guirnalda de luces -->
+        <g fill="#ffc83d"><circle cx="20" cy="48" r="2.4"/><circle cx="80" cy="50" r="2.4"/><circle cx="140" cy="48" r="2.4"/><circle cx="200" cy="50" r="2.4"/><circle cx="260" cy="48" r="2.4"/><circle cx="320" cy="50" r="2.4"/></g>
+
+        <!-- carriles de agua (rieles del shooting gallery) -->
+        <g>
+          <rect x="0" y="78"  width="360" height="34" fill="#163a55"/>
+          <rect x="0" y="78"  width="360" height="4"  fill="rgba(255,255,255,.10)"/>
+          <rect x="0" y="128" width="360" height="34" fill="#15324a"/>
+          <rect x="0" y="128" width="360" height="4"  fill="rgba(255,255,255,.10)"/>
+          <rect x="0" y="178" width="360" height="34" fill="#122a40"/>
+          <rect x="0" y="178" width="360" height="4"  fill="rgba(255,255,255,.10)"/>
+        </g>
+
+        <!-- mostrador inferior -->
+        <rect x="0" y="212" width="360" height="18" fill="#0c1a2b"/>
+
+        <!-- LANE 0 -->
+        <g class="lane lane0" id="lane0">
+          <g class="duck">
+            <ellipse cx="40" cy="98" rx="17" ry="11" fill="#ffc83d"/>
+            <path d="M30,94 q-9,-2 -12,5 q8,3 14,-1 Z" fill="#f6b21a"/>
+            <circle cx="49" cy="88" r="8" fill="#ffc83d"/>
+            <circle cx="51" cy="86" r="1.6" fill="#0a0e1a"/>
+            <path d="M56,88 l9,2 l-9,3 Z" fill="#ff7a3d"/>
+            <path d="M35,96 q6,7 14,3 q-3,-7 -14,-3 Z" fill="#f6b21a"/>
+          </g>
+        </g>
+        <!-- LANE 1 -->
+        <g class="lane lane1" id="lane1">
+          <g class="duck">
+            <ellipse cx="40" cy="148" rx="17" ry="11" fill="#7fd6ff"/>
+            <path d="M30,144 q-9,-2 -12,5 q8,3 14,-1 Z" fill="#5cc0ee"/>
+            <circle cx="49" cy="138" r="8" fill="#7fd6ff"/>
+            <circle cx="51" cy="136" r="1.6" fill="#0a0e1a"/>
+            <path d="M56,138 l9,2 l-9,3 Z" fill="#ff7a3d"/>
+            <path d="M35,146 q6,7 14,3 q-3,-7 -14,-3 Z" fill="#5cc0ee"/>
+          </g>
+        </g>
+        <!-- LANE 2 -->
+        <g class="lane lane2" id="lane2">
+          <g class="duck">
+            <ellipse cx="40" cy="198" rx="17" ry="11" fill="#19e57f"/>
+            <path d="M30,194 q-9,-2 -12,5 q8,3 14,-1 Z" fill="#0fb863"/>
+            <circle cx="49" cy="188" r="8" fill="#19e57f"/>
+            <circle cx="51" cy="186" r="1.6" fill="#0a0e1a"/>
+            <path d="M56,188 l9,2 l-9,3 Z" fill="#ff7a3d"/>
+            <path d="M35,196 q6,7 14,3 q-3,-7 -14,-3 Z" fill="#0fb863"/>
+          </g>
+        </g>
+
+        <!-- mira / crosshair -->
+        <g id="crosshair" style="opacity:0; transform:translate(180px,120px); transition:transform .42s cubic-bezier(.4,.6,.5,1), opacity .15s;">
+          <circle r="13" fill="none" stroke="#ff4d5e" stroke-width="2"/>
+          <line x1="-18" y1="0" x2="-6" y2="0" stroke="#ff4d5e" stroke-width="2"/>
+          <line x1="6" y1="0" x2="18" y2="0" stroke="#ff4d5e" stroke-width="2"/>
+          <line x1="0" y1="-18" x2="0" y2="-6" stroke="#ff4d5e" stroke-width="2"/>
+          <line x1="0" y1="6" x2="0" y2="18" stroke="#ff4d5e" stroke-width="2"/>
+          <circle r="1.6" fill="#ff4d5e"/>
+        </g>
+      </svg>
+    </div>
+    <div class="msg" id="message">Elige un pato y dispara</div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="betrow">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+    </div>
+    <div class="picks">
+      <button class="pick" id="pick0" data-duck="0">
+        <svg viewBox="0 0 70 50" xmlns="http://www.w3.org/2000/svg"><ellipse cx="33" cy="32" rx="18" ry="12" fill="#ffc83d"/><circle cx="43" cy="20" r="9" fill="#ffc83d"/><circle cx="45" cy="18" r="1.8" fill="#0a0e1a"/><path d="M51,20 l11,3 l-11,4 Z" fill="#ff7a3d"/></svg>
+        Pato 1
+      </button>
+      <button class="pick" id="pick1" data-duck="1">
+        <svg viewBox="0 0 70 50" xmlns="http://www.w3.org/2000/svg"><ellipse cx="33" cy="32" rx="18" ry="12" fill="#7fd6ff"/><circle cx="43" cy="20" r="9" fill="#7fd6ff"/><circle cx="45" cy="18" r="1.8" fill="#0a0e1a"/><path d="M51,20 l11,3 l-11,4 Z" fill="#ff7a3d"/></svg>
+        Pato 2
+      </button>
+      <button class="pick" id="pick2" data-duck="2">
+        <svg viewBox="0 0 70 50" xmlns="http://www.w3.org/2000/svg"><ellipse cx="33" cy="32" rx="18" ry="12" fill="#19e57f"/><circle cx="43" cy="20" r="9" fill="#19e57f"/><circle cx="45" cy="18" r="1.8" fill="#0a0e1a"/><path d="M51,20 l11,3 l-11,4 Z" fill="#ff7a3d"/></svg>
+        Pato 3
+      </button>
+    </div>
+    <button class="fire" id="fire">DISPARAR</button>
+    <div class="foot">Nova Duck · juego original de BetNova · acertar paga 2.91x</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  const PAYOUT=2.91;
+  // centro Y de cada carril (px del viewBox) — el crosshair aterriza aquí
+  const LANE_Y=[93, 143, 193];
+
+  let balance=1000, shooting=false, selected=0;
+
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio: solo un "shot" sutil; los sonidos de win/bet los pone el sistema compartido.
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function shotSfx(){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type='square'; o.frequency.setValueAtTime(420,c.currentTime); o.frequency.exponentialRampToValueAtTime(90,c.currentTime+0.1); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.18,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.14); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.16); }
+
+  function selectDuck(i){ if(shooting) return; selected=i; for(let k=0;k<3;k++){ $('pick'+k).classList.toggle('sel', k===selected); } }
+
+  function resetLanes(){
+    for(let k=0;k<3;k++){ const L=$('lane'+k); L.classList.remove('hit','go','miss'); }
+    const ch=$('crosshair'); ch.style.transition='none'; ch.style.opacity='0'; ch.style.transform='translate(180px,120px)'; void ch.getBoundingClientRect(); ch.style.transition='transform .42s cubic-bezier(.4,.6,.5,1), opacity .15s';
+  }
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    const dis=shooting;
+    $('fire').disabled=dis;
+    for(let k=0;k<3;k++){ $('pick'+k).disabled=dis; $('pick'+k).classList.toggle('sel', k===selected); }
+    $('betUp').disabled=dis; $('betDown').disabled=dis;
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function fire(){
+    if(shooting) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    ac();
+    resetLanes();
+    const zone=selected;
+    shooting=true;
+    syncUI();
+    balance=NovaWallet.bet(bet);
+    $('winDisp').textContent=fmt(0);
+    setMsg('¡Apuntando!');
+
+    // ¿Permite la casa esta victoria? Se decide ANTES de la animación.
+    const canWin = (window.NovaHouse ? NovaHouse.allowWin(PAYOUT) : true);
+
+    // mover la mira al pato elegido (x aprox. del centro de la fila)
+    const ch=$('crosshair');
+    ch.style.opacity='1';
+    ch.style.transform='translate(150px,'+LANE_Y[zone]+'px)';
+
+    setTimeout(()=>{
+      shotSfx();
+      const L=$('lane'+zone);
+      if(canWin){
+        L.classList.add('hit');
+        void L.getBoundingClientRect();
+        L.classList.add('go'); // dispara animación de caída
+      } else {
+        L.classList.add('miss');
+      }
+    }, 460);
+
+    setTimeout(()=>{
+      // reset estado ANTES de syncUI
+      shooting=false;
+      if(canWin){
+        const win=bet*PAYOUT;
+        balance=NovaWallet.win(win);
+        $('winDisp').textContent=fmt(win);
+        setMsg('¡IMPACTO! +'+fmt(win));
+        if(window.Juice) Juice.win(win,{ mult:PAYOUT, el:$('winDisp') });
+      } else {
+        setMsg('¡Fallaste! El pato escapó.');
+      }
+      $('crosshair').style.opacity='0';
+      syncUI();
+      // volver a colocar todo tras un momento
+      setTimeout(()=>{ resetLanes(); }, 1100);
+    }, 1180);
+  }
+
+  $('pick0').addEventListener('click',()=>selectDuck(0));
+  $('pick1').addEventListener('click',()=>selectDuck(1));
+  $('pick2').addEventListener('click',()=>selectDuck(2));
+  $('fire').addEventListener('click',fire);
+  $('betUp').addEventListener('click',()=>{ if(!shooting&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!shooting&&betIdx>0){betIdx--;syncUI();} });
+
+  // render inicial
+  selected=0;
+  resetLanes();
+  syncUI();
+
+  // ¡SIEMPRE AL FINAL! evitar TDZ con const $ definido arriba
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Nova Memory — BetNova</title>
+<link rel="stylesheet" href="../_shared/juice.css" />
+<style>
+  :root{ --brand:#19e57f; --ink:#0a0e1a; --panel:#121829; --panel2:#1a2238; --gold:#ffc83d; --muted:#8a94ad; --red:#ff4d5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:"Segoe UI",system-ui,Roboto,sans-serif; color:#e8eefc;
+    background:radial-gradient(circle at 50% -10%, #163a55, var(--ink) 60%);
+    min-height:100%; padding:12px; user-select:none; -webkit-user-select:none; }
+  .wrap{ max-width:360px; margin:0 auto; }
+  .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .head h1{ font-size:20px; font-weight:800; } .head h1 span{ color:var(--brand); }
+  .head .tag{ font-size:11px; color:var(--muted); background:rgba(255,255,255,.06); padding:4px 10px; border-radius:999px; }
+  .stage{ position:relative; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.08);
+    background:radial-gradient(circle at 50% 20%, #11203a, #0a1120 70%); box-shadow:0 14px 40px rgba(0,0,0,.5);
+    padding:16px 12px; }
+  .mult{ text-align:center; font-size:13px; font-weight:700; color:var(--gold); opacity:.9; margin-bottom:12px; }
+  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .card{ position:relative; aspect-ratio:3/4; cursor:pointer; perspective:600px; }
+  .card .inner{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .4s ease; }
+  .card.flipped .inner{ transform:rotateY(180deg); }
+  .face{ position:absolute; inset:0; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    backface-visibility:hidden; -webkit-backface-visibility:hidden; border:1px solid rgba(255,255,255,.1); overflow:hidden; }
+  .face.back{ background:linear-gradient(160deg,#1d2c52,#13204a); box-shadow:inset 0 0 18px rgba(0,0,0,.4); }
+  .face.front{ background:radial-gradient(circle at 50% 35%,#1a2746,#0e1730); transform:rotateY(180deg); }
+  .card.pickable:hover .inner{ transform:translateY(-4px); }
+  .card.pickable.flipped:hover .inner{ transform:rotateY(180deg) translateY(-4px); }
+  .card.matched .face.front{ box-shadow:0 0 16px rgba(25,229,127,.6); border-color:var(--brand); }
+  .face svg{ width:62%; height:62%; display:block; }
+  .back svg{ width:46%; height:46%; opacity:.5; }
+  .hud{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .stat{ background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px; text-align:center; }
+  .stat span{ display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat b{ font-size:18px; } .stat b.bal{ color:var(--brand);} .stat b.win{ color:var(--gold);}
+  .controls{ display:flex; gap:10px; margin-top:12px; }
+  .bet{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 10px; }
+  .bet button{ width:32px; height:32px; border-radius:8px; border:0; background:var(--panel2); color:#fff; font-size:18px; cursor:pointer; }
+  .bet .v{ min-width:54px; text-align:center; font-weight:700; }
+  .act{ flex:1; height:50px; border:0; border-radius:13px; cursor:pointer; font-size:17px; font-weight:800; color:var(--ink); background:linear-gradient(180deg,var(--brand),#0fb863); box-shadow:0 0 22px rgba(25,229,127,.4); transition:filter .15s; }
+  .act:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .msg{ text-align:center; min-height:22px; margin-top:10px; font-weight:700; color:var(--gold); }
+  .foot{ margin-top:8px; text-align:center; font-size:10px; color:#5e6781; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><h1>Nova <span>Memory</span></h1><span class="tag">Desarrollado por BetNova</span></div>
+    <div class="stage">
+      <div class="mult">Encuentra un par y ganas 2.4x</div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Saldo</span><b class="bal" id="balance">1000.00</b></div>
+      <div class="stat"><span>Apuesta</span><b id="betDisp">50.00</b></div>
+      <div class="stat"><span>Ganancia</span><b class="win" id="winDisp">0.00</b></div>
+    </div>
+    <div class="controls">
+      <div class="bet">
+        <button id="betDown">−</button><div class="v" id="betVal">50</div><button id="betUp">+</button>
+      </div>
+      <button class="act" id="actBtn">JUGAR</button>
+    </div>
+    <div class="msg" id="message">Pon tu apuesta y voltea dos cartas iguales 🃏</div>
+    <div class="foot">Nova Memory · juego original de BetNova · encuentra un par · pago 2.4x</div>
+  </div>
+<script src="../_shared/house.js?v=20260615d"></script>
+<script src="../_shared/wallet-bridge.js?v=20260615d"></script>
+<script src="../_shared/juice.js?v=20260615d"></script>
+<script>
+(function(){
+  const PAYOUT=2.4;
+  const BETS=[50,100,250,500,1000]; let betIdx=0;
+  let balance=1000, playing=false, resolved=false, firstPick=-1;
+  const $=(id)=>document.getElementById(id);
+  const fmt=(n)=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Audio (subtle synth for flips only; win/bet sounds handled by shared system)
+  let actx=null; const ac=()=>{ if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; };
+  function tone(f,d,t,v,glide){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.setValueAtTime(f,c.currentTime); if(glide)o.frequency.exponentialRampToValueAtTime(glide,c.currentTime+d); g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(v||0.06,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d+0.02); }
+  const sndFlip=()=>tone(340+Math.random()*90,0.08,'triangle',0.05);
+
+  // Three distinct symbols (inline SVG, no emojis). board[i] holds symbol index 0..2.
+  const SYMS=[
+    // 0: diamond
+    '<svg viewBox="0 0 60 60"><defs><linearGradient id="s0" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7fd6ff"/><stop offset="100%" stop-color="#1f7bd6"/></linearGradient></defs><path d="M30 6 L52 30 L30 54 L8 30 Z" fill="url(#s0)" stroke="#0f4a8c" stroke-width="2"/><path d="M30 6 L40 30 L30 54 L20 30 Z" fill="rgba(255,255,255,.25)"/></svg>',
+    // 1: star
+    '<svg viewBox="0 0 60 60"><defs><linearGradient id="s1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff0a8"/><stop offset="100%" stop-color="#ffb01f"/></linearGradient></defs><path d="M30 4 L37 22 L56 23 L41 35 L46 54 L30 43 L14 54 L19 35 L4 23 L23 22 Z" fill="url(#s1)" stroke="#b87800" stroke-width="2" stroke-linejoin="round"/></svg>',
+    // 2: heart
+    '<svg viewBox="0 0 60 60"><defs><linearGradient id="s2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff8aa0"/><stop offset="100%" stop-color="#e0243f"/></linearGradient></defs><path d="M30 52 C6 34 8 14 22 14 C29 14 30 20 30 20 C30 20 31 14 38 14 C52 14 54 34 30 52 Z" fill="url(#s2)" stroke="#9c1326" stroke-width="2" stroke-linejoin="round"/></svg>'
+  ];
+  const BACK='<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="none" stroke="#19e57f" stroke-width="3"/><path d="M30 12 L30 48 M12 30 L48 30" stroke="#19e57f" stroke-width="3"/></svg>';
+
+  let board=[0,0,1,1,2,2]; // symbol index per card position
+
+  function buildGrid(){
+    const g=$('grid'); g.innerHTML='';
+    for(let i=0;i<6;i++){
+      const card=document.createElement('div');
+      card.className='card'; card.dataset.i=i;
+      card.innerHTML='<div class="inner"><div class="face back">'+BACK+'</div><div class="face front"></div></div>';
+      card.addEventListener('click',()=>{ ac(); pick(i); });
+      g.appendChild(card);
+    }
+  }
+  const cards=()=>Array.from(document.querySelectorAll('.card'));
+
+  function syncUI(){
+    $('balance').textContent=fmt(balance);
+    $('betDisp').textContent=fmt(BETS[betIdx]);
+    $('betVal').textContent=BETS[betIdx];
+    $('actBtn').disabled=playing;
+    $('betUp').disabled=playing; $('betDown').disabled=playing;
+  }
+  function setMsg(t){ $('message').textContent=t; }
+
+  function shuffleBoard(){
+    board=[0,0,1,1,2,2];
+    for(let i=board.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [board[i],board[j]]=[board[j],board[i]]; }
+  }
+
+  function resetBoard(){
+    shuffleBoard();
+    cards().forEach(c=>{
+      c.classList.remove('flipped','matched','pickable');
+      c.querySelector('.front').innerHTML='';
+    });
+  }
+
+  function revealAll(){
+    cards().forEach(c=>{
+      const i=+c.dataset.i;
+      c.querySelector('.front').innerHTML=SYMS[board[i]];
+      c.classList.add('flipped');
+    });
+  }
+
+  function startRound(){
+    if(playing) return;
+    const bet=BETS[betIdx];
+    if(balance<bet){ setMsg('Saldo insuficiente.'); return; }
+    balance=NovaWallet.bet(bet); playing=true; resolved=false; firstPick=-1; syncUI();
+    $('winDisp').textContent=fmt(0);
+    resetBoard();
+    setMsg('Voltea una carta… luego otra.');
+    cards().forEach(c=>c.classList.add('pickable'));
+  }
+
+  function pick(idx){
+    if(!playing || resolved) return;
+    const card=cards()[idx];
+    if(!card.classList.contains('pickable')) return;
+
+    if(firstPick<0){
+      // First flip: show its true symbol; second card's symbol is committed at the second pick.
+      firstPick=idx;
+      card.classList.remove('pickable');
+      card.querySelector('.front').innerHTML=SYMS[board[idx]];
+      card.classList.add('flipped');
+      sndFlip();
+      setMsg('¡Ahora elige la segunda carta!');
+      return;
+    }
+
+    if(idx===firstPick) return; // can't pick the same card
+    resolved=true;
+    card.classList.remove('pickable');
+    cards().forEach(c=>c.classList.remove('pickable'));
+
+    // House gate decided when the second card is flipped.
+    const canWin=(window.NovaHouse ? NovaHouse.allowWin(PAYOUT) : true);
+    const firstSym=board[firstPick];
+    let shownSym;
+    if(canWin){
+      shownSym=firstSym; // force a MATCH
+    } else {
+      // force a NON-match: pick any symbol different from the first
+      const others=[0,1,2].filter(s=>s!==firstSym);
+      shownSym=others[Math.floor(Math.random()*others.length)];
+    }
+    board[idx]=shownSym; // displayed face must match the result
+
+    card.querySelector('.front').innerHTML=SYMS[shownSym];
+    card.classList.add('flipped');
+    sndFlip();
+
+    const bet=BETS[betIdx];
+    const isMatch=(shownSym===firstSym);
+
+    setTimeout(()=>{
+      if(isMatch){
+        cards()[firstPick].classList.add('matched'); card.classList.add('matched');
+        const win=bet*PAYOUT;
+        balance=NovaWallet.win(win); $('winDisp').textContent=fmt(win);
+        setMsg('✅ ¡Par encontrado! +'+fmt(win));
+        if(window.Juice) Juice.win(win,{ mult:PAYOUT, el:$('winDisp') });
+      } else {
+        setMsg('❌ No coinciden. Inténtalo de nuevo.');
+      }
+      // briefly reveal all cards, then end the round
+      setTimeout(()=>{ revealAll(); }, 360);
+      playing=false;
+      syncUI();
+    }, 460);
+  }
+
+  // Wiring
+  $('actBtn').addEventListener('click',()=>{ ac(); startRound(); });
+  $('betUp').addEventListener('click',()=>{ if(!playing&&betIdx<BETS.length-1){betIdx++;syncUI();} });
+  $('betDown').addEventListener('click',()=>{ if(!playing&&betIdx>0){betIdx--;syncUI();} });
+
+  // initial render
+  buildGrid();
+  resetBoard();
+  syncUI();
+
+  // *** wallet hooks LAST (after $ + functions + initial render) to avoid TDZ ***
+  NovaWallet.ready(b=>{ balance=b; syncUI(); });
+  NovaWallet.onBalance(b=>{ balance=b; syncUI(); });
+})();
+</script>
+</body>
+</html>
